@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($src = 'c:\\\\Users\\\\Ivan_Zivanovic\\\\Documents\\\\Claude\\\\Projects\\\\AirSerbia Virtual'; $dst = 'C:\\\\Users\\\\Ivan_Zivanovic\\\\RiderProjects\\\\AirSerbiaVirtual'; robocopy \"$src\\\\AirSerbiaVirtua.Client\\\\AirSerbiaVirtua.Acars.PoC\" \"$dst\\\\AirSerbiaVirtua.Acars.PoC\" /E /XD bin obj .idea .vs /NFL /NDL /NJH /NJS; if \\($LASTEXITCODE -lt 8\\) { Write-Output \"PoC copy OK \\($LASTEXITCODE\\)\" } else { Write-Output \"PoC copy FAILED \\($LASTEXITCODE\\)\" })",
+      "PowerShell(Out-Null *)",
+      "Bash(dotnet sln *)",
+      "Bash(dotnet restore *)"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+@host = https://localhost:7001
+
+### Health
+GET {{host}}/health
+
+### Login
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "callsign": "ASL001", "password": "letmein" }
+
+### Airport delta sync (since revision 0)
+GET {{host}}/api/sync/airports?since=0
+Authorization: Bearer {{login.response.body.token}}
+
+### Start flight (returns flightSessionId)
+POST {{host}}/api/flights/start
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "routeId": 1, "aircraftId": 1, "date": "2026-06-02" }
+
+### Push POSREP
+POST {{host}}/api/flights/1/position
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "timestamp": "2026-06-02T10:05:00Z", "lat": 44.82, "lon": 20.31, "altFt": 12000, "gsKts": 280, "phase": 4 }
+
+### Submit PIREP
+POST {{host}}/api/pireps
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "flightSessionId": 1, "depActual": "2026-06-02T10:00:00Z", "arrActual": "2026-06-02T11:30:00Z", "blockMin": 90, "airMin": 78, "fuelUsedKg": 3200, "landingRateFpm": -180, "source": "ACARS", "rawJson": null }
