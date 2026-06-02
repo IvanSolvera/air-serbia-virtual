@@ -3,6 +3,7 @@ using AirSerbiaVirtua.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Route = AirSerbiaVirtua.Api.Models.Route;
 
 namespace AirSerbiaVirtua.Api.Data;
 
@@ -23,6 +24,7 @@ public class AppDbContext : DbContext
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Pirep> Pireps => Set<Pirep>();
     public DbSet<PositionLog> PositionLogs => Set<PositionLog>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -179,6 +181,21 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             e.HasIndex(x => new { x.PirepId, x.Timestamp });
+        });
+
+        // ---- RefreshToken ---------------------------------------------------
+        b.Entity<RefreshToken>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Ignore(x => x.IsActive);
+            e.Property(x => x.TokenHash).HasMaxLength(64).IsRequired();
+            e.HasIndex(x => x.TokenHash).IsUnique();
+            e.HasIndex(x => x.PilotId);
+
+            e.HasOne(x => x.Pilot)
+                .WithMany()
+                .HasForeignKey(x => x.PilotId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         SeedData.Apply(b);

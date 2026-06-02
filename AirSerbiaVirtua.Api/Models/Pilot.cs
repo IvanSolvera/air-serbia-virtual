@@ -21,6 +21,13 @@ public class Pilot
     [MaxLength(256)]
     public string Email { get; set; } = null!;
 
+    /// <summary>BCrypt hash of the pilot's password. Never exposed in DTOs.</summary>
+    [MaxLength(255)]
+    public string PasswordHash { get; set; } = null!;
+
+    /// <summary>UTC timestamp of the last password change (null if never set).</summary>
+    public DateTimeOffset? PasswordUpdatedAtUtc { get; set; }
+
     public int RankId { get; set; }
     public Rank? Rank { get; set; }
 

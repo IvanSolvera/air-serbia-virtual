@@ -8,12 +8,25 @@ using PostgreSQL via EF Core (Npgsql).
 - PostgreSQL 14+
 
 ## Configuration
-Set the `Default` connection string in `appsettings.json` (or via user-secrets /
-environment variable `ConnectionStrings__Default`):
 
+### Connection string
+Set via user-secrets (dev) or `ConnectionStrings__Default` env var (prod):
+
+```bash
+cd AirSerbiaVirtua.Api
+dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Database=airserbiavirtua;Username=postgres;Password=postgres"
 ```
-Host=localhost;Port=5432;Database=airserbiavirtua;Username=postgres;Password=postgres
+
+### JWT signing key (required)
+The API refuses to start without a valid `Jwt:Key` (must be ≥ 32 bytes). The key
+is **never** committed; configure it via user-secrets in dev:
+
+```bash
+cd AirSerbiaVirtua.Api
+dotnet user-secrets set "Jwt:Key" "$(openssl rand -base64 48)"
 ```
+
+In production set the `Jwt__Key` environment variable to a 48+ byte random value.
 
 ## First run
 ```bash

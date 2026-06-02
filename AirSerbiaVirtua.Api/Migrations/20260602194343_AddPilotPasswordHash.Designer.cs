@@ -3,6 +3,7 @@ using System;
 using AirSerbiaVirtua.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AirSerbiaVirtua.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602194343_AddPilotPasswordHash")]
+    partial class AddPilotPasswordHash
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -445,49 +448,6 @@ namespace AirSerbiaVirtua.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("AirSerbiaVirtua.Api.Models.RefreshToken", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedFromIp")
-                        .HasMaxLength(45)
-                        .HasColumnType("character varying(45)");
-
-                    b.Property<DateTimeOffset>("ExpiresAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("PilotId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ReplacedByTokenHash")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<DateTimeOffset?>("RevokedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PilotId");
-
-                    b.HasIndex("TokenHash")
-                        .IsUnique();
-
-                    b.ToTable("RefreshTokens");
-                });
-
             modelBuilder.Entity("AirSerbiaVirtua.Api.Models.Route", b =>
                 {
                     b.Property<int>("Id")
@@ -623,17 +583,6 @@ namespace AirSerbiaVirtua.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Pirep");
-                });
-
-            modelBuilder.Entity("AirSerbiaVirtua.Api.Models.RefreshToken", b =>
-                {
-                    b.HasOne("AirSerbiaVirtua.Api.Models.Pilot", "Pilot")
-                        .WithMany()
-                        .HasForeignKey("PilotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Pilot");
                 });
 
             modelBuilder.Entity("AirSerbiaVirtua.Api.Models.Route", b =>

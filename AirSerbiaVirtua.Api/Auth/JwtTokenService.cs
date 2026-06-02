@@ -12,12 +12,13 @@ public class JwtTokenService
     private readonly IConfiguration _config;
     public JwtTokenService(IConfiguration config) => _config = config;
 
-    public (string token, DateTimeOffset expires) CreateToken(Pilot pilot)
+    public (string token, DateTimeOffset expires) CreateAccessToken(Pilot pilot)
     {
         var jwt = _config.GetSection("Jwt");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTimeOffset.UtcNow.AddMinutes(int.Parse(jwt["ExpiresMinutes"] ?? "720"));
+        var ttlMinutes = int.Parse(jwt["AccessExpiresMinutes"] ?? jwt["ExpiresMinutes"] ?? "60");
+        var expires = DateTimeOffset.UtcNow.AddMinutes(ttlMinutes);
 
         var claims = new List<Claim>
         {

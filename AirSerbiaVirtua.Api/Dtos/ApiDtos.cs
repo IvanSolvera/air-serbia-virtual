@@ -5,12 +5,32 @@ namespace AirSerbiaVirtua.Api.Dtos;
 // ---- Auth -------------------------------------------------------------------
 public record LoginRequest(string Callsign, string Password);
 
+public record RegisterRequest(
+    string Callsign,
+    string Name,
+    string Email,
+    string Password,
+    string HubIcao);
+
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+
+public record RefreshRequest(string RefreshToken);
+
 public record PilotProfileDto(
     int Id, string Callsign, string Name, string Email,
     int RankId, string RankName, decimal TotalHours,
     PilotStatus Status, string HubId, DateTimeOffset DateJoined);
 
-public record LoginResponse(string Token, DateTimeOffset ExpiresAtUtc, PilotProfileDto Pilot);
+/// <summary>Both tokens issued by login or refresh.</summary>
+public record AuthTokensDto(
+    string AccessToken,
+    DateTimeOffset AccessExpiresAtUtc,
+    string RefreshToken,
+    DateTimeOffset RefreshExpiresAtUtc);
+
+public record LoginResponse(AuthTokensDto Tokens, PilotProfileDto Pilot);
+
+public record RefreshResponse(AuthTokensDto Tokens);
 
 // ---- Airport sync -----------------------------------------------------------
 public record AirportDto(

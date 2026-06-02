@@ -1,3 +1,5 @@
+using AirSerbiaVirtua.Acars.Core;
+
 namespace AirSerbiaVirtua.Acars.PoC;
 
 /// <summary>

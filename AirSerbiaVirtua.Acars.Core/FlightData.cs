@@ -1,4 +1,4 @@
-namespace AirSerbiaVirtua.Acars.PoC;
+namespace AirSerbiaVirtua.Acars.Core;
 
 /// <summary>
 /// An immutable snapshot of simulator telemetry for a single poll, already
@@ -31,7 +31,7 @@ public sealed record FlightData
 
     public string ToConsoleBlock() =>
         $"""
-         ── {SampleTimeUtc:HH:mm:ss} UTC ─────────────────────────────
+         â”€â”€ {SampleTimeUtc:HH:mm:ss} UTC â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Flight {FlightNumber,-8} Reg {TailNumber,-8}
           Pos   {LatitudeDeg,11:F6}, {LongitudeDeg,11:F6}   Alt {AltitudeFt,8:F0} ft
           Speed IAS {IndicatedAirspeedKts,6:F1} kt   GS {GroundSpeedKts,6:F1} kt   VS {VerticalSpeedFpm,7:F0} fpm

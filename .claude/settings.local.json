@@ -4,7 +4,19 @@
       "PowerShell($src = 'c:\\\\Users\\\\Ivan_Zivanovic\\\\Documents\\\\Claude\\\\Projects\\\\AirSerbia Virtual'; $dst = 'C:\\\\Users\\\\Ivan_Zivanovic\\\\RiderProjects\\\\AirSerbiaVirtual'; robocopy \"$src\\\\AirSerbiaVirtua.Client\\\\AirSerbiaVirtua.Acars.PoC\" \"$dst\\\\AirSerbiaVirtua.Acars.PoC\" /E /XD bin obj .idea .vs /NFL /NDL /NJH /NJS; if \\($LASTEXITCODE -lt 8\\) { Write-Output \"PoC copy OK \\($LASTEXITCODE\\)\" } else { Write-Output \"PoC copy FAILED \\($LASTEXITCODE\\)\" })",
       "PowerShell(Out-Null *)",
       "Bash(dotnet sln *)",
-      "Bash(dotnet restore *)"
+      "Bash(dotnet restore *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet user-secrets *)",
+      "PowerShell(Out-File *)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(dotnet run *)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet tool *)",
+      "Bash(dotnet ef *)",
+      "Bash(dotnet run *)",
+      "PowerShell($proc = Start-Process -FilePath \"dotnet\" -ArgumentList \"run --project AirSerbiaVirtua.Acars.Desktop\\\\AirSerbiaVirtua.Acars.Desktop.csproj\" -WorkingDirectory \"C:\\\\Users\\\\Ivan_Zivanovic\\\\RiderProjects\\\\AirSerbiaVirtual\" -PassThru -WindowStyle Hidden; Start-Sleep -Seconds 8; if \\(-not $proc.HasExited\\) { Write-Output \"Desktop running. PID: $\\($proc.Id\\)\" } else { Write-Output \"Exited early code=$\\($proc.ExitCode\\)\" })",
+      "PowerShell(New-Item *)",
+      "PowerShell(Copy-Item *)"
     ]
   }
 }

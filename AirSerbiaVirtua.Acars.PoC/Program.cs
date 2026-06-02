@@ -1,3 +1,4 @@
+using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.PoC;
 
 // `--selftest` runs the deterministic state-machine simulation with mock data

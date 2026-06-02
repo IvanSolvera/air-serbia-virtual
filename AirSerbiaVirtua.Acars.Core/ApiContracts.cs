@@ -1,16 +1,26 @@
-namespace AirSerbiaVirtua.Acars.PoC;
+namespace AirSerbiaVirtua.Acars.Core;
 
 // Client-side mirrors of the server DTOs. Property names serialize to camelCase
 // (System.Text.Json default), matching the ASP.NET Core API.
 
 public record LoginRequest(string Callsign, string Password);
 
+public record RefreshRequest(string RefreshToken);
+
 public record PilotProfile(
     int Id, string Callsign, string Name, string Email,
     int RankId, string RankName, decimal TotalHours,
     int Status, string HubId, DateTimeOffset DateJoined);
 
-public record LoginResponse(string Token, DateTimeOffset ExpiresAtUtc, PilotProfile Pilot);
+public record AuthTokens(
+    string AccessToken,
+    DateTimeOffset AccessExpiresAtUtc,
+    string RefreshToken,
+    DateTimeOffset RefreshExpiresAtUtc);
+
+public record LoginResponse(AuthTokens Tokens, PilotProfile Pilot);
+
+public record RefreshResponse(AuthTokens Tokens);
 
 public record AirportDto(
     string Icao, string? Iata, string Name, string Country,

@@ -1,6 +1,6 @@
 using FSUIPC;
 
-namespace AirSerbiaVirtua.Acars.PoC;
+namespace AirSerbiaVirtua.Acars.Core;
 
 /// <summary>
 /// Robust wrapper around Paul Henty's FSUIPCClientDLL. Owns the connection
@@ -23,21 +23,21 @@ public sealed class FsuipcService : IDisposable
     private const double LonScale = 360.0 / (TwoPow32 * TwoPow32);
 
     // ---- Offsets (auto-register with the FSUIPC default group on creation) --
-    // Position / altitude — 8-byte fixed point.
+    // Position / altitude â€” 8-byte fixed point.
     private readonly Offset<long> _latitude = new(0x0560);   // FsLatitude
     private readonly Offset<long> _longitude = new(0x0568);  // FsLongitude
     private readonly Offset<long> _altitude = new(0x0570);   // FsAltitude (metres, 32.32 fixed)
 
-    // Speeds — 4-byte integers.
+    // Speeds â€” 4-byte integers.
     private readonly Offset<int> _ias = new(0x02BC);   // IAS  : knots * 128
     private readonly Offset<int> _gs = new(0x02B4);    // GS   : (m/s) * 65536
     private readonly Offset<int> _vs = new(0x02C8);    // VS   : (m/s) * 256
 
-    // Status — 2-byte integers.
+    // Status â€” 2-byte integers.
     private readonly Offset<short> _onGround = new(0x0366);      // 0 = airborne, 1 = on ground
     private readonly Offset<short> _parkingBrake = new(0x0BC8);  // 0 = off, 32767 = on
 
-    // ATC info — fixed-length strings.
+    // ATC info â€” fixed-length strings.
     private readonly Offset<string> _flightNumber = new(0x3130, 12);
     private readonly Offset<string> _tailNumber = new(0x313C, 12);
 
@@ -124,7 +124,7 @@ public sealed class FsuipcService : IDisposable
         }
         catch (FSUIPCException ex)
         {
-            // Sim closed / IPC lost — drop the connection and let the loop retry.
+            // Sim closed / IPC lost â€” drop the connection and let the loop retry.
             Log?.Invoke($"Lost connection ({ex.FSUIPCErrorCode}): {ex.Message}. Will reconnect.");
             Close();
             return null;

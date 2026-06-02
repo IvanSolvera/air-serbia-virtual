@@ -1,4 +1,4 @@
-namespace AirSerbiaVirtua.Acars.PoC;
+namespace AirSerbiaVirtua.Acars.Core;
 
 /// <summary>Phases of a tracked flight, in order.</summary>
 public enum FlightState
@@ -17,15 +17,15 @@ public enum FlightState
 
 /// <summary>
 /// Drives the flight phase transitions from a stream of <see cref="FlightData"/>
-/// samples. Designed to be fed one sample per poll (≈1 Hz) via <see cref="Update"/>,
+/// samples. Designed to be fed one sample per poll (â‰ˆ1 Hz) via <see cref="Update"/>,
 /// but is fully deterministic and time-driven off each sample's timestamp, so it
 /// can be exercised with mock data in tests.
 ///
 /// Captured milestones:
-///   OffBlock  — first movement out of the gate (brake released, rolling)
-///   Takeoff   — wheels-up (on-ground 1→0)
-///   Landing   — touchdown (on-ground 0→1); landing rate captured at this instant
-///   OnBlock   — parked at gate (brake set, stopped)
+///   OffBlock  â€” first movement out of the gate (brake released, rolling)
+///   Takeoff   â€” wheels-up (on-ground 1â†’0)
+///   Landing   â€” touchdown (on-ground 0â†’1); landing rate captured at this instant
+///   OnBlock   â€” parked at gate (brake set, stopped)
 /// </summary>
 public sealed class FlightStateMachine
 {
@@ -39,7 +39,7 @@ public sealed class FlightStateMachine
     public double TaxiInGsKts { get; init; } = 30.0;
     public double ArrivedGsKts { get; init; } = 1.0;
 
-    /// <summary>Planned cruise altitude (ft MSL); enables the altitude-based Climb→Cruise trigger.</summary>
+    /// <summary>Planned cruise altitude (ft MSL); enables the altitude-based Climbâ†’Cruise trigger.</summary>
     public double? PlannedCruiseAltFt { get; set; }
 
     public FlightState State { get; private set; } = FlightState.Preflight;
@@ -132,7 +132,7 @@ public sealed class FlightStateMachine
                 break;
 
             case FlightState.Descent:
-                // Touchdown — capture the landing rate at this instant.
+                // Touchdown â€” capture the landing rate at this instant.
                 if (Touchdown(s))
                 {
                     LandingUtc = s.SampleTimeUtc;
@@ -163,7 +163,7 @@ public sealed class FlightStateMachine
         return State != from;
     }
 
-    /// <summary>Optional manual step Preflight → Boarding (no telemetry trigger defined).</summary>
+    /// <summary>Optional manual step Preflight â†’ Boarding (no telemetry trigger defined).</summary>
     public void MarkBoarding(FlightData s)
     {
         if (State == FlightState.Preflight)
@@ -193,7 +193,7 @@ public sealed class FlightStateMachine
 
     /// <summary>
     /// At 1 Hz the exact touchdown can fall between samples; the on-ground sample
-    /// often already reads VS ≈ 0. Use the more-negative of the touchdown sample
+    /// often already reads VS â‰ˆ 0. Use the more-negative of the touchdown sample
     /// and the last airborne sample to best represent the real touchdown rate.
     /// </summary>
     private double CaptureTouchdownVs(FlightData s)
