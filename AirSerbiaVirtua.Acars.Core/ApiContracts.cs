@@ -22,6 +22,43 @@ public record LoginResponse(AuthTokens Tokens, PilotProfile Pilot);
 
 public record RefreshResponse(AuthTokens Tokens);
 
+// ---- Routes & Bookings ------------------------------------------------------
+public record ApiRoute(
+    int Id,
+    string FlightNumber,
+    string DepIcao,
+    string ArrIcao,
+    string AircraftType,
+    int DistanceNm,
+    int PlannedMinutes,
+    List<int> Days);
+
+public record CreateBookingRequest(int RouteId, DateOnly Date);
+
+public record ApiBooking(
+    int Id,
+    int RouteId,
+    string FlightNumber,
+    string DepIcao,
+    string ArrIcao,
+    string AircraftType,
+    int PlannedMinutes,
+    DateOnly Date,
+    int Status);
+
+/// <summary>Mirror of API BookingStatus enum.</summary>
+public enum ApiBookingStatus
+{
+    Open = 0, Confirmed = 1, Flown = 2, Cancelled = 3, Expired = 4
+}
+
+public record ApiAircraft(
+    int Id,
+    string Type,
+    string Registration,
+    string Status,
+    string HubId);
+
 public record AirportDto(
     string Icao, string? Iata, string Name, string Country,
     double Lat, double Lon, int Elevation, int Revision);
@@ -34,10 +71,27 @@ public record FlightStartResponse(
     int FlightSessionId, int RouteId, int AircraftId,
     string AircraftRegistration, DateTimeOffset StartedAtUtc);
 
-/// <summary>POSREP payload. <see cref="Phase"/> uses the API's FlightPhase ordinal.</summary>
+/// <summary>
+/// POSREP payload. <see cref="Phase"/> uses the API's FlightPhase ordinal.
+/// <see cref="ClientReportId"/> is generated once per sample and stays stable
+/// across retries so the server can dedupe (production-readiness item #5).
+/// </summary>
 public record PositionReport(
+    Guid ClientReportId,
     DateTimeOffset Timestamp, double Lat, double Lon,
-    int AltFt, int GsKts, int Phase);
+    int AltFt, int GsKts, int Phase)
+{
+    /// <summary>Builds a POSREP from a telemetry sample, assigning a fresh report id.</summary>
+    public static PositionReport FromTelemetry(FlightData data, FlightState phase) =>
+        new(
+            ClientReportId: Guid.NewGuid(),
+            Timestamp: data.SampleTimeUtc,
+            Lat: data.LatitudeDeg,
+            Lon: data.LongitudeDeg,
+            AltFt: (int)Math.Round(data.AltitudeFt),
+            GsKts: (int)Math.Round(data.GroundSpeedKts),
+            Phase: (int)phase.ToApiPhase());
+}
 
 public record PirepSubmitRequest(
     int FlightSessionId, DateTimeOffset DepActual, DateTimeOffset ArrActual,

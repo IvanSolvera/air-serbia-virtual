@@ -8,61 +8,108 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:LoginViewModel}"
-             d:DesignHeight="540" d:DesignWidth="700">
+             d:DesignHeight="640" d:DesignWidth="960">
 
-    <Grid Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
-        <Border MaxWidth="420"
-                Padding="32,28"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                Background="{DynamicResource MahApps.Brushes.Window.Background}"
-                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
-                BorderThickness="1"
-                CornerRadius="6">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,18">
-                    <iconPacks:PackIconMaterial Kind="Airplane"
-                                                Width="28" Height="28"
-                                                Foreground="{DynamicResource MahApps.Brushes.Accent}"
-                                                VerticalAlignment="Center" />
-                    <TextBlock Text="Air Serbia Virtua"
-                               FontSize="22" FontWeight="Light"
-                               Margin="12,0,0,0"
-                               VerticalAlignment="Center" />
-                </StackPanel>
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="380" />
+            <ColumnDefinition Width="1.2*" MinWidth="320" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ============== Left: form ============== -->
+        <Grid Grid.Column="0" Background="White">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="360" Margin="40,0">
+
+                <Image Source="pack://application:,,,/Resources/airserbia-logo.png"
+                       Height="72" Width="72"
+                       HorizontalAlignment="Left" />
 
                 <TextBlock Text="Pilot login"
-                           Style="{DynamicResource MahApps.Styles.TextBlock.Subheadline}"
-                           Margin="0,0,0,16" />
+                           Style="{StaticResource H1}"
+                           Margin="0,28,0,6" />
+                <TextBlock Text="Sign in to your Air Serbia Virtua roster"
+                           Style="{StaticResource Body}"
+                           Margin="0,0,0,32" />
 
-                <TextBlock Text="Callsign" Margin="0,0,0,4" />
-                <TextBox Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
+                <TextBlock Text="CALLSIGN" Style="{StaticResource Label}" Margin="0,0,0,6" />
+                <TextBox Style="{StaticResource BrandTextBox}"
+                         Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
                          mah:TextBoxHelper.Watermark="e.g. ASL001"
                          IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
-                         Margin="0,0,0,14" />
+                         Margin="0,0,0,18" />
 
-                <TextBlock Text="Password" Margin="0,0,0,4" />
+                <TextBlock Text="PASSWORD" Style="{StaticResource Label}" Margin="0,0,0,6" />
                 <PasswordBox x:Name="PasswordBox"
+                             Style="{StaticResource BrandPasswordBox}"
                              PasswordChanged="PasswordBox_OnPasswordChanged"
                              IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
-                             Margin="0,0,0,18" />
+                             Margin="0,0,0,24" />
 
-                <Button Content="Sign in"
+                <Button Content="SIGN IN"
                         Command="{Binding LoginCommand}"
-                        Style="{DynamicResource MahApps.Styles.Button.Square.Accent}"
-                        Height="38" />
+                        Style="{StaticResource RedButton}"
+                        HorizontalAlignment="Stretch"
+                        Height="44" />
 
                 <ProgressBar IsIndeterminate="True"
-                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}"
-                             Height="3"
-                             Margin="0,12,0,0" />
+                             Height="2"
+                             Foreground="{StaticResource Brand.Red}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Margin="0,14,0,0"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}" />
 
-                <TextBlock Text="{Binding ErrorMessage}"
-                           Foreground="#C0392B"
-                           TextWrapping="Wrap"
-                           Margin="0,12,0,0"
-                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}" />
+                <Border Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"
+                        Background="#FFF7E9EE"
+                        BorderBrush="{StaticResource Brand.Red}"
+                        BorderThickness="0,0,0,2"
+                        Padding="12,10"
+                        Margin="0,18,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="AlertCircle" Width="16" Height="16"
+                                                    Foreground="{StaticResource Brand.RedDark}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                        <TextBlock Text="{Binding ErrorMessage}"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource Brand.RedDark}"
+                                   TextWrapping="Wrap"
+                                   Margin="10,0,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <TextBlock FontSize="11" Foreground="{StaticResource Brand.Muted}" Margin="0,36,0,0">
+                    <Run Text="Don't have an account?" />
+                    <Run Text=" Contact ops to register your callsign." />
+                </TextBlock>
             </StackPanel>
-        </Border>
+        </Grid>
+
+        <!-- ============== Right: hero ============== -->
+        <Grid Grid.Column="1">
+            <Image Source="pack://application:,,,/Resources/airserbia-hero.png"
+                   Stretch="UniformToFill" />
+
+            <!-- Subtle dark gradient at the bottom for tagline legibility -->
+            <Border VerticalAlignment="Bottom" Height="180">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#00000000" Offset="0" />
+                        <GradientStop Color="#CC1A1A1F" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <StackPanel VerticalAlignment="Bottom" Margin="32,0,32,28">
+                <TextBlock Text="Fly the flag."
+                           FontFamily="{StaticResource Brand.Serif}"
+                           FontSize="32"
+                           FontStyle="Italic"
+                           Foreground="White" />
+                <TextBlock Text="Your virtual airline — schedule, dispatch, ACARS in one cockpit."
+                           FontFamily="{StaticResource Brand.Sans}"
+                           FontSize="13"
+                           Foreground="#E6FFFFFF"
+                           Margin="0,4,0,0" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

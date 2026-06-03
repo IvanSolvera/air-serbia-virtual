@@ -68,7 +68,9 @@ public class FlightsController : ControllerBase
 
     /// <summary>
     /// Receives a POSREP telemetry sample (pushed ~every 30 s) and appends it to
-    /// the session's position log.
+    /// the session's position log. Idempotent: a client retry carrying the same
+    /// <see cref="PositionReportDto.ClientReportId"/> is accepted without creating
+    /// a duplicate row (production-readiness item #5).
     /// </summary>
     [HttpPost("{id:int}/position")]
     public async Task<IActionResult> Position(int id, [FromBody] PositionReportDto report)
@@ -81,9 +83,14 @@ public class FlightsController : ControllerBase
         if (pirep.Status != PirepStatus.Pending)
             return Conflict(new { message = "Flight session is no longer active." });
 
+        // An old client (or a replayed empty id) must not collide with other
+        // samples on the (PirepId, ClientReportId) unique index — give it a real id.
+        var clientReportId = report.ClientReportId == Guid.Empty ? Guid.NewGuid() : report.ClientReportId;
+
         _db.PositionLogs.Add(new PositionLog
         {
             PirepId = id,
+            ClientReportId = clientReportId,
             Timestamp = report.Timestamp,
             Lat = report.Lat,
             Lon = report.Lon,
@@ -92,7 +99,21 @@ public class FlightsController : ControllerBase
             Phase = report.Phase
         });
 
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            // Likely a duplicate from a client retry. If the sample is already
+            // stored, report success so the client can drop it from its queue.
+            var alreadyStored = await _db.PositionLogs
+                .AnyAsync(p => p.PirepId == id && p.ClientReportId == clientReportId);
+            if (alreadyStored)
+                return Ok(new { message = "Already received." });
+            throw;
+        }
+
         return Accepted();
     }
 }

@@ -3,6 +3,7 @@ using System;
 using AirSerbiaVirtua.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AirSerbiaVirtua.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602205915_SeedRouteNetwork")]
+    partial class SeedRouteNetwork
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -419,9 +422,6 @@ namespace AirSerbiaVirtua.Api.Migrations
                     b.Property<int>("AltFt")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("ClientReportId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("GsKts")
                         .HasColumnType("integer");
 
@@ -443,9 +443,6 @@ namespace AirSerbiaVirtua.Api.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PirepId", "ClientReportId")
-                        .IsUnique();
 
                     b.HasIndex("PirepId", "Timestamp");
 

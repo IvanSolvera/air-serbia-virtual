@@ -9,9 +9,14 @@ namespace AirSerbiaVirtua.Acars.Core;
 ///
 /// All numeric offsets are read as raw simulator units and converted to
 /// standard aviation units in <see cref="ReadCurrent"/>.
+///
+/// Implements <see cref="ISimBridge"/> so the flight logic stays sim-agnostic.
 /// </summary>
-public sealed class FsuipcService : IDisposable
+public sealed class FsuipcService : ISimBridge
 {
+    /// <inheritdoc />
+    public string Name => "FSUIPC";
+
     // ---- Unit conversion constants ------------------------------------------
     private const double MetresToFeet = 3.280839895;
     private const double MetresPerSecToKnots = 1.943844492;

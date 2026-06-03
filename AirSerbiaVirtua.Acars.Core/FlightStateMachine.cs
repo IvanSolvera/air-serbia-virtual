@@ -170,6 +170,22 @@ public sealed class FlightStateMachine
             TransitionTo(FlightState.Boarding, s);
     }
 
+    /// <summary>Returns the machine to a fresh Preflight, ready for a new session.</summary>
+    public void Reset()
+    {
+        State = FlightState.Preflight;
+        OffBlockUtc = null;
+        TakeoffUtc = null;
+        LandingUtc = null;
+        OnBlockUtc = null;
+        FuelAtStartKg = 0;
+        FuelAtEndKg = 0;
+        LandingRateFpm = 0;
+        _previous = null;
+        _cruiseStableSince = null;
+        _descentSince = null;
+    }
+
     private bool WentAirborne(FlightData s) => _previous is { OnGround: true } && !s.OnGround;
 
     private bool Touchdown(FlightData s) => _previous is { OnGround: false } && s.OnGround;

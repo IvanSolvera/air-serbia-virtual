@@ -1,3 +1,5 @@
+using System.Windows;
+using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,35 +15,46 @@ public sealed partial class MainViewModel : ObservableObject
 {
     private readonly ISessionService _session;
     private readonly INavigationService _navigation;
+    private readonly SimulatorService _sim;
 
     [ObservableProperty] private string _pilotStatusText = "<not signed in>";
     [ObservableProperty] private string _serverStatusText = "Offline";
-    [ObservableProperty] private string _simStatusText = "-";
+    [ObservableProperty] private string _simStatusText = "Disconnected";
     [ObservableProperty] private bool _isAuthenticated;
 
     public INavigationService Navigation => _navigation;
 
-    public MainViewModel(ISessionService session, INavigationService navigation)
+    public MainViewModel(ISessionService session, INavigationService navigation, SimulatorService sim)
     {
         _session = session;
         _navigation = navigation;
+        _sim = sim;
         _session.StateChanged += OnSessionChanged;
+        _sim.ConnectionStateChanged += OnSimConnectionChanged;
         OnSessionChanged(this, EventArgs.Empty);
     }
 
+    private void OnSimConnectionChanged(bool connected) =>
+        Application.Current?.Dispatcher.Invoke(() =>
+            SimStatusText = connected ? "Connected" : "Disconnected");
+
+    // Phase 2a: nav is open so the live ACARS page works without API. The Pilot
+    // Centre / Bookings / Logbook are still placeholders; ACARS Live is functional
+    // (FSUIPC telemetry + state machine). Lock back to IsAuthenticated when the
+    // pilot-centric pages are wired up end-to-end.
     [RelayCommand]
     private void NavigateLogin() => _navigation.NavigateTo(NavTarget.Login);
 
-    [RelayCommand(CanExecute = nameof(IsAuthenticated))]
+    [RelayCommand]
     private void NavigatePilotCentre() => _navigation.NavigateTo(NavTarget.PilotCentre);
 
-    [RelayCommand(CanExecute = nameof(IsAuthenticated))]
+    [RelayCommand]
     private void NavigateBookings() => _navigation.NavigateTo(NavTarget.Bookings);
 
-    [RelayCommand(CanExecute = nameof(IsAuthenticated))]
+    [RelayCommand]
     private void NavigateAcars() => _navigation.NavigateTo(NavTarget.Acars);
 
-    [RelayCommand(CanExecute = nameof(IsAuthenticated))]
+    [RelayCommand]
     private void NavigateLogbook() => _navigation.NavigateTo(NavTarget.Logbook);
 
     [RelayCommand(CanExecute = nameof(IsAuthenticated))]
@@ -57,10 +70,6 @@ public sealed partial class MainViewModel : ObservableObject
         PilotStatusText = _session.Pilot is { } p ? $"{p.Callsign} — {p.Name}" : "<not signed in>";
         ServerStatusText = _session.IsApiReachable ? "Online" : "Offline";
 
-        NavigatePilotCentreCommand.NotifyCanExecuteChanged();
-        NavigateBookingsCommand.NotifyCanExecuteChanged();
-        NavigateAcarsCommand.NotifyCanExecuteChanged();
-        NavigateLogbookCommand.NotifyCanExecuteChanged();
         LogoutCommand.NotifyCanExecuteChanged();
 
         // Auto-jump to the Pilot Centre when login succeeds.

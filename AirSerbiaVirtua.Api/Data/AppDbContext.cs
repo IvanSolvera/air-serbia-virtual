@@ -181,6 +181,9 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             e.HasIndex(x => new { x.PirepId, x.Timestamp });
+
+            // Idempotency: a client retry of the same POSREP cannot double-insert.
+            e.HasIndex(x => new { x.PirepId, x.ClientReportId }).IsUnique();
         });
 
         // ---- RefreshToken ---------------------------------------------------

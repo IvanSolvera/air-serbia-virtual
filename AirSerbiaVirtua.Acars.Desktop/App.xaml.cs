@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
 using AirSerbiaVirtua.Acars.Desktop.Settings;
 using AirSerbiaVirtua.Acars.Desktop.ViewModels;
@@ -28,6 +29,8 @@ public partial class App : Application
 
                 services.AddSingleton<ISessionService, SessionService>();
                 services.AddSingleton<INavigationService, NavigationService>();
+                services.AddSingleton<SimulatorService>();
+                services.AddSingleton<FlightSessionState>();
 
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
@@ -35,8 +38,14 @@ public partial class App : Application
                 services.AddTransient<LoginViewModel>();
                 services.AddTransient<LoginView>();
                 services.AddTransient<PilotCentreView>();
-                services.AddTransient<BookingsView>();
-                services.AddTransient<AcarsView>();
+
+                // Bookings + ACARS views are singleton so their loaded state and
+                // background subscriptions survive navigation.
+                services.AddSingleton<BookingsViewModel>();
+                services.AddSingleton<BookingsView>();
+                services.AddSingleton<AcarsViewModel>();
+                services.AddSingleton<AcarsView>();
+
                 services.AddTransient<LogbookView>();
             })
             .Build();

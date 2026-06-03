@@ -1,0 +1,243 @@
+using System.Collections.ObjectModel;
+using System.Windows;
+using AirSerbiaVirtua.Acars.Core;
+using AirSerbiaVirtua.Acars.Desktop.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+namespace AirSerbiaVirtua.Acars.Desktop.ViewModels;
+
+public sealed partial class BookingsViewModel : ObservableObject
+{
+    private readonly ISessionService _session;
+    private readonly FlightSessionState _flightState;
+    private readonly INavigationService _navigation;
+    private readonly AirSerbiaVirtua.Acars.Core.SimulatorService _sim;
+
+    [ObservableProperty] private bool _isBusy;
+    [ObservableProperty] private string? _statusMessage;
+    [ObservableProperty] private bool _hasError;
+
+    public ObservableCollection<RouteRow> Routes { get; } = new();
+    public ObservableCollection<BookingRow> MyBookings { get; } = new();
+
+    public BookingsViewModel(
+        ISessionService session,
+        FlightSessionState flightState,
+        INavigationService navigation,
+        AirSerbiaVirtua.Acars.Core.SimulatorService sim)
+    {
+        _session = session;
+        _flightState = flightState;
+        _navigation = navigation;
+        _sim = sim;
+        _session.StateChanged += (_, _) =>
+            Application.Current?.Dispatcher.Invoke(() => RefreshCommand.NotifyCanExecuteChanged());
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRefresh))]
+    public async Task RefreshAsync()
+    {
+        if (!_session.IsAuthenticated)
+        {
+            StatusMessage = "Sign in to view available routes.";
+            HasError = false;
+            Routes.Clear();
+            MyBookings.Clear();
+            return;
+        }
+
+        IsBusy = true;
+        StatusMessage = null;
+        HasError = false;
+        try
+        {
+            var hub = _session.Pilot?.HubId;
+            var routeTask = _session.Api.GetRoutesAsync(hub);
+            var bookingsTask = _session.Api.GetMyBookingsAsync();
+            await Task.WhenAll(routeTask, bookingsTask);
+
+            Routes.Clear();
+            foreach (var r in routeTask.Result)
+                Routes.Add(new RouteRow(r));
+
+            // Hide Cancelled/Expired/Flown from the active list — they belong in the Logbook.
+            MyBookings.Clear();
+            foreach (var b in bookingsTask.Result.Where(IsActive))
+                MyBookings.Add(new BookingRow(b));
+
+            if (Routes.Count == 0)
+                StatusMessage = "No routes match this hub.";
+        }
+        catch (Exception ex)
+        {
+            HasError = true;
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+            BookRouteCommand.NotifyCanExecuteChanged();
+            CancelBookingCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanBook))]
+    private async Task BookRouteAsync(RouteRow? row)
+    {
+        if (row is null || !_session.IsAuthenticated) return;
+
+        IsBusy = true;
+        StatusMessage = null;
+        HasError = false;
+        try
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var booked = await _session.Api.CreateBookingAsync(row.Id, today);
+            MyBookings.Insert(0, new BookingRow(booked));
+            StatusMessage = $"Booked {booked.FlightNumber} on {booked.Date:yyyy-MM-dd}.";
+        }
+        catch (Exception ex)
+        {
+            HasError = true;
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanStartFlight))]
+    private async Task StartFlightAsync(BookingRow? row)
+    {
+        if (row is null || !_session.IsAuthenticated) return;
+
+        IsBusy = true;
+        StatusMessage = null;
+        HasError = false;
+        try
+        {
+            // Pick the first Active aircraft of the required type. The API
+            // returns Conflict if it's already InFlight, which we surface
+            // through StatusMessage.
+            var fleet = await _session.Api.GetAircraftAsync(type: row.AircraftType, status: "Active");
+            if (fleet.Count == 0)
+            {
+                HasError = true;
+                StatusMessage = $"No {row.AircraftType} airframes are available right now.";
+                return;
+            }
+
+            var aircraft = fleet[0];
+            var start = await _session.Api.StartFlightAsync(row.RouteId, aircraft.Id, row.Date);
+
+            _sim.ResetSession();
+            _flightState.Set(start, row.FlightNumber);
+            row.Status = (int)ApiBookingStatus.Confirmed;
+
+            StatusMessage = $"Flight {row.FlightNumber} started on {aircraft.Registration}. Switching to ACARS Live.";
+            _navigation.NavigateTo(NavTarget.Acars);
+        }
+        catch (Exception ex)
+        {
+            HasError = true;
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
+    private async Task CancelBookingAsync(BookingRow? row)
+    {
+        if (row is null || !_session.IsAuthenticated) return;
+
+        IsBusy = true;
+        StatusMessage = null;
+        HasError = false;
+        try
+        {
+            await _session.Api.CancelBookingAsync(row.Id);
+            MyBookings.Remove(row);
+            StatusMessage = $"Cancelled {row.FlightNumber} ({row.Date:yyyy-MM-dd}).";
+        }
+        catch (Exception ex)
+        {
+            HasError = true;
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private bool CanRefresh() => !IsBusy;
+
+    private static bool IsActive(ApiBooking b) =>
+        b.Status is (int)ApiBookingStatus.Open or (int)ApiBookingStatus.Confirmed;
+    private bool CanBook(RouteRow? row) => row is not null && !IsBusy && _session.IsAuthenticated;
+    private bool CanCancel(BookingRow? row) =>
+        row is not null && !IsBusy && _session.IsAuthenticated &&
+        row.Status is (int)ApiBookingStatus.Open or (int)ApiBookingStatus.Confirmed;
+    private bool CanStartFlight(BookingRow? row) =>
+        row is not null && !IsBusy && _session.IsAuthenticated &&
+        row.Status is (int)ApiBookingStatus.Open or (int)ApiBookingStatus.Confirmed &&
+        !_flightState.HasActiveSession;
+}
+
+public sealed class RouteRow
+{
+    public int Id { get; }
+    public string FlightNumber { get; }
+    public string DepIcao { get; }
+    public string ArrIcao { get; }
+    public string LegLabel => $"{DepIcao} → {ArrIcao}";
+    public string AircraftType { get; }
+    public int DistanceNm { get; }
+    public int PlannedMinutes { get; }
+    public string PlannedTimeLabel => $"{PlannedMinutes / 60}h {PlannedMinutes % 60:D2}m";
+
+    public RouteRow(ApiRoute r)
+    {
+        Id = r.Id;
+        FlightNumber = r.FlightNumber;
+        DepIcao = r.DepIcao;
+        ArrIcao = r.ArrIcao;
+        AircraftType = r.AircraftType;
+        DistanceNm = r.DistanceNm;
+        PlannedMinutes = r.PlannedMinutes;
+    }
+}
+
+public sealed partial class BookingRow : ObservableObject
+{
+    public int Id { get; }
+    public int RouteId { get; }
+    public string FlightNumber { get; }
+    public string DepIcao { get; }
+    public string ArrIcao { get; }
+    public string LegLabel => $"{DepIcao} → {ArrIcao}";
+    public string AircraftType { get; }
+    public DateOnly Date { get; }
+
+    [ObservableProperty] private int _status;
+    public string StatusLabel => ((ApiBookingStatus)Status).ToString();
+
+    public BookingRow(ApiBooking b)
+    {
+        Id = b.Id;
+        RouteId = b.RouteId;
+        FlightNumber = b.FlightNumber;
+        DepIcao = b.DepIcao;
+        ArrIcao = b.ArrIcao;
+        AircraftType = b.AircraftType;
+        Date = b.Date;
+        _status = b.Status;
+    }
+
+    partial void OnStatusChanged(int value) => OnPropertyChanged(nameof(StatusLabel));
+}

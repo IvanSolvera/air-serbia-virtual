@@ -7,22 +7,32 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:PlaceholderViewModel}"
-             d:DesignHeight="540" d:DesignWidth="700">
+             d:DesignHeight="540" d:DesignWidth="900">
 
-    <Grid Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="520">
-            <iconPacks:PackIconMaterial Kind="ToolboxOutline"
-                                        Width="48" Height="48"
-                                        Foreground="{DynamicResource MahApps.Brushes.Accent}"
-                                        HorizontalAlignment="Center" />
+    <Grid Background="White">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="540" Margin="48">
+
+            <Border Width="64" Height="64"
+                    Background="{StaticResource Brand.Surface}"
+                    BorderBrush="{StaticResource Brand.Border}"
+                    BorderThickness="1"
+                    CornerRadius="32"
+                    HorizontalAlignment="Center">
+                <iconPacks:PackIconMaterial Kind="ToolboxOutline"
+                                            Width="28" Height="28"
+                                            Foreground="{StaticResource Brand.Red}"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+
             <TextBlock Text="{Binding Title}"
-                       Style="{DynamicResource MahApps.Styles.TextBlock.Headline}"
+                       Style="{StaticResource H1}"
                        HorizontalAlignment="Center"
-                       Margin="0,18,0,8" />
+                       Margin="0,22,0,12" />
             <TextBlock Text="{Binding Description}"
+                       Style="{StaticResource Body}"
+                       FontSize="14"
                        TextWrapping="Wrap"
-                       TextAlignment="Center"
-                       Opacity="0.7" />
+                       TextAlignment="Center" />
         </StackPanel>
     </Grid>
 </UserControl>

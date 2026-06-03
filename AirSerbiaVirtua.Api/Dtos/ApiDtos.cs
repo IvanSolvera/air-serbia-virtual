@@ -32,6 +32,37 @@ public record LoginResponse(AuthTokensDto Tokens, PilotProfileDto Pilot);
 
 public record RefreshResponse(AuthTokensDto Tokens);
 
+// ---- Routes & Bookings ------------------------------------------------------
+public record RouteDto(
+    int Id,
+    string FlightNumber,
+    string DepIcao,
+    string ArrIcao,
+    string AircraftType,
+    int DistanceNm,
+    int PlannedMinutes,
+    List<int> Days);
+
+public record CreateBookingRequest(int RouteId, DateOnly Date);
+
+public record BookingDto(
+    int Id,
+    int RouteId,
+    string FlightNumber,
+    string DepIcao,
+    string ArrIcao,
+    string AircraftType,
+    int PlannedMinutes,
+    DateOnly Date,
+    BookingStatus Status);
+
+public record AircraftDto(
+    int Id,
+    string Type,
+    string Registration,
+    string Status,
+    string HubId);
+
 // ---- Airport sync -----------------------------------------------------------
 public record AirportDto(
     string Icao, string? Iata, string Name, string Country,
@@ -48,6 +79,7 @@ public record FlightStartResponse(
 
 // ---- Position report (POSREP) ----------------------------------------------
 public record PositionReportDto(
+    Guid ClientReportId,
     DateTimeOffset Timestamp, double Lat, double Lon,
     int AltFt, int GsKts, FlightPhase Phase);
 

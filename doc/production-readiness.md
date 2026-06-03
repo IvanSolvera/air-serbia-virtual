@@ -59,6 +59,7 @@ Lista je poređana po redu izvršenja — svaka stavka je samostalna, ima jasnu 
 - Migracija + `FlightsController.Position`: pri pokušaju duplikat-insert-a vrati 200 (već primljeno) umesto 500.
 - Klijent generiše Guid jednom po POSREP-u, isti se koristi za sve retry-jeve.
 **Gotovo kad:** trostruki push istog POSREP-a rezultuje jednim redom u `PositionLog`.
+**✅ Urađeno 2026-06-03:** `PositionLog.ClientReportId` + unique index `(PirepId, ClientReportId)`, migracija `AddPosrepIdempotency` (nullable→backfill `gen_random_uuid()`→NOT NULL, primenjena na dev DB). `FlightsController.Position` hvata `DbUpdateException` i vraća 200 ako red već postoji. `PositionReport.FromTelemetry` generiše Guid jednom; `PosrepQueue` ga čuva u fajlu pa svi retry-jevi nose isti id. Pokriveno `--selftest`-om (PosrepQueueTest C).
 
 ### 6. Klijent: offline buffer + retry/backoff
 **Trenutno:** `ApiService.PushPositionAsync` baci exception na bilo koju mrežnu grešku — POSREP je izgubljen.
@@ -68,7 +69,9 @@ Lista je poređana po redu izvršenja — svaka stavka je samostalna, ima jasnu 
 - POSREP HttpClient timeout: 5s (umesto 30s) — ne sme da blokira sledeći tick.
 - PIREP submit: čeka da queue bude prazan (sve POSREP-e prosleđene), pa šalje sinhrono uz retry.
 - UI/console indikator: broj POSREP-a u queue-u + status veze.
+- **GVA referenca:** njihov `ACKBuffer` / `RequestStack` rešava tačno ovaj problem (guaranteed delivery sa ack-om). Vidi `doc/acars-comparison.md`. #5 i #6 zajedno = naša verzija tog pattern-a (Guid idempotency ključ + lokalni queue sa ack/retry).
 **Gotovo kad:** isključen Wi-Fi tokom 5-minutnog testa, pa uključen — svi POSREP-i stignu na server u tačnom redosledu.
+**✅ Urađeno 2026-06-03:** `PosrepQueue` u `Acars.Core` — durable directory-of-files queue (`%LOCALAPPDATA%/AirSerbiaVirtua/posrep/`), atomic write (temp+rename), filename `{unixMillis}_{guid}.json` = hronološki sort. Background worker šalje u redosledu, exponential backoff 1s→2s→…→cap 60s + jitter, briše fajl tek nakon ack-a. Send timeout 5s po POSREP-u (linked CTS) — ne blokira tick. `WaitForDrainAsync` pre PIREP submit-a. UI: `QueueStatusText` (broj u redu) + `LastPosRepText` (zadnji ack). `AcarsViewModel.PosRepLoopAsync` sada samo `Enqueue` (nikad ne baca). Preživljava restart (novi queue pokupi zaostale fajlove). Pokriveno `--selftest`-om: 11/11 PASS (durability, crash-reload, ordered delivery, idempotent retry). **Preostaje:** end-to-end Wi-Fi test tokom živog leta (Phase 2b).
 
 ---
 
@@ -112,15 +115,52 @@ Lista je poređana po redu izvršenja — svaka stavka je samostalna, ima jasnu 
 
 ---
 
+---
+
+## D — GVA-inspirisane nadogradnje (vidi `doc/acars-comparison.md`)
+
+Ideje pozajmljene iz Global Virtual Airlines Group (GVA) ACARS klijenta —
+implementirane natively u našem stack-u, ne kopiran kod. Nisu blokatori za
+produkciju; redosled po vrednosti.
+
+### 11. `ISimBridge` apstrakcija simulatora
+**Zašto:** GVA izoluje simulator iza `Bridge` interfejsa (FSUIPC i X-Plane su dve implementacije). Mi smo vezani direktno za `FsuipcService`.
+**Uradi:**
+- `ISimBridge` interfejs u `Acars.Core` (Name, IsConnected, Log, EnsureConnected, ReadCurrent, Close, Dispose).
+- `FsuipcService` implementira `ISimBridge`.
+- `SimulatorService` zavisi od `ISimBridge` (constructor injection, default `FsuipcService`).
+**Gotovo kad:** `SimulatorService` ne referencira `FsuipcService` direktno; može da primi fake bridge u testu. **(Urađeno 2026-06-03)**
+
+### 12. Per-packet kompresija POSREP-a
+**Zašto:** GVA GZIP/Deflate-uje svaki paket. Kad offline buffer (#6) batch-uje POSREP-e, kompresija je trivijalan dobitak na bandwidth-u (bitno za mobilni hotspot).
+**Uradi:** opcioni GZIP nad batch JSON-om pre slanja; server dekompresuje po `Content-Encoding`. Tek nakon #6.
+**Gotovo kad:** batch od N POSREP-a ide kao gzip telo; server ga transparentno prima.
+
+### 13. Bogatija telemetrija (`FlightData`)
+**Zašto:** GVA `PositionData` ima ~80 polja (per-engine N1/N2/throttle/flow, svi AP/AT modovi, G-force, AoA, touchdown G). Naš `FlightData` ima ~10. Ograničava kvalitet PIREP scoring-a i debrief-a.
+**Uradi:** selektivno dodati polja koja nose vrednost za scoring (touchdown G, AoA, bank/pitch na touchdown-u, AP mode na approach-u). Ne svih 80. Vezano za Phase 4 Debriefing.
+**Gotovo kad:** PIREP score koristi bar touchdown G + landing pitch/bank; debrief ih prikazuje.
+
+### 14. Više faza leta (Pushback / Aborted / Error)
+**Zašto:** GVA `FlightPhase` ima 14 faza uključujući Aborted i Error — neuspeli letovi su first-class. Naš `FlightState` nema način da obeleži prekinut let.
+**Uradi:** dodati `Aborted` i opciono `Pushback` u `FlightState`; state machine prelazi u `Aborted` na crash/prekid; PIREP to beleži umesto da visi u Pending.
+**Gotovo kad:** crash u simu ili user-abort rezultuje `Aborted` PIREP-om, ne zaglavljenim Pending-om.
+
+---
+
 ## Status
 
 - [x] 1. JWT signing key van repozitorijuma
 - [x] 2. Per-pilot hešovane lozinke
 - [x] 3. Rate limiting na auth endpoint-ima
 - [x] 4. Refresh token rotacija
-- [ ] 5. Idempotencija POSREP-a
-- [ ] 6. Klijent: offline buffer + retry/backoff
+- [x] 5. Idempotencija POSREP-a
+- [x] 6. Klijent: offline buffer + retry/backoff
 - [ ] 7. API versioning
 - [ ] 8. Strukturisani logovi (Serilog)
 - [ ] 9. CORS politika
 - [ ] 10. Deployment dokument
+- [x] 11. `ISimBridge` apstrakcija simulatora (GVA)
+- [ ] 12. Per-packet kompresija POSREP-a (GVA)
+- [ ] 13. Bogatija telemetrija `FlightData` (GVA)
+- [ ] 14. Više faza leta — Aborted/Pushback (GVA)

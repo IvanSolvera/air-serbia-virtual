@@ -16,7 +16,21 @@
       "Bash(dotnet run *)",
       "PowerShell($proc = Start-Process -FilePath \"dotnet\" -ArgumentList \"run --project AirSerbiaVirtua.Acars.Desktop\\\\AirSerbiaVirtua.Acars.Desktop.csproj\" -WorkingDirectory \"C:\\\\Users\\\\Ivan_Zivanovic\\\\RiderProjects\\\\AirSerbiaVirtual\" -PassThru -WindowStyle Hidden; Start-Sleep -Seconds 8; if \\(-not $proc.HasExited\\) { Write-Output \"Desktop running. PID: $\\($proc.Id\\)\" } else { Write-Output \"Exited early code=$\\($proc.ExitCode\\)\" })",
       "PowerShell(New-Item *)",
-      "PowerShell(Copy-Item *)"
+      "PowerShell(Copy-Item *)",
+      "PowerShell($proc = Start-Process -FilePath \"dotnet\" -ArgumentList \"run --project AirSerbiaVirtua.Acars.Desktop\\\\AirSerbiaVirtua.Acars.Desktop.csproj --no-build\" -WorkingDirectory \"C:\\\\Users\\\\Ivan_Zivanovic\\\\RiderProjects\\\\AirSerbiaVirtual\" -PassThru -WindowStyle Hidden; Start-Sleep -Seconds 6; if \\(-not $proc.HasExited\\) { Write-Output \"Running PID $\\($proc.Id\\)\" } else { Write-Output \"Exited code=$\\($proc.ExitCode\\)\" })",
+      "PowerShell(Remove-Item *)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(psql *)",
+      "PowerShell($psql = Get-ChildItem 'C:\\\\Program Files\\\\PostgreSQL' -Recurse -Filter 'psql.exe' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName; if \\($psql\\) { $env:PGPASSWORD = '112358.Zivanovic'; & $psql -h localhost -U postgres -d airserbiavirtua -c 'SELECT \"Callsign\", \"Name\", \"Email\", \"HubId\", \"Status\" FROM \"Pilots\";' } else { Write-Output \"psql not found\" })",
+      "PowerShell($psql = Get-ChildItem 'C:\\\\Program Files\\\\PostgreSQL' -Recurse -Filter 'psql.exe' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName; $env:PGPASSWORD = '112358.Zivanovic'; $sql = 'SELECT \\\\\"Callsign\\\\\", \\\\\"Name\\\\\", \\\\\"Email\\\\\", \\\\\"HubId\\\\\", \\\\\"Status\\\\\" FROM \\\\\"Pilots\\\\\";'; & $psql -h localhost -U postgres -d airserbiavirtua -c $sql)",
+      "PowerShell($desk = Start-Process -FilePath \"dotnet\" -ArgumentList \"run --project AirSerbiaVirtua.Acars.Desktop\\\\AirSerbiaVirtua.Acars.Desktop.csproj --no-build\" -WorkingDirectory \"C:\\\\Users\\\\Ivan_Zivanovic\\\\RiderProjects\\\\AirSerbiaVirtual\" -PassThru -WindowStyle Hidden; Start-Sleep -Seconds 5; if \\($desk.HasExited\\) { Write-Output \"Desktop EXITED $\\($desk.ExitCode\\)\" } else { Write-Output \"Desktop running PID $\\($desk.Id\\)\" })",
+      "Read(//j/Program Files/Delta Virtual/ACARSv3//**)",
+      "Read(//j/Program Files/Delta Virtual/ACARSv3/**)",
+      "Bash(rm -rf \"/c/Users/Ivan_Zivanovic/RiderProjects/AirSerbiaVirtual/.dva-analysis\")",
+      "Bash(cygpath -w /tmp/dva)",
+      "Bash(echo \"removed repo copy; source still at: $\\(cygpath -w /tmp/dva\\)\")",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(sed -n '/PosrepQueue self-test \\(fake/,/self-test:/p' /tmp/st2.log)"
     ]
   }
 }

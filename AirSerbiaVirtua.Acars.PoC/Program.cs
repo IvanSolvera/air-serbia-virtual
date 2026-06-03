@@ -1,10 +1,11 @@
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.PoC;
 
-// `--selftest` runs the deterministic state-machine simulation with mock data
-// (no simulator required). Otherwise the live FSUIPC polling loop runs.
+// `--selftest` runs the deterministic state-machine simulation and the offline
+// POSREP queue test with mock data (no simulator required). Otherwise the live
+// FSUIPC polling loop runs.
 if (args.Contains("--selftest"))
-    return FlightSimulationTest.Run();
+    return FlightSimulationTest.Run() + PosrepQueueTest.Run();
 
 Console.WriteLine("Air Serbia Virtua — ACARS PoC");
 Console.WriteLine("Polling FSUIPC at 1 Hz. Press Ctrl+C to exit.\n");

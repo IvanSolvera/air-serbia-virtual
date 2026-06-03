@@ -1,0 +1,280 @@
+<UserControl x:Class="AirSerbiaVirtua.Acars.Desktop.Views.BookingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:vm="clr-namespace:AirSerbiaVirtua.Acars.Desktop.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance vm:BookingsViewModel}"
+             d:DesignHeight="700" d:DesignWidth="960"
+             Background="White">
+
+    <UserControl.Resources>
+        <Style x:Key="ColHeader" TargetType="TextBlock" BasedOn="{StaticResource Label}">
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+        <Style x:Key="Cell" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Brand.Sans}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource Brand.Dark}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+        <Style x:Key="MutedCell" TargetType="TextBlock" BasedOn="{StaticResource Cell}">
+            <Setter Property="Foreground" Value="{StaticResource Brand.Muted}" />
+        </Style>
+        <Style x:Key="SmallButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Brand.Red}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontFamily" Value="{StaticResource Brand.Sans}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="r" Background="{TemplateBinding Background}" CornerRadius="2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="r" Property="Background" Value="{StaticResource Brand.RedDark}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.35" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource SmallButton}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Brand.Dark}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="r" Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource Brand.Border}" BorderThickness="1"
+                                CornerRadius="2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="r" Property="Background" Value="{StaticResource Brand.Surface}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.35" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============== Header ============== -->
+        <Border Grid.Row="0" Padding="36,28,36,20" BorderBrush="{StaticResource Brand.Border}" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Bookings" Style="{StaticResource H1}" />
+                    <TextBlock Text="Reserve a route from the schedule, then take it flying."
+                               Style="{StaticResource Body}" Margin="0,6,0,0" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Content="Refresh"
+                        Style="{StaticResource OutlineButton}"
+                        Command="{Binding RefreshCommand}"
+                        VerticalAlignment="Center"
+                        MinWidth="110" />
+            </Grid>
+        </Border>
+
+        <!-- ============== Status banner ============== -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Margin="36,16,36,0" Padding="14,10"
+                    Background="{StaticResource Brand.Surface}"
+                    BorderThickness="0,0,0,2"
+                    Visibility="{Binding StatusMessage, Converter={StaticResource NullToCollapsedConverter}}">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="BorderBrush" Value="{StaticResource Brand.Border}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasError}" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource Brand.Red}" />
+                                <Setter Property="Background" Value="#FFF7E9EE" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="{Binding StatusMessage}" FontSize="12.5" Foreground="{StaticResource Brand.Dark}" TextWrapping="Wrap" />
+            </Border>
+
+            <!-- =========== Available routes =========== -->
+            <Border Grid.Row="1" Margin="36,16,36,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="AVAILABLE ROUTES" Style="{StaticResource Label}" Margin="0,0,0,10" />
+
+                    <Border Grid.Row="1" BorderBrush="{StaticResource Brand.Border}" BorderThickness="1" CornerRadius="4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0" Background="{StaticResource Brand.Surface}" BorderBrush="{StaticResource Brand.Border}" BorderThickness="0,0,0,1" Padding="16,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="110" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="FLIGHT" Style="{StaticResource ColHeader}" />
+                                    <TextBlock Grid.Column="1" Text="LEG" Style="{StaticResource ColHeader}" />
+                                    <TextBlock Grid.Column="2" Text="A/C" Style="{StaticResource ColHeader}" />
+                                    <TextBlock Grid.Column="3" Text="DISTANCE" Style="{StaticResource ColHeader}" />
+                                    <TextBlock Grid.Column="4" Text="ETE" Style="{StaticResource ColHeader}" />
+                                    <TextBlock Grid.Column="5" Text="" />
+                                </Grid>
+                            </Border>
+
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding Routes}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="{StaticResource Brand.Border}" BorderThickness="0,0,0,1" Padding="16,12">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="90" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="70" />
+                                                        <ColumnDefinition Width="90" />
+                                                        <ColumnDefinition Width="80" />
+                                                        <ColumnDefinition Width="110" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding FlightNumber}" Style="{StaticResource Cell}" FontWeight="SemiBold" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding LegLabel}" Style="{StaticResource Cell}" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding AircraftType}" Style="{StaticResource MutedCell}" />
+                                                    <TextBlock Grid.Column="3" Text="{Binding DistanceNm, StringFormat='{}{0} nm'}" Style="{StaticResource MutedCell}" />
+                                                    <TextBlock Grid.Column="4" Text="{Binding PlannedTimeLabel}" Style="{StaticResource MutedCell}" />
+                                                    <Button Grid.Column="5"
+                                                            Style="{StaticResource SmallButton}"
+                                                            Content="Book today"
+                                                            HorizontalAlignment="Right"
+                                                            Command="{Binding DataContext.BookRouteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- =========== My bookings =========== -->
+            <TextBlock Grid.Row="2" Text="MY BOOKINGS" Style="{StaticResource Label}" Margin="36,16,36,8" />
+
+            <Border Grid.Row="3" Margin="36,0,36,28" BorderBrush="{StaticResource Brand.Border}" BorderThickness="1" CornerRadius="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="{StaticResource Brand.Surface}" BorderBrush="{StaticResource Brand.Border}" BorderThickness="0,0,0,1" Padding="16,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="90" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="130" />
+                                <ColumnDefinition Width="90" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="FLIGHT" Style="{StaticResource ColHeader}" />
+                            <TextBlock Grid.Column="1" Text="LEG" Style="{StaticResource ColHeader}" />
+                            <TextBlock Grid.Column="2" Text="A/C" Style="{StaticResource ColHeader}" />
+                            <TextBlock Grid.Column="3" Text="DATE" Style="{StaticResource ColHeader}" />
+                            <TextBlock Grid.Column="4" Text="STATUS" Style="{StaticResource ColHeader}" />
+                            <TextBlock Grid.Column="5" Text="" />
+                            <TextBlock Grid.Column="6" Text="" />
+                        </Grid>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding MyBookings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{StaticResource Brand.Border}" BorderThickness="0,0,0,1" Padding="16,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="70" />
+                                                <ColumnDefinition Width="110" />
+                                                <ColumnDefinition Width="110" />
+                                                <ColumnDefinition Width="130" />
+                                                <ColumnDefinition Width="90" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding FlightNumber}" Style="{StaticResource Cell}" FontWeight="SemiBold" />
+                                            <TextBlock Grid.Column="1" Text="{Binding LegLabel}" Style="{StaticResource Cell}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding AircraftType}" Style="{StaticResource MutedCell}" />
+                                            <TextBlock Grid.Column="3" Text="{Binding Date, StringFormat='yyyy-MM-dd'}" Style="{StaticResource MutedCell}" />
+                                            <TextBlock Grid.Column="4" Text="{Binding StatusLabel}" Style="{StaticResource Cell}" FontWeight="SemiBold" Foreground="{StaticResource Brand.Red}" />
+                                            <Button Grid.Column="5"
+                                                    Style="{StaticResource SmallButton}"
+                                                    Content="Start flight"
+                                                    Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.StartFlightCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" />
+                                            <Button Grid.Column="6"
+                                                    Style="{StaticResource OutlineButton}"
+                                                    Content="Cancel"
+                                                    HorizontalAlignment="Right"
+                                                    Command="{Binding DataContext.CancelBookingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
