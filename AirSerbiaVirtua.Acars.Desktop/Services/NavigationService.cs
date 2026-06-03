@@ -36,7 +36,9 @@ public sealed class NavigationService : INavigationService
             NavTarget.Login => _provider.GetRequiredService<LoginView>(),
             NavTarget.PilotCentre => _provider.GetRequiredService<PilotCentreView>(),
             NavTarget.Bookings => _provider.GetRequiredService<BookingsView>(),
+            NavTarget.Briefing => _provider.GetRequiredService<BriefingView>(),
             NavTarget.Acars => _provider.GetRequiredService<AcarsView>(),
+            NavTarget.Debriefing => _provider.GetRequiredService<DebriefingView>(),
             NavTarget.Logbook => _provider.GetRequiredService<LogbookView>(),
             _ => null
         };

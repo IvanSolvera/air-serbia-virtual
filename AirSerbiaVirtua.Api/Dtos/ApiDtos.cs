@@ -98,3 +98,23 @@ public record PirepSubmitRequest(
 public record PirepResultDto(
     int PirepId, PirepStatus Status, int Score, int LandingRateFpm,
     int BlockMin, decimal PilotTotalHours, int RankId, string RankName, bool Promoted);
+
+// ---- Logbook ----------------------------------------------------------------
+public record PirepListItemDto(
+    int Id,
+    string FlightNumber,
+    string DepIcao,
+    string ArrIcao,
+    string AircraftType,
+    string AircraftRegistration,
+    DateTimeOffset DepActual,
+    DateTimeOffset ArrActual,
+    int BlockMin,
+    int AirMin,
+    int FuelUsedKg,
+    int LandingRateFpm,
+    int Score,
+    PirepStatus Status);
+
+// ---- Weather (METAR) --------------------------------------------------------
+public record MetarDto(string Icao, string? Raw, DateTimeOffset? ObservedAtUtc);

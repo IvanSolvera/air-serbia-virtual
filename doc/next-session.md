@@ -28,7 +28,26 @@ First GVA idea landed in code: **`ISimBridge` abstraction** (item 11, done).
 - Verified by `--selftest` (PoC): flight-sim test + **11/11 PosrepQueue asserts PASS**.
 - **Still needs a live Wi-Fi-drop test during an actual flight** (folds into Phase 2b).
 
-**Phase 2b verification (below) is STILL the next real task** — unchanged, needs
+**Phase 3 + 4 built (2026-06-03):**
+- **Phase 3 — Pilot Centre**: real profile page (avatar/initials, rank, hours, hub,
+  status, joined) from `_session.Pilot` + working Change-password form
+  (`ApiService.ChangePasswordAsync` → existing `POST /api/auth/change-password`).
+- **Phase 3 — Logbook**: lists PIREPs from new `GET /api/pireps/mine`
+  (`PirepsController.Mine`, status filter), totals (count, hours, avg score).
+- **Phase 4 — Briefing**: route facts + rough fuel estimate + live dep/arr METAR
+  for the active session. New `GET /api/routes/{id}` and `GET /api/metar?icaos=`.
+- **Phase 4 — Debriefing**: last PIREP analysis — score hero, landing verdict,
+  block/air/fuel tiles.
+- **METAR**: `MetarService` proxies aviationweather.gov (registered HttpClient),
+  degrades gracefully when offline.
+- Nav order now: Pilot Centre → Bookings → Briefing → ACARS Live → Debriefing → Logbook.
+  Placeholder PilotCentreView/LogbookView classes deleted; replaced with real XAML.
+- New client contracts: `PirepListItem`, `MetarInfo`, `ChangePasswordRequest`;
+  `ApiService`: `GetMyPirepsAsync`, `GetRouteAsync`, `GetMetarAsync`, `ChangePasswordAsync`.
+- Full solution builds 0 errors. **Not yet runtime-smoke-tested by me** — launch and
+  click through the new tabs.
+
+**Phase 2b verification is STILL the next real flight task** — unchanged, needs
 a live MSFS flight which only the user can fly. While flying it, also exercise
 #6: pull Wi-Fi for ~1 min mid-cruise and confirm POSREPs catch up (queue depth
 ticks up then drains, no rows lost, no duplicates).

@@ -7,7 +7,9 @@ public enum NavTarget
     Login,
     PilotCentre,
     Bookings,
+    Briefing,
     Acars,
+    Debriefing,
     Logbook
 }
 

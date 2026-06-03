@@ -72,6 +72,45 @@ public class PirepsController : ControllerBase
     }
 
     /// <summary>
+    /// Lists the authenticated pilot's PIREPs, newest first. Optional
+    /// <paramref name="status"/> filter (e.g. "Accepted", "Pending"). Powers the
+    /// desktop Logbook (Phase 3).
+    /// </summary>
+    [HttpGet("mine")]
+    public async Task<ActionResult<List<PirepListItemDto>>> Mine([FromQuery] string? status = null)
+    {
+        var pilotId = User.PilotId();
+        if (pilotId is null) return Unauthorized();
+
+        var query = _db.Pireps.AsNoTracking()
+            .Where(p => p.PilotId == pilotId);
+
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<PirepStatus>(status, ignoreCase: true, out var st))
+            query = query.Where(p => p.Status == st);
+
+        var items = await query
+            .OrderByDescending(p => p.Id)
+            .Select(p => new PirepListItemDto(
+                p.Id,
+                p.Route!.FlightNumber,
+                p.Route.DepIcao,
+                p.Route.ArrIcao,
+                p.Aircraft!.Type,
+                p.Aircraft.Registration,
+                p.DepActual,
+                p.ArrActual,
+                p.BlockMin,
+                p.AirMin,
+                p.FuelUsedKg,
+                p.LandingRateFpm,
+                p.Score,
+                p.Status))
+            .ToListAsync();
+
+        return Ok(items);
+    }
+
+    /// <summary>
     /// Baseline landing-quality score (0-100). Replace/extend with a full scoring
     /// engine that also weighs route adherence, fuel and time accuracy.
     /// </summary>

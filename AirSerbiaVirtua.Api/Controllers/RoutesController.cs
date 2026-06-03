@@ -36,4 +36,18 @@ public class RoutesController : ControllerBase
             .ToListAsync();
         return Ok(routes);
     }
+
+    /// <summary>Returns a single route by id (used by the desktop Briefing).</summary>
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<RouteDto>> Get(int id)
+    {
+        var route = await _db.Routes.AsNoTracking()
+            .Where(r => r.Id == id)
+            .Select(r => new RouteDto(
+                r.Id, r.FlightNumber, r.DepIcao, r.ArrIcao,
+                r.AircraftType, r.Distance, r.PlannedTime, r.Days))
+            .FirstOrDefaultAsync();
+
+        return route is null ? NotFound(new { message = "Unknown route." }) : Ok(route);
+    }
 }

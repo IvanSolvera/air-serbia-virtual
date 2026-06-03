@@ -102,6 +102,28 @@ public record PirepResult(
     int PirepId, int Status, int Score, int LandingRateFpm,
     int BlockMin, decimal PilotTotalHours, int RankId, string RankName, bool Promoted);
 
+// ---- Logbook ----------------------------------------------------------------
+public record PirepListItem(
+    int Id,
+    string FlightNumber,
+    string DepIcao,
+    string ArrIcao,
+    string AircraftType,
+    string AircraftRegistration,
+    DateTimeOffset DepActual,
+    DateTimeOffset ArrActual,
+    int BlockMin,
+    int AirMin,
+    int FuelUsedKg,
+    int LandingRateFpm,
+    int Score,
+    int Status);
+
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+
+// ---- Weather (METAR) --------------------------------------------------------
+public record MetarInfo(string Icao, string? Raw, DateTimeOffset? ObservedAtUtc);
+
 /// <summary>API FlightPhase ordinals (must match AirSerbiaVirtua.Api.Models.FlightPhase).</summary>
 public enum ApiFlightPhase
 {

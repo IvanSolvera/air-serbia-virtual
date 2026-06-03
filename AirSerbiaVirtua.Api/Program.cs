@@ -76,6 +76,14 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
+// ---- Weather (METAR) ---------------------------------------------------------
+builder.Services.AddHttpClient<AirSerbiaVirtua.Api.Services.MetarService>(c =>
+{
+    c.BaseAddress = new Uri("https://aviationweather.gov/");
+    c.Timeout = TimeSpan.FromSeconds(8);
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("AirSerbiaVirtua-ACARS/1.0");
+});
+
 // ---- MVC + Swagger -----------------------------------------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

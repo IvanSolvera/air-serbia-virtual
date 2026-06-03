@@ -181,6 +181,43 @@ public sealed class ApiService : IDisposable
         return (await resp.Content.ReadFromJsonAsync<PirepResult>(Json, ct))!;
     }
 
+    /// <summary>Returns the signed-in pilot's PIREPs (newest first), optionally filtered by status name.</summary>
+    public async Task<List<PirepListItem>> GetMyPirepsAsync(string? status = null, CancellationToken ct = default)
+    {
+        var url = string.IsNullOrWhiteSpace(status) ? "api/pireps/mine" : $"api/pireps/mine?status={Uri.EscapeDataString(status)}";
+        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync(url, ct), ct);
+        await EnsureSuccess(resp, "Logbook");
+        return (await resp.Content.ReadFromJsonAsync<List<PirepListItem>>(Json, ct)) ?? new();
+    }
+
+    // ---- Route detail -------------------------------------------------------
+    public async Task<ApiRoute> GetRouteAsync(int id, CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync($"api/routes/{id}", ct), ct);
+        await EnsureSuccess(resp, "Route");
+        return (await resp.Content.ReadFromJsonAsync<ApiRoute>(Json, ct))!;
+    }
+
+    // ---- Weather (METAR) ----------------------------------------------------
+    public async Task<List<MetarInfo>> GetMetarAsync(IEnumerable<string> icaos, CancellationToken ct = default)
+    {
+        var ids = string.Join(",", icaos);
+        using var resp = await SendWithAuthRetryAsync(
+            () => _http.GetAsync($"api/metar?icaos={Uri.EscapeDataString(ids)}", ct), ct);
+        await EnsureSuccess(resp, "METAR");
+        return (await resp.Content.ReadFromJsonAsync<List<MetarInfo>>(Json, ct)) ?? new();
+    }
+
+    // ---- Change password ----------------------------------------------------
+    public async Task ChangePasswordAsync(string currentPassword, string newPassword, CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(
+            () => _http.PostAsJsonAsync("api/auth/change-password",
+                new ChangePasswordRequest(currentPassword, newPassword), Json, ct),
+            ct);
+        await EnsureSuccess(resp, "Change password");
+    }
+
     // ---- Internals ----------------------------------------------------------
     private async Task<HttpResponseMessage> SendWithAuthRetryAsync(
         Func<Task<HttpResponseMessage>> send,

@@ -37,7 +37,17 @@ public partial class App : Application
 
                 services.AddTransient<LoginViewModel>();
                 services.AddTransient<LoginView>();
+
+                // Pilot Centre / Logbook / Briefing / Debriefing are transient so
+                // they reload current data each time they're navigated to.
+                services.AddTransient<PilotCentreViewModel>();
                 services.AddTransient<PilotCentreView>();
+                services.AddTransient<LogbookViewModel>();
+                services.AddTransient<LogbookView>();
+                services.AddTransient<BriefingViewModel>();
+                services.AddTransient<BriefingView>();
+                services.AddTransient<DebriefingViewModel>();
+                services.AddTransient<DebriefingView>();
 
                 // Bookings + ACARS views are singleton so their loaded state and
                 // background subscriptions survive navigation.
@@ -45,8 +55,6 @@ public partial class App : Application
                 services.AddSingleton<BookingsView>();
                 services.AddSingleton<AcarsViewModel>();
                 services.AddSingleton<AcarsView>();
-
-                services.AddTransient<LogbookView>();
             })
             .Build();
 

@@ -80,10 +80,24 @@
                         </StackPanel>
                     </Button>
 
+                    <Button Style="{StaticResource NavButton}" Command="{Binding NavigateBriefingCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ClipboardTextOutline" Width="16" Height="16" VerticalAlignment="Center" />
+                            <TextBlock Text="Briefing" Margin="14,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
                     <Button Style="{StaticResource NavButton}" Command="{Binding NavigateAcarsCommand}">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="RadioTower" Width="16" Height="16" VerticalAlignment="Center" />
                             <TextBlock Text="ACARS Live" Margin="14,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource NavButton}" Command="{Binding NavigateDebriefingCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ChartLine" Width="16" Height="16" VerticalAlignment="Center" />
+                            <TextBlock Text="Debriefing" Margin="14,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 

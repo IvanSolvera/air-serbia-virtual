@@ -52,7 +52,13 @@ public sealed partial class MainViewModel : ObservableObject
     private void NavigateBookings() => _navigation.NavigateTo(NavTarget.Bookings);
 
     [RelayCommand]
+    private void NavigateBriefing() => _navigation.NavigateTo(NavTarget.Briefing);
+
+    [RelayCommand]
     private void NavigateAcars() => _navigation.NavigateTo(NavTarget.Acars);
+
+    [RelayCommand]
+    private void NavigateDebriefing() => _navigation.NavigateTo(NavTarget.Debriefing);
 
     [RelayCommand]
     private void NavigateLogbook() => _navigation.NavigateTo(NavTarget.Logbook);

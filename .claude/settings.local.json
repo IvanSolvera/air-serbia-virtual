@@ -30,7 +30,12 @@
       "Bash(cygpath -w /tmp/dva)",
       "Bash(echo \"removed repo copy; source still at: $\\(cygpath -w /tmp/dva\\)\")",
       "Bash(echo \"EXIT=$?\")",
-      "Bash(sed -n '/PosrepQueue self-test \\(fake/,/self-test:/p' /tmp/st2.log)"
+      "Bash(sed -n '/PosrepQueue self-test \\(fake/,/self-test:/p' /tmp/st2.log)",
+      "Bash(powershell.exe -NoProfile -Command \"Get-Process AirSerbiaVirtua.Acars.Desktop -ErrorAction SilentlyContinue | Select-Object Name,Id | Format-Table -AutoSize\")",
+      "PowerShell($conns = Get-NetTCPConnection -LocalPort 5036 -State Listen -ErrorAction SilentlyContinue; if \\($conns\\) { $conns | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { try { Stop-Process -Id $_ -Force; \"Stopped PID $_\" } catch { \"Could not stop $_\" } } } else { \"Nothing listening on 5036\" })",
+      "Bash(powershell.exe -NoProfile -Command \"if \\(Get-NetTCPConnection -LocalPort 5036 -State Listen -ErrorAction SilentlyContinue\\) {'still listening'} else {'free'}\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-Process AirSerbiaVirtua.Acars.Desktop -ErrorAction SilentlyContinue | Select Name,Id\")",
+      "PowerShell($c = Get-NetTCPConnection -LocalPort 5036 -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { $c | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { try { Stop-Process -Id $_ -Force; \"Stopped API PID $_\" } catch {} } } else { \"API not running\" })"
     ]
   }
 }
