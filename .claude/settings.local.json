@@ -35,7 +35,10 @@
       "PowerShell($conns = Get-NetTCPConnection -LocalPort 5036 -State Listen -ErrorAction SilentlyContinue; if \\($conns\\) { $conns | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { try { Stop-Process -Id $_ -Force; \"Stopped PID $_\" } catch { \"Could not stop $_\" } } } else { \"Nothing listening on 5036\" })",
       "Bash(powershell.exe -NoProfile -Command \"if \\(Get-NetTCPConnection -LocalPort 5036 -State Listen -ErrorAction SilentlyContinue\\) {'still listening'} else {'free'}\")",
       "Bash(powershell.exe -NoProfile -Command \"Get-Process AirSerbiaVirtua.Acars.Desktop -ErrorAction SilentlyContinue | Select Name,Id\")",
-      "PowerShell($c = Get-NetTCPConnection -LocalPort 5036 -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { $c | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { try { Stop-Process -Id $_ -Force; \"Stopped API PID $_\" } catch {} } } else { \"API not running\" })"
+      "PowerShell($c = Get-NetTCPConnection -LocalPort 5036 -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { $c | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { try { Stop-Process -Id $_ -Force; \"Stopped API PID $_\" } catch {} } } else { \"API not running\" })",
+      "PowerShell(git *)",
+      "PowerShell(Select-String -Path AirSerbiaVirtua.Acars.Desktop\\\\App.xaml -Pattern 'Color|Brush' | Select-Object -First 30 | ForEach-Object Line)",
+      "PowerShell(Get-Content AirSerbiaVirtua.Api\\\\appsettings.json; Select-String -Path AirSerbiaVirtua.Api\\\\AirSerbiaVirtua.Api.csproj -Pattern 'ProjectReference|PackageReference' | ForEach-Object Line; Test-Path .gitignore, .dockerignore)"
     ]
   }
 }
