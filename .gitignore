@@ -8,3 +8,4 @@ appsettings.*.local.json
 .idea/
 riderModule.iml
 /_ReSharper.Caches/
+doc/next-session.md
