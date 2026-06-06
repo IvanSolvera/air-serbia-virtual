@@ -1,7 +1,7 @@
 using AirSerbiaVirtua.Api.Auth;
 using AirSerbiaVirtua.Api.Data;
-using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -226,11 +226,11 @@ public class FlightsController : ControllerBase
     /// <summary>
     /// Receives a POSREP telemetry sample (pushed ~every 30 s) and appends it to
     /// the session's position log. Idempotent: a client retry carrying the same
-    /// <see cref="PositionReportDto.ClientReportId"/> is accepted without creating
+    /// <see cref="PositionReport.ClientReportId"/> is accepted without creating
     /// a duplicate row (production-readiness item #5).
     /// </summary>
     [HttpPost("{id:int}/position")]
-    public async Task<IActionResult> Position(int id, [FromBody] PositionReportDto report)
+    public async Task<IActionResult> Position(int id, [FromBody] PositionReport report)
     {
         var pilotId = User.PilotId();
         if (pilotId is null) return Unauthorized();

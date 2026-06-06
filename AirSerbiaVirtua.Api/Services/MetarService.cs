@@ -1,11 +1,11 @@
 using System.Text.Json;
-using AirSerbiaVirtua.Api.Dtos;
+using AirSerbiaVirtua.Contracts;
 
 namespace AirSerbiaVirtua.Api.Services;
 
 /// <summary>
 /// Fetches raw METARs from the free aviationweather.gov data API and maps them to
-/// <see cref="MetarDto"/>. Network/parse failures degrade gracefully to a DTO with
+/// <see cref="MetarInfo"/>. Network/parse failures degrade gracefully to a DTO with
 /// a null <c>Raw</c> rather than throwing, so the Briefing always renders.
 /// </summary>
 public sealed class MetarService
@@ -16,7 +16,7 @@ public sealed class MetarService
     public MetarService(HttpClient http) => _http = http;
 
     /// <summary>Fetches the latest METAR for each ICAO. Order/length matches the input.</summary>
-    public async Task<List<MetarDto>> GetAsync(IEnumerable<string> icaos, CancellationToken ct = default)
+    public async Task<List<MetarInfo>> GetAsync(IEnumerable<string> icaos, CancellationToken ct = default)
     {
         var ids = icaos
             .Where(s => !string.IsNullOrWhiteSpace(s))
@@ -24,9 +24,9 @@ public sealed class MetarService
             .Distinct()
             .ToList();
 
-        if (ids.Count == 0) return new List<MetarDto>();
+        if (ids.Count == 0) return new List<MetarInfo>();
 
-        var byIcao = new Dictionary<string, MetarDto>();
+        var byIcao = new Dictionary<string, MetarInfo>();
         try
         {
             // e.g. https://aviationweather.gov/api/data/metar?ids=LYBE,LOWW&format=json
@@ -42,7 +42,7 @@ public sealed class MetarService
                     DateTimeOffset? observed = e.ObsTime is { } t and > 0
                         ? DateTimeOffset.FromUnixTimeSeconds(t)
                         : null;
-                    byIcao[e.IcaoId.ToUpperInvariant()] = new MetarDto(e.IcaoId.ToUpperInvariant(), e.RawOb, observed);
+                    byIcao[e.IcaoId.ToUpperInvariant()] = new MetarInfo(e.IcaoId.ToUpperInvariant(), e.RawOb, observed);
                 }
             }
         }
@@ -51,7 +51,7 @@ public sealed class MetarService
             // Swallow — fall through and return null-raw entries for everything.
         }
 
-        return ids.Select(id => byIcao.TryGetValue(id, out var m) ? m : new MetarDto(id, null, null)).ToList();
+        return ids.Select(id => byIcao.TryGetValue(id, out var m) ? m : new MetarInfo(id, null, null)).ToList();
     }
 
     // Shape of the relevant fields from aviationweather.gov's JSON METAR.

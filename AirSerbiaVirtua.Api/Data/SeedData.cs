@@ -1,4 +1,5 @@
 using AirSerbiaVirtua.Api.Models;
+using AirSerbiaVirtua.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Route = AirSerbiaVirtua.Api.Models.Route;
 

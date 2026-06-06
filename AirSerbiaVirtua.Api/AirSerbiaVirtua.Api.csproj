@@ -23,4 +23,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AirSerbiaVirtua.Contracts\AirSerbiaVirtua.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,5 +1,5 @@
 using AirSerbiaVirtua.Api.Data;
-using AirSerbiaVirtua.Api.Dtos;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

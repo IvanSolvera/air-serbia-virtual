@@ -1,3 +1,5 @@
+using AirSerbiaVirtua.Contracts;
+
 namespace AirSerbiaVirtua.Api.Models;
 
 /// <summary>

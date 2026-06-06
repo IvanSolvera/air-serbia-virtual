@@ -1,7 +1,7 @@
 using AirSerbiaVirtua.Api.Auth;
 using AirSerbiaVirtua.Api.Data;
-using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,13 +30,13 @@ public class AdminController : ControllerBase
 
     /// <summary>Full roster, newest first — Pending pilots surface for approval.</summary>
     [HttpGet("pilots")]
-    public async Task<ActionResult<List<AdminPilotDto>>> Pilots()
+    public async Task<ActionResult<List<AdminPilot>>> Pilots()
     {
         var pilots = await _db.Pilots
             .Include(p => p.Rank)
             .OrderBy(p => p.Status == PilotStatus.Pending ? 0 : 1)
             .ThenByDescending(p => p.DateJoined)
-            .Select(p => new AdminPilotDto(
+            .Select(p => new AdminPilot(
                 p.Id, p.Callsign, p.Name, p.Email,
                 p.Rank != null ? p.Rank.Name : string.Empty, p.TotalHours,
                 p.Status, p.HubId, p.DateJoined, p.IsAdmin, p.VatsimId))

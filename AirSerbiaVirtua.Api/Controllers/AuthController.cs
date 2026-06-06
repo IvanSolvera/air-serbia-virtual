@@ -1,7 +1,7 @@
 using AirSerbiaVirtua.Api.Auth;
 using AirSerbiaVirtua.Api.Data;
-using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +44,7 @@ public class AuthController : ControllerBase
     /// before they can sign in.
     /// </summary>
     [HttpPost("register")]
-    public async Task<ActionResult<PilotProfileDto>> Register([FromBody] RegisterRequest req)
+    public async Task<ActionResult<PilotProfile>> Register([FromBody] RegisterRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Callsign) || string.IsNullOrWhiteSpace(req.Name) ||
             string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.HubIcao))
@@ -127,7 +127,7 @@ public class AuthController : ControllerBase
         _logger.LogInformation("Pilot {PilotId} ({Callsign}) logged in from {RemoteIp}",
             pilot.Id, pilot.Callsign, RemoteIp());
 
-        var tokens = new AuthTokensDto(accessToken, accessExpires, refreshRaw, refreshExpires);
+        var tokens = new AuthTokens(accessToken, accessExpires, refreshRaw, refreshExpires);
         return Ok(new LoginResponse(tokens, ToProfile(pilot, pilot.Rank?.Name ?? string.Empty)));
     }
 
@@ -147,7 +147,7 @@ public class AuthController : ControllerBase
                 var pilot = await _db.Pilots.FirstOrDefaultAsync(p => p.Id == s.PilotId);
                 if (pilot is null) return Unauthorized();
                 var (accessToken, accessExpires) = _jwt.CreateAccessToken(pilot);
-                return Ok(new RefreshResponse(new AuthTokensDto(accessToken, accessExpires, s.RawToken, s.ExpiresAtUtc)));
+                return Ok(new RefreshResponse(new AuthTokens(accessToken, accessExpires, s.RawToken, s.ExpiresAtUtc)));
 
             case RotationResult.Reused:
                 return Unauthorized(new { message = "Refresh token reuse detected; all sessions revoked." });
@@ -165,7 +165,7 @@ public class AuthController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpGet("me")]
-    public async Task<ActionResult<PilotProfileDto>> Me()
+    public async Task<ActionResult<PilotProfile>> Me()
     {
         var pilotId = User.PilotId();
         if (pilotId is null) return Unauthorized();
@@ -219,7 +219,7 @@ public class AuthController : ControllerBase
 
     private string? RemoteIp() => HttpContext.Connection.RemoteIpAddress?.ToString();
 
-    private static PilotProfileDto ToProfile(Pilot p, string rankName) => new(
+    private static PilotProfile ToProfile(Pilot p, string rankName) => new(
         p.Id, p.Callsign, p.Name, p.Email,
         p.RankId, rankName, p.TotalHours,
         p.Status, p.HubId, p.DateJoined,

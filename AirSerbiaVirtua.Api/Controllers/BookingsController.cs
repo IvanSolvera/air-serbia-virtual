@@ -1,7 +1,7 @@
 using AirSerbiaVirtua.Api.Auth;
 using AirSerbiaVirtua.Api.Data;
-using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +20,7 @@ public class BookingsController : ControllerBase
 
     /// <summary>Returns the calling pilot's bookings, newest scheduled date first.</summary>
     [HttpGet("mine")]
-    public async Task<ActionResult<List<BookingDto>>> Mine()
+    public async Task<ActionResult<List<BookingInfo>>> Mine()
     {
         var pilotId = User.PilotId();
         if (pilotId is null) return Unauthorized();
@@ -31,7 +31,7 @@ public class BookingsController : ControllerBase
             .Include(b => b.Route)
             .OrderByDescending(b => b.Date)
             .ThenBy(b => b.Id)
-            .Select(b => new BookingDto(
+            .Select(b => new BookingInfo(
                 b.Id, b.RouteId,
                 b.Route!.FlightNumber, b.Route.DepIcao, b.Route.ArrIcao,
                 b.Route.AircraftType, b.Route.PlannedTime,
@@ -43,7 +43,7 @@ public class BookingsController : ControllerBase
 
     /// <summary>Creates an open booking for the calling pilot. Idempotent per (pilot, route, date).</summary>
     [HttpPost]
-    public async Task<ActionResult<BookingDto>> Create([FromBody] CreateBookingRequest req)
+    public async Task<ActionResult<BookingInfo>> Create([FromBody] CreateBookingRequest req)
     {
         var pilotId = User.PilotId();
         if (pilotId is null) return Unauthorized();
@@ -69,7 +69,7 @@ public class BookingsController : ControllerBase
         _db.Bookings.Add(booking);
         await _db.SaveChangesAsync();
 
-        return Ok(new BookingDto(
+        return Ok(new BookingInfo(
             booking.Id, route.Id,
             route.FlightNumber, route.DepIcao, route.ArrIcao,
             route.AircraftType, route.PlannedTime,

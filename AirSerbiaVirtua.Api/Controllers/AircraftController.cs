@@ -1,6 +1,6 @@
 using AirSerbiaVirtua.Api.Data;
-using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +24,7 @@ public class AircraftController : ControllerBase
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<List<AircraftDto>>> List(
+    public async Task<ActionResult<List<AircraftInfo>>> List(
         [FromQuery] string? type = null,
         [FromQuery] string? status = null)
     {
@@ -44,7 +44,7 @@ public class AircraftController : ControllerBase
 
         var list = await query
             .OrderBy(a => a.Registration)
-            .Select(a => new AircraftDto(a.Id, a.Type, a.Registration, a.Status.ToString(), a.HubId))
+            .Select(a => new AircraftInfo(a.Id, a.Type, a.Registration, a.Status.ToString(), a.HubId))
             .ToListAsync();
 
         return Ok(list);

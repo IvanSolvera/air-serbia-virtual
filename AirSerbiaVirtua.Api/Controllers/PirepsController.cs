@@ -1,7 +1,7 @@
 using AirSerbiaVirtua.Api.Auth;
 using AirSerbiaVirtua.Api.Data;
-using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +24,7 @@ public class PirepsController : ControllerBase
     /// booking flown.
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<PirepResultDto>> Submit([FromBody] PirepSubmitRequest req)
+    public async Task<ActionResult<PirepResult>> Submit([FromBody] PirepSubmitRequest req)
     {
         var pilotId = User.PilotId();
         if (pilotId is null) return Unauthorized();
@@ -68,7 +68,7 @@ public class PirepsController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-        return Ok(new PirepResultDto(
+        return Ok(new PirepResult(
             pirep.Id, pirep.Status, pirep.Score, pirep.LandingRateFpm,
             pirep.BlockMin, pilot.TotalHours, earnedRank.Id, earnedRank.Name, promoted));
     }
@@ -79,7 +79,7 @@ public class PirepsController : ControllerBase
     /// desktop Logbook (Phase 3).
     /// </summary>
     [HttpGet("mine")]
-    public async Task<ActionResult<List<PirepListItemDto>>> Mine([FromQuery] string? status = null)
+    public async Task<ActionResult<List<PirepListItem>>> Mine([FromQuery] string? status = null)
     {
         var pilotId = User.PilotId();
         if (pilotId is null) return Unauthorized();
@@ -92,7 +92,7 @@ public class PirepsController : ControllerBase
 
         var items = await query
             .OrderByDescending(p => p.Id)
-            .Select(p => new PirepListItemDto(
+            .Select(p => new PirepListItem(
                 p.Id,
                 p.Route!.FlightNumber,
                 p.Route.DepIcao,

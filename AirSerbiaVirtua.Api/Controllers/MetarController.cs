@@ -1,5 +1,5 @@
-using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Services;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +20,7 @@ public class MetarController : ControllerBase
     /// e.g. <c>/api/metar?icaos=LYBE,LOWW</c>. Used by the Briefing (Phase 4).
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<List<MetarDto>>> Get([FromQuery] string icaos, CancellationToken ct)
+    public async Task<ActionResult<List<MetarInfo>>> Get([FromQuery] string icaos, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(icaos))
             return BadRequest(new { message = "Provide at least one ICAO via ?icaos=" });

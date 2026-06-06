@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using AirSerbiaVirtua.Contracts;
 
 namespace AirSerbiaVirtua.Api.Models;
 

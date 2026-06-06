@@ -1,5 +1,5 @@
 using AirSerbiaVirtua.Api.Data;
-using AirSerbiaVirtua.Api.Dtos;
+using AirSerbiaVirtua.Contracts;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +23,7 @@ public class RoutesController : ControllerBase
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<List<RouteDto>>> List([FromQuery] string? hub = null)
+    public async Task<ActionResult<List<RouteInfo>>> List([FromQuery] string? hub = null)
     {
         // Outstation legs are one-offs — they never appear in the bookable schedule.
         var query = _db.Routes.AsNoTracking().Where(r => !r.IsOutstation);
@@ -35,7 +35,7 @@ public class RoutesController : ControllerBase
 
         var routes = await query
             .OrderBy(r => r.FlightNumber)
-            .Select(r => new RouteDto(
+            .Select(r => new RouteInfo(
                 r.Id, r.FlightNumber, r.DepIcao, r.ArrIcao,
                 r.AircraftType, r.Distance, r.PlannedTime, r.Days))
             .ToListAsync();
@@ -44,11 +44,11 @@ public class RoutesController : ControllerBase
 
     /// <summary>Returns a single route by id (used by the desktop Briefing).</summary>
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<RouteDto>> Get(int id)
+    public async Task<ActionResult<RouteInfo>> Get(int id)
     {
         var route = await _db.Routes.AsNoTracking()
             .Where(r => r.Id == id)
-            .Select(r => new RouteDto(
+            .Select(r => new RouteInfo(
                 r.Id, r.FlightNumber, r.DepIcao, r.ArrIcao,
                 r.AircraftType, r.Distance, r.PlannedTime, r.Days))
             .FirstOrDefaultAsync();
