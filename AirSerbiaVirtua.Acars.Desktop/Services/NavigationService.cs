@@ -45,13 +45,15 @@ public sealed class NavigationService : INavigationService
             {
                 Title = "METARs",
                 Description = "Station weather lookup is coming in Phase 5. " +
-                              "Live departure/arrival METARs are already on the Briefing page."
+                              "Live departure/arrival METARs are already on the Briefing page.",
+                Icon = MahApps.Metro.IconPacks.PackIconMaterialKind.WeatherPartlyCloudy
             }),
             NavTarget.Outstation => new PlaceholderView(new PlaceholderViewModel
             {
                 Title = "Outstation Flights",
                 Description = "Charter and one-off flights outside the scheduled network " +
-                              "are coming in Phase 5."
+                              "are coming in Phase 5.",
+                Icon = MahApps.Metro.IconPacks.PackIconMaterialKind.MapMarkerOutline
             }),
             _ => null
         };

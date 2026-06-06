@@ -17,6 +17,22 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Last-resort guard: log UI-thread exceptions and keep the app alive
+        // instead of silently terminating (e.g. a bad XAML resource in one view
+        // must not take the whole client down mid-flight).
+        DispatcherUnhandledException += (_, args) =>
+        {
+            LogCrash(args.Exception);
+            MessageBox.Show(
+                $"Unexpected error:\n\n{args.Exception.Message}\n\nDetails were written to the crash log.",
+                "Air Serbia Virtual — ACARS",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            args.Handled = true;
+        };
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            LogCrash(args.ExceptionObject as Exception);
+
         _host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration((_, config) =>
             {
@@ -75,5 +91,24 @@ public partial class App : Application
             _host.Dispose();
         }
         base.OnExit(e);
+    }
+
+    private static void LogCrash(Exception? ex)
+    {
+        if (ex is null) return;
+        try
+        {
+            var dir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AirSerbiaVirtua");
+            Directory.CreateDirectory(dir);
+            File.AppendAllText(
+                Path.Combine(dir, "crash.log"),
+                $"[{DateTimeOffset.UtcNow:O}] {ex}{Environment.NewLine}{Environment.NewLine}");
+        }
+        catch
+        {
+            // Logging must never throw from a crash handler.
+        }
     }
 }

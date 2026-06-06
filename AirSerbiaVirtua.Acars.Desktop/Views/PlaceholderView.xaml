@@ -32,7 +32,7 @@
                         <GradientStop Color="#66081628" Offset="1" />
                     </RadialGradientBrush>
                 </Border.Background>
-                <iconPacks:PackIconMaterial Kind="WrenchClockOutline"
+                <iconPacks:PackIconMaterial Kind="{Binding Icon}"
                                             Width="34" Height="34"
                                             Foreground="{StaticResource Suite.RoyalBright}"
                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
