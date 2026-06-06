@@ -44,7 +44,7 @@ public record RouteInfo(
     string ArrIcao,
     string AircraftType,
     int DistanceNm,
-    int PlannedTimeMin,
+    int PlannedMinutes,
     List<int> Days);
 
 // ---- Fleet ---------------------------------------------------------------------
@@ -87,6 +87,9 @@ public record PirepListItem(
 
 // ---- Weather ----------------------------------------------------------------------
 public record MetarInfo(string Icao, string? Raw, DateTimeOffset? ObservedAtUtc);
+
+// ---- Public stats (website landing) -------------------------------------------------
+public record VaStats(int Pilots, int FlightsFlown, decimal HoursLogged, int Routes);
 
 // ---- Admin -----------------------------------------------------------------------
 public record AdminPilot(

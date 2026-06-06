@@ -20,9 +20,10 @@ public class AircraftController : ControllerBase
     /// <summary>
     /// Lists airframes, optionally filtered by ICAO type code and operational
     /// status. Used by the desktop client to pick a compatible aircraft for a
-    /// route before opening a flight session.
+    /// route, and anonymously by the public website fleet page (phase W2).
     /// </summary>
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<AircraftDto>>> List(
         [FromQuery] string? type = null,
         [FromQuery] string? status = null)

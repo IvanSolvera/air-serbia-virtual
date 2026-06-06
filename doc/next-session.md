@@ -1,5 +1,33 @@
 # Continuation log — pick-up notes
 
+## Update 2026-06-06 (W1+W2 complete) — public website live locally
+
+**API:** new anonymous `GET /api/v1/stats` (pilots/flights/hours/routes);
+`GET /routes` and `GET /aircraft` lists now `[AllowAnonymous]` (public
+schedules/fleet pages); rest of those controllers stays authorized.
+
+**Web (SSR, all pages verified 200 against live API):**
+- Home — hero + stats strip wired to /stats (graceful "—" when API down).
+- Schedules — full network table (flight/leg/AC chip/distance/ETE/operating
+  days), server-side filter via `?q=` (verified: q=LOWW shows JU360 only).
+- Fleet — aircraft cards w/ photos by type (A32x→a319.png, A330, ATR72;
+  others get a type monogram), status badges (Active/InFlight/Maintenance).
+- Join us — SSR EditForm (FormName="join") → POST /auth/register → Pending +
+  success state. NOT yet submitted live (antiforgery) — test from browser,
+  then approve via desktop Roster Admin tab.
+- /portal — W3 coming-soon. **Login/auth deliberately moved to W3** (belongs
+  with the WASM portal; Join covers W1's register half).
+
+**Docker:** real Dockerfiles for Api + Web (multi-stage, context = repo root);
+docker-compose now buildable (untested — Docker not exercised this session).
+
+**Run order (dev):** API :5036 → Web :5166 (`Api:BaseUrl` in Web appsettings).
+
+**Next: W3 pilot portal** — WASM login (JWT in browser storage + auth state
+provider), dashboard, book-a-flight, briefing w/ "dispatch ready", logbook,
+profile. Then W4 desktop slim-down + contracts convergence, W5 admin web,
+W6 AI dispatcher. Hetzner still not provisioned.
+
 ## Update 2026-06-06 (W1) — Website foundation scaffolded (Blazor per spec)
 
 User chose **Blazor per doc/website-design.md** (over adopting the static SPA

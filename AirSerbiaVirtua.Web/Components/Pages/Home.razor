@@ -1,4 +1,5 @@
 @page "/"
+@inject IHttpClientFactory HttpFactory
 
 <PageTitle>Air Serbia Virtual — Flight Crew Center</PageTitle>
 
@@ -43,24 +44,41 @@
             </div>
         </div>
 
-        <!-- Stats strip (wired to GET /api/v1/stats in W2) -->
+        <!-- Stats strip (live from GET /api/v1/stats) -->
         <div class="mt-14 panel rounded-2xl grid grid-cols-2 sm:grid-cols-4 divide-x divide-mist/10 overflow-hidden">
             <div class="px-6 py-5">
                 <p class="font-mono text-[9.5px] tracking-[0.18em] text-mist/70">PILOTS ON ROSTER</p>
-                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">—</p>
+                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">@(_stats?.Pilots.ToString() ?? "—")</p>
             </div>
             <div class="px-6 py-5">
                 <p class="font-mono text-[9.5px] tracking-[0.18em] text-mist/70">FLIGHTS FLOWN</p>
-                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">—</p>
+                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">@(_stats?.FlightsFlown.ToString() ?? "—")</p>
             </div>
             <div class="px-6 py-5">
                 <p class="font-mono text-[9.5px] tracking-[0.18em] text-mist/70">HOURS LOGGED</p>
-                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">—</p>
+                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">@(_stats is { } s ? s.HoursLogged.ToString("0.#") : "—")</p>
             </div>
             <div class="px-6 py-5">
                 <p class="font-mono text-[9.5px] tracking-[0.18em] text-mist/70">ROUTES IN NETWORK</p>
-                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">—</p>
+                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">@(_stats?.Routes.ToString() ?? "—")</p>
             </div>
         </div>
     </div>
 </section>
+
+@code {
+    private VaStats? _stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _stats = await HttpFactory.CreateClient("Api")
+                .GetFromJsonAsync<VaStats>("api/v1/stats");
+        }
+        catch
+        {
+            // API offline — the strip degrades to em-dashes.
+        }
+    }
+}

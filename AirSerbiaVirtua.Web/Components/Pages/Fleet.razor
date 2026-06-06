@@ -1,0 +1,92 @@
+@page "/fleet"
+@inject IHttpClientFactory HttpFactory
+
+<PageTitle>Fleet — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+    <p class="font-mono text-[10px] tracking-[0.28em] text-mist/70 mb-3">VIRTUAL FLEET</p>
+    <h1 class="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">Fleet</h1>
+    <p class="mt-2 mb-10 text-mist text-[14px]">Every airframe on the virtual register — live operational status.</p>
+
+    @if (_error)
+    {
+        <div class="panel rounded-xl px-5 py-4 text-mist text-[13.5px]">
+            The fleet service is unreachable right now — try again in a moment.
+        </div>
+    }
+    else if (_fleet is null)
+    {
+        <div class="panel rounded-xl px-5 py-4 text-mist text-[13.5px]">Loading fleet…</div>
+    }
+    else
+    {
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var ac in _fleet)
+            {
+                <div class="panel-solid rounded-2xl overflow-hidden group">
+                    <div class="relative h-44 overflow-hidden bg-ink-850">
+                        @if (ImageFor(ac.Type) is { } img)
+                        {
+                            <img src="@img" alt="@ac.Type"
+                                 class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                        }
+                        else
+                        {
+                            <div class="h-full w-full grid place-items-center grid-overlay">
+                                <span class="font-display font-extrabold text-3xl text-mist/30">@ac.Type</span>
+                            </div>
+                        }
+                        <span class="absolute top-3 right-3 rounded-md px-2.5 py-1 font-mono text-[10px] tracking-wider backdrop-blur @StatusClasses(ac.Status)">
+                            @ac.Status.ToUpperInvariant()
+                        </span>
+                    </div>
+                    <div class="px-5 py-4 flex items-center justify-between">
+                        <div>
+                            <p class="font-display font-bold text-white text-[17px]">@ac.Registration</p>
+                            <p class="font-mono text-[11px] text-mist/70 mt-0.5">@ac.Type · HUB @ac.HubId</p>
+                        </div>
+                        <svg class="h-5 w-5 text-mist/40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5Z" />
+                        </svg>
+                    </div>
+                </div>
+            }
+        </div>
+        <p class="mt-6 font-mono text-[11px] text-mist/50">@_fleet.Count aircraft on the register</p>
+    }
+</section>
+
+@code {
+    private List<AircraftInfo>? _fleet;
+    private bool _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _fleet = await HttpFactory.CreateClient("Api")
+                .GetFromJsonAsync<List<AircraftInfo>>("api/v1/aircraft") ?? [];
+        }
+        catch
+        {
+            _error = true;
+        }
+    }
+
+    private static string? ImageFor(string type) => type switch
+    {
+        "A319" or "A320" or "A320neo" or "A321neo" => "assets/a319.png",
+        "A330" => "assets/a330.png",
+        "ATR72" => "assets/atr72.jpg",
+        _ => null
+    };
+
+    private static string StatusClasses(string status) => status switch
+    {
+        "Active" => "bg-emerald-400/15 text-emerald-200 border border-emerald-400/30",
+        "InFlight" => "bg-royal/20 text-sky-200 border border-royal-bright/40",
+        "Maintenance" => "bg-amber-400/15 text-amber-200 border border-amber-400/30",
+        _ => "bg-ink-900/60 text-mist border hairline"
+    };
+}

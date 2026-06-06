@@ -1,0 +1,112 @@
+@page "/schedules"
+@inject IHttpClientFactory HttpFactory
+
+<PageTitle>Schedules — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+    <p class="font-mono text-[10px] tracking-[0.28em] text-mist/70 mb-3">PUBLISHED NETWORK</p>
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <div>
+            <h1 class="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">Schedules</h1>
+            <p class="mt-2 text-mist text-[14px]">Every leg in the network. Sign in to the pilot portal to book one.</p>
+        </div>
+
+        <!-- Filter (SSR form GET) -->
+        <form method="get" class="flex items-center gap-2">
+            <input name="q" value="@Q" placeholder="Filter: flight no or ICAO…"
+                   class="h-10 w-64 rounded-lg panel px-3.5 text-[13px] text-white placeholder:text-mist/50 outline-none focus:ring-2 focus:ring-royal-bright/40" />
+            <button type="submit"
+                    class="h-10 rounded-lg bg-gradient-to-b from-royal-bright to-royal px-4 text-[13px] font-bold text-white hover:brightness-110 transition">
+                Filter
+            </button>
+        </form>
+    </div>
+
+    @if (_error)
+    {
+        <div class="panel rounded-xl px-5 py-4 text-mist text-[13.5px]">
+            The schedule service is unreachable right now — try again in a moment.
+        </div>
+    }
+    else if (_routes is null)
+    {
+        <div class="panel rounded-xl px-5 py-4 text-mist text-[13.5px]">Loading schedules…</div>
+    }
+    else
+    {
+        <div class="panel-solid rounded-2xl overflow-hidden">
+            <table class="w-full text-[13.5px]">
+                <thead>
+                    <tr class="border-b hairline bg-ink-900/50 text-left font-mono text-[9.5px] tracking-[0.16em] text-mist/70">
+                        <th class="px-5 py-3.5 font-medium">FLIGHT</th>
+                        <th class="px-5 py-3.5 font-medium">LEG</th>
+                        <th class="px-5 py-3.5 font-medium">A/C</th>
+                        <th class="px-5 py-3.5 font-medium">DISTANCE</th>
+                        <th class="px-5 py-3.5 font-medium">ETE</th>
+                        <th class="px-5 py-3.5 font-medium">OPERATES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Filtered)
+                    {
+                        <tr class="border-b hairline last:border-0 hover:bg-royal/5 transition-colors">
+                            <td class="px-5 py-4 font-display font-bold text-white">@r.FlightNumber</td>
+                            <td class="px-5 py-4 font-mono text-slate-100">@r.DepIcao <span class="text-mist/60">→</span> @r.ArrIcao</td>
+                            <td class="px-5 py-4">
+                                <span class="rounded-md border hairline bg-ink-800/70 px-2 py-0.5 font-mono text-[11px] text-royal-bright/90">@r.AircraftType</span>
+                            </td>
+                            <td class="px-5 py-4 font-mono text-[12px] text-mist">@r.DistanceNm nm</td>
+                            <td class="px-5 py-4 font-mono text-[12px] text-mist">@FormatEte(r.PlannedMinutes)</td>
+                            <td class="px-5 py-4 font-mono text-[11px] tracking-wide text-mist">@FormatDays(r.Days)</td>
+                        </tr>
+                    }
+                    @if (!Filtered.Any())
+                    {
+                        <tr><td colspan="6" class="px-5 py-10 text-center text-mist/60 text-[13px]">No routes match “@Q”.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="mt-4 font-mono text-[11px] text-mist/50">@_routes.Count route(s) in the published network</p>
+    }
+</section>
+
+@code {
+    [SupplyParameterFromQuery] public string? Q { get; set; }
+
+    private List<RouteInfo>? _routes;
+    private bool _error;
+
+    private IEnumerable<RouteInfo> Filtered =>
+        _routes is null
+            ? []
+            : string.IsNullOrWhiteSpace(Q)
+                ? _routes
+                : _routes.Where(r =>
+                    r.FlightNumber.Contains(Q, StringComparison.OrdinalIgnoreCase) ||
+                    r.DepIcao.Contains(Q, StringComparison.OrdinalIgnoreCase) ||
+                    r.ArrIcao.Contains(Q, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _routes = await HttpFactory.CreateClient("Api")
+                .GetFromJsonAsync<List<RouteInfo>>("api/v1/routes") ?? [];
+        }
+        catch
+        {
+            _error = true;
+        }
+    }
+
+    private static string FormatEte(int minutes) =>
+        minutes <= 0 ? "—" : $"{minutes / 60}h {minutes % 60:00}m";
+
+    private static readonly string[] DayNames = ["", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+    private static string FormatDays(List<int> days) =>
+        days is { Count: 7 } ? "Daily"
+        : days is { Count: > 0 } ? string.Join(" ", days.Where(d => d is >= 1 and <= 7).Select(d => DayNames[d]))
+        : "—";
+}

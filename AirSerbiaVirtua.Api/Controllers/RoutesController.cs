@@ -19,8 +19,10 @@ public class RoutesController : ControllerBase
     /// <summary>
     /// Lists schedulable routes, optionally filtered by hub ICAO (matches either
     /// departure or arrival airport so we surface both outbound and inbound legs).
+    /// Anonymous: the public website schedules page reads this (phase W2).
     /// </summary>
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<RouteDto>>> List([FromQuery] string? hub = null)
     {
         // Outstation legs are one-offs — they never appear in the bookable schedule.

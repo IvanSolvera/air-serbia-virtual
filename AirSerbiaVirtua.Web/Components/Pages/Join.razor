@@ -1,0 +1,149 @@
+@page "/join"
+@using System.ComponentModel.DataAnnotations
+@inject IHttpClientFactory HttpFactory
+
+<PageTitle>Join us — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+    <div class="grid lg:grid-cols-2 gap-12 items-start">
+
+        <!-- Pitch -->
+        <div>
+            <p class="font-mono text-[10px] tracking-[0.28em] text-mist/70 mb-3">CREW RECRUITMENT</p>
+            <h1 class="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">Join the crew</h1>
+            <p class="mt-4 text-mist text-[14.5px] leading-relaxed max-w-lg">
+                Pick a callsign, fly the network, climb the ranks. Applications go to the
+                roster as <span class="text-amber-300/90 font-semibold">Pending</span> — an
+                administrator reviews and activates new pilots, usually within a day.
+            </p>
+            <ul class="mt-8 space-y-4 text-[13.5px] text-mist">
+                <li class="flex gap-3"><span class="text-royal-bright font-bold">01</span> Apply with your preferred ASL callsign</li>
+                <li class="flex gap-3"><span class="text-royal-bright font-bold">02</span> Get activated and download the ACARS client</li>
+                <li class="flex gap-3"><span class="text-royal-bright font-bold">03</span> Book a leg, fly it in MSFS, build your logbook</li>
+            </ul>
+        </div>
+
+        <!-- Application form (SSR POST) -->
+        <div class="panel-solid rounded-2xl p-7">
+            @if (_done)
+            {
+                <div class="text-center py-10">
+                    <div class="mx-auto h-16 w-16 rounded-full bg-emerald-400/10 border border-emerald-400/30 grid place-items-center mb-6">
+                        <svg class="h-7 w-7 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                    </div>
+                    <h2 class="font-display font-bold text-xl text-white">Application received</h2>
+                    <p class="mt-3 text-mist text-[13.5px] max-w-sm mx-auto">
+                        Welcome aboard, @Model.Callsign. Your roster entry is pending review —
+                        you'll be able to sign in once an administrator activates it.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <h2 class="font-display font-bold text-lg text-white mb-6">Crew application</h2>
+
+                <EditForm Model="Model" OnValidSubmit="SubmitAsync" FormName="join">
+                    <DataAnnotationsValidator />
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">CALLSIGN</label>
+                            <InputText @bind-Value="Model.Callsign" placeholder="e.g. ASL042"
+                                       class="w-full h-11 rounded-lg panel px-3.5 text-[14px] font-mono text-white placeholder:text-mist/40 outline-none focus:ring-2 focus:ring-royal-bright/40" />
+                            <ValidationMessage For="() => Model.Callsign" class="text-[12px] mt-1" />
+                        </div>
+                        <div>
+                            <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">FULL NAME</label>
+                            <InputText @bind-Value="Model.Name"
+                                       class="w-full h-11 rounded-lg panel px-3.5 text-[14px] text-white outline-none focus:ring-2 focus:ring-royal-bright/40" />
+                            <ValidationMessage For="() => Model.Name" class="text-[12px] mt-1" />
+                        </div>
+                        <div>
+                            <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">EMAIL</label>
+                            <InputText @bind-Value="Model.Email" type="email"
+                                       class="w-full h-11 rounded-lg panel px-3.5 text-[14px] text-white outline-none focus:ring-2 focus:ring-royal-bright/40" />
+                            <ValidationMessage For="() => Model.Email" class="text-[12px] mt-1" />
+                        </div>
+                        <div>
+                            <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">PASSWORD</label>
+                            <InputText @bind-Value="Model.Password" type="password"
+                                       class="w-full h-11 rounded-lg panel px-3.5 text-[14px] text-white outline-none focus:ring-2 focus:ring-royal-bright/40" />
+                            <ValidationMessage For="() => Model.Password" class="text-[12px] mt-1" />
+                        </div>
+
+                        @if (_error is not null)
+                        {
+                            <div class="rounded-lg border border-crimson/50 bg-crimson/10 px-4 py-3 text-[13px] text-rose-100">
+                                @_error
+                            </div>
+                        }
+
+                        <button type="submit"
+                                class="w-full h-12 rounded-xl bg-gradient-to-b from-royal-bright to-royal font-display font-bold text-white shadow-lg shadow-royal/40 hover:brightness-110 transition">
+                            Submit application
+                        </button>
+                        <p class="font-mono text-[10px] text-mist/50 text-center">HUB: LYBE · BELGRADE NIKOLA TESLA</p>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    [SupplyParameterFromForm] private JoinModel Model { get; set; } = new();
+
+    private bool _done;
+    private string? _error;
+
+    private async Task SubmitAsync()
+    {
+        _error = null;
+        try
+        {
+            var req = new RegisterRequest(
+                Model.Callsign.Trim().ToUpperInvariant(),
+                Model.Name.Trim(),
+                Model.Email.Trim(),
+                Model.Password,
+                "LYBE");
+
+            var resp = await HttpFactory.CreateClient("Api")
+                .PostAsJsonAsync("api/v1/auth/register", req);
+
+            if (resp.IsSuccessStatusCode)
+            {
+                _done = true;
+            }
+            else
+            {
+                var body = await resp.Content.ReadFromJsonAsync<ErrorBody>();
+                _error = body?.Message ?? $"Application failed ({(int)resp.StatusCode}).";
+            }
+        }
+        catch
+        {
+            _error = "The crew desk is unreachable right now — try again in a moment.";
+        }
+    }
+
+    private sealed record ErrorBody(string? Message);
+
+    public sealed class JoinModel
+    {
+        [Required(ErrorMessage = "Pick a callsign."), MaxLength(10)]
+        public string Callsign { get; set; } = "";
+
+        [Required(ErrorMessage = "Your name is required."), MaxLength(120)]
+        public string Name { get; set; } = "";
+
+        [Required(ErrorMessage = "An email is required."), EmailAddress(ErrorMessage = "That doesn't look like an email.")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Choose a password."), MinLength(8, ErrorMessage = "At least 8 characters.")]
+        public string Password { get; set; } = "";
+    }
+}
