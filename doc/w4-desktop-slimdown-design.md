@@ -19,6 +19,7 @@ the desktop client, and the web.
 | Desktop slim-down extent | **Keep** desktop Bookings + Briefing pages as-is; **add** the dispatch pull. The original "remove Bookings/Briefing UI" wording in website-design.md is superseded — those pages were since built, restyled, and work. Web becomes the preferred path; desktop stays self-sufficient. |
 | "Dispatch ready" semantics | **Explicit flag**: `Booking.DispatchReadyAtUtc` (`DateTimeOffset?`), set by the pilot from the web Briefing page. No separate Dispatch table, no persisted fuel plan (the estimate is recomputed identically on both clients). |
 | Contracts convergence scope | **Desktop + API** — both reference Contracts; duplicated records in `Api.Dtos/ApiDtos.cs` and `Acars.Core/ApiContracts.cs` are deleted. Wire shapes unchanged. |
+| Testing | **Automated tests for every W4 segment** (first test projects in the solution): NUnit 4 + Moq + FluentAssertions; API integration tests via WebApplicationFactory + Testcontainers Postgres (fallback: dedicated `airserbiavirtua_test` DB on local Postgres if Docker proves unusable); bUnit for web components. Scope = W4 code + convergence guards; pre-W4 features keep manual coverage. |
 
 ## 1. Data model
 
@@ -58,6 +59,10 @@ in `PortalNav` between Book and Logbook):
 - Empty state when no active bookings ("Book a flight first") linking to
   /portal/book.
 
+Testability seam: `PortalApi` gets an `IPortalApi` interface (members the
+portal pages use) so bUnit tests can substitute a fake; pages inject the
+interface.
+
 `/portal/book` changes: each MY BOOKINGS row gets a "Prepare →" link to the
 briefing deep link, and a "READY" badge when `DispatchReadyAtUtc` is set.
 
@@ -80,6 +85,12 @@ aircraftId, date)` → `SimulatorService.ResetSession()` → `FlightSessionState
 → navigate to ACARS Live. Conflict/no-airframe errors are returned to the
 caller for display. Callers: `BookingsViewModel` (unchanged behavior) and the
 Pilot Centre dispatch card.
+
+Testability seam: `ApiService` gets an `IApiService` interface and
+`ISessionService.Api` exposes it (mechanical property-type change; ViewModels
+already consume it through the session). `DispatchService` and the ViewModels
+become unit-testable with a mocked `IApiService`; the sim side already has its
+`ISimBridge` fake seam.
 
 ### Pilot Centre — "Resume dispatch" card
 
@@ -163,20 +174,71 @@ reference Contracts. Final dependency picture matches website-design.md §1.
 - `GET /bookings/active` with zero rows: empty list, both clients render
   their normal empty states.
 
-## 7. Verification plan
+## 7. Testing
 
-1. **Wire-compat regression** (the convergence risk): capture JSON from
-   `POST /auth/login`, `GET /routes`, `GET /bookings/mine`,
-   `GET /pireps/mine` before and after the refactor; diff must be empty.
-2. **Dispatch E2E via curl**: book → `POST .../dispatch` → booking appears
-   first in `/active` with timestamp → `DELETE` clears → 409 when marking a
-   Flown booking.
-3. **Build**: full solution 0 errors; desktop built with `-p:Platform=x64`.
-4. **Click-through**: web `/portal/briefing` (select booking → METARs/fuel
-   render → Mark ready → badge) → desktop Pilot Centre shows the card →
-   Start flight → ACARS Live with session strip; Bookings shows READY chip.
-5. **Existing-flow regression**: desktop login → bookings list → start →
-   POSREP accepted (proves renamed contracts still parse end-to-end).
+First automated test projects in the solution. Stack: **NUnit 4 + Moq +
+FluentAssertions**; **bUnit** for Blazor; **WebApplicationFactory +
+Testcontainers (Postgres)** for API integration. Run with `dotnet test` on the
+solution. If Docker turns out unusable on the dev machine, the integration
+fixture falls back to a dedicated `airserbiavirtua_test` database on the local
+Postgres server (connection string via user-secrets), reset between runs.
+
+| Project | Targets | Covers |
+|---|---|---|
+| `AirSerbiaVirtua.Tests.Unit` | net10.0-windows, **x64** (references Desktop, which is x64-only) + Core + Contracts | FuelEstimator, wire-shape guards, DispatchService, ViewModel logic |
+| `AirSerbiaVirtua.Tests.Api` | net10.0 | Dispatch endpoints + `/active` + convergence regression against real Postgres |
+| `AirSerbiaVirtua.Tests.Web` | net10.0 (bUnit) | Briefing page, PortalBook changes |
+
+### Per segment
+
+**Contracts — `FuelEstimator`** (unit): burn rates per known type, unknown
+type falls back to default, trip = distance × burn rounded, reserve formula,
+zero-distance edge.
+
+**Contracts — wire-shape guards** (unit): serialize each canonical record
+with web defaults (camelCase) and assert golden JSON — property names, enums
+as numbers, `dispatchReadyAtUtc` null-when-absent. Covers `LoginResponse`,
+`PilotProfile`, `RouteInfo`, `BookingInfo` (with and without dispatch flag),
+`PirepListItem`, `PositionReport`, `FlightStartResponse`. These tests are the
+convergence safety net for *every* client.
+
+**API — dispatch endpoints** (integration, real Postgres):
+- `POST /dispatch`: sets timestamp; idempotent re-POST refreshes it; 404 on
+  missing/foreign booking; 409 on Flown/Cancelled/Expired; 401 anonymous.
+- `DELETE /dispatch`: clears flag, 204; same guard matrix.
+- `GET /active`: only Open/Confirmed of the caller; ordering exactly as §2
+  (ready newest-first → date → id); other pilots' bookings excluded;
+  empty list when none.
+- Convergence regression: `POST /auth/login`, `GET /routes`,
+  `GET /bookings/mine`, `GET /pireps/mine` — response JSON contains the
+  expected camelCase keys with numeric enum values (locks the pre-W4 wire
+  format in place).
+- Migrations apply on a blank Postgres container (fixture startup proves it).
+
+**Web — bUnit** (fake `IPortalApi`):
+- Briefing: renders active bookings; selection loads route facts + fuel +
+  METARs; Mark-ready calls POST and renders READY badge + Undo; Undo calls
+  DELETE; 409 message rendered inline; `?bookingId=` preselects; empty state.
+- PortalBook: READY badge and "Prepare →" link render iff flag set.
+
+**Desktop — unit** (mock `IApiService`, fake `ISimBridge`):
+- `DispatchService`: happy path (first Active airframe picked → start called
+  with right args → `FlightSessionState` set → sim reset → navigate to
+  ACARS); no-airframe error; API conflict propagates message; state untouched
+  on failure.
+- `PilotCentreViewModel` card: visible iff ready-today booking and no active
+  session; newest `DispatchReadyAtUtc` wins among several; hidden on API
+  failure (and no error surfaced); hidden while session active.
+- `BookingsViewModel`: READY chip mapping and unchanged Start-flight
+  delegation to `DispatchService`.
+
+### Manual (what automation can't reach)
+
+1. Full solution build 0 errors; desktop with `-p:Platform=x64`.
+2. Browser click-through: `/portal/briefing` mark ready → desktop Pilot
+   Centre card → Start flight → ACARS Live session strip; Bookings READY chip.
+3. Live-flight regression (POSREP→PIREP) stays with the Phase 2b MSFS
+   verification flight.
 
 ## Out of scope
 
