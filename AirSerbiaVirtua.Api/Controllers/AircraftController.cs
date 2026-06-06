@@ -1,6 +1,7 @@
 using AirSerbiaVirtua.Api.Data;
 using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace AirSerbiaVirtua.Api.Controllers;
 
 [ApiController]
-[Route("api/aircraft")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/aircraft")]
 [Authorize]
 public class AircraftController : ControllerBase
 {

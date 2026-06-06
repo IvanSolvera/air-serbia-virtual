@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using AirSerbiaVirtua.Acars.Desktop.ViewModels;
 using AirSerbiaVirtua.Acars.Desktop.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,6 +41,18 @@ public sealed class NavigationService : INavigationService
             NavTarget.Acars => _provider.GetRequiredService<AcarsView>(),
             NavTarget.Debriefing => _provider.GetRequiredService<DebriefingView>(),
             NavTarget.Logbook => _provider.GetRequiredService<LogbookView>(),
+            NavTarget.Metars => new PlaceholderView(new PlaceholderViewModel
+            {
+                Title = "METARs",
+                Description = "Station weather lookup is coming in Phase 5. " +
+                              "Live departure/arrival METARs are already on the Briefing page."
+            }),
+            NavTarget.Outstation => new PlaceholderView(new PlaceholderViewModel
+            {
+                Title = "Outstation Flights",
+                Description = "Charter and one-off flights outside the scheduled network " +
+                              "are coming in Phase 5."
+            }),
             _ => null
         };
         Current = target;

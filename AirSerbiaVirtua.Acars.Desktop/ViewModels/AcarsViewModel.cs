@@ -296,7 +296,10 @@ public sealed partial class AcarsViewModel : ObservableObject, IDisposable
     private void UpdatePhaseHighlight(FlightState current)
     {
         foreach (var p in Phases)
+        {
             p.IsCurrent = p.State == current;
+            p.IsDone = p.State < current;   // enum order mirrors the flight sequence
+        }
     }
 
     private static string FormatPhase(FlightState s) => s switch
@@ -321,4 +324,5 @@ public sealed partial class PhaseItem : ObservableObject
     public FlightState State { get; init; }
     public string Label { get; init; } = string.Empty;
     [ObservableProperty] private bool _isCurrent;
+    [ObservableProperty] private bool _isDone;
 }

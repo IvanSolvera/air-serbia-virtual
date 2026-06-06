@@ -2,6 +2,7 @@ using AirSerbiaVirtua.Api.Auth;
 using AirSerbiaVirtua.Api.Data;
 using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -10,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 namespace AirSerbiaVirtua.Api.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/auth")]
 [EnableRateLimiting("auth")]
 public class AuthController : ControllerBase
 {
@@ -20,17 +22,20 @@ public class AuthController : ControllerBase
     private readonly JwtTokenService _jwt;
     private readonly RefreshTokenService _refresh;
     private readonly IPasswordHasher _hasher;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         AppDbContext db,
         JwtTokenService jwt,
         RefreshTokenService refresh,
-        IPasswordHasher hasher)
+        IPasswordHasher hasher,
+        ILogger<AuthController> logger)
     {
         _db = db;
         _jwt = jwt;
         _refresh = refresh;
         _hasher = hasher;
+        _logger = logger;
     }
 
     /// <summary>
@@ -90,13 +95,23 @@ public class AuthController : ControllerBase
             .FirstOrDefaultAsync(p => p.Callsign == req.Callsign);
 
         if (pilot is null || !_hasher.Verify(req.Password, pilot.PasswordHash))
+        {
+            _logger.LogWarning("Login failed for callsign {Callsign} from {RemoteIp}", req.Callsign, RemoteIp());
             return Unauthorized(new { message = "Invalid credentials." });
+        }
 
         if (pilot.Status == PilotStatus.Banned || pilot.Status == PilotStatus.Inactive)
+        {
+            _logger.LogWarning("Login rejected for pilot {PilotId} ({Callsign}): status {Status}",
+                pilot.Id, pilot.Callsign, pilot.Status);
             return StatusCode(StatusCodes.Status403Forbidden, new { message = "Account is not active." });
+        }
 
         var (accessToken, accessExpires) = _jwt.CreateAccessToken(pilot);
         var (refreshRaw, refreshExpires) = await _refresh.IssueAsync(pilot.Id, RemoteIp());
+
+        _logger.LogInformation("Pilot {PilotId} ({Callsign}) logged in from {RemoteIp}",
+            pilot.Id, pilot.Callsign, RemoteIp());
 
         var tokens = new AuthTokensDto(accessToken, accessExpires, refreshRaw, refreshExpires);
         return Ok(new LoginResponse(tokens, ToProfile(pilot, pilot.Rank?.Name ?? string.Empty)));

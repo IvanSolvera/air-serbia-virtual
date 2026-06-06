@@ -7,23 +7,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:LogbookViewModel}"
-             d:DesignHeight="700" d:DesignWidth="980"
-             Background="White">
+             d:DesignHeight="700" d:DesignWidth="980">
 
-    <UserControl.Resources>
-        <Style x:Key="ColHeader" TargetType="TextBlock" BasedOn="{StaticResource Label}">
-            <Setter Property="Margin" Value="0,0,12,0" />
-        </Style>
-        <Style x:Key="Cell" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource Brand.Sans}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource Brand.Dark}" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,12,0" />
-        </Style>
-    </UserControl.Resources>
-
-    <Grid Margin="40,36">
+    <Grid Margin="36,30,36,36">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -31,101 +17,143 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Grid Grid.Row="0">
+        <!-- phead -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
-                <TextBlock Text="Logbook" Style="{StaticResource H1}" />
-                <TextBlock Text="{Binding TotalsText}" Style="{StaticResource Body}" Margin="0,6,0,0" />
+                <TextBlock Text="Logbook" Style="{StaticResource Suite.PageTitle}" />
+                <TextBlock Text="{Binding TotalsText}" FontFamily="{StaticResource Suite.Mono}" FontSize="12"
+                           Foreground="{StaticResource Suite.MistDim}" Margin="0,9,0,0" />
             </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                 <ComboBox ItemsSource="{Binding Filters}" SelectedItem="{Binding SelectedFilter}"
-                          Width="150" VerticalAlignment="Center" Margin="0,0,10,0" />
-                <Button Command="{Binding RefreshCommand}" Style="{StaticResource RedButton}" Padding="14,8">
+                          Style="{StaticResource Suite.Combo}" Width="150" Margin="0,0,10,0" />
+                <Button Command="{Binding RefreshCommand}" Style="{StaticResource Suite.BtnCrimson}">
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Refresh" Width="14" Height="14" VerticalAlignment="Center" />
+                        <iconPacks:PackIconMaterial Kind="Refresh" Width="15" Height="15" VerticalAlignment="Center" />
                         <TextBlock Text="Refresh" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </StackPanel>
         </Grid>
 
-        <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" Foreground="{StaticResource Brand.Red}"
-                     Background="Transparent" BorderThickness="0" Margin="0,16,0,0"
+        <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" Foreground="{StaticResource Suite.RoyalBright}"
+                     Background="Transparent" BorderThickness="0" Margin="0,0,0,8"
                      Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}" />
 
-        <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" Style="{StaticResource Body}" Margin="0,16,0,0"
+        <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" Style="{StaticResource Suite.Body}" Margin="0,0,0,12"
                    Visibility="{Binding StatusMessage, Converter={StaticResource NullToCollapsedConverter}}" />
 
         <!-- Table -->
-        <Border Grid.Row="3" Margin="0,18,0,0" BorderBrush="{StaticResource Brand.Border}" BorderThickness="1" CornerRadius="6">
+        <Border Grid.Row="3" Style="{StaticResource Suite.TblWrap}" VerticalAlignment="Top">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- Column headers -->
-                <Border Grid.Row="0" Background="{StaticResource Brand.Surface}" BorderBrush="{StaticResource Brand.Border}" BorderThickness="0,0,0,1" Padding="18,12">
+                <Border Grid.Row="0" Background="#8C061228" BorderBrush="{StaticResource Suite.Hairline}"
+                        BorderThickness="0,0,0,1" CornerRadius="14,14,0,0" Padding="16,13">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.1*" />
-                            <ColumnDefinition Width="1.2*" />
-                            <ColumnDefinition Width="1*" />
-                            <ColumnDefinition Width="1.2*" />
-                            <ColumnDefinition Width="0.9*" />
-                            <ColumnDefinition Width="0.9*" />
-                            <ColumnDefinition Width="0.9*" />
-                            <ColumnDefinition Width="0.8*" />
-                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="115" />
+                            <ColumnDefinition Width="85" />
+                            <ColumnDefinition Width="85" />
+                            <ColumnDefinition Width="85" />
+                            <ColumnDefinition Width="65" />
+                            <ColumnDefinition Width="110" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="FLIGHT" Style="{StaticResource ColHeader}" />
-                        <TextBlock Grid.Column="1" Text="ROUTE" Style="{StaticResource ColHeader}" />
-                        <TextBlock Grid.Column="2" Text="AIRCRAFT" Style="{StaticResource ColHeader}" />
-                        <TextBlock Grid.Column="3" Text="DATE" Style="{StaticResource ColHeader}" />
-                        <TextBlock Grid.Column="4" Text="BLOCK" Style="{StaticResource ColHeader}" />
-                        <TextBlock Grid.Column="5" Text="AIR" Style="{StaticResource ColHeader}" />
-                        <TextBlock Grid.Column="6" Text="LANDING" Style="{StaticResource ColHeader}" />
-                        <TextBlock Grid.Column="7" Text="SCORE" Style="{StaticResource ColHeader}" />
-                        <TextBlock Grid.Column="8" Text="STATUS" Style="{StaticResource ColHeader}" />
+                        <TextBlock Grid.Column="0" Text="FLIGHT" Style="{StaticResource Suite.ColHeader}" />
+                        <TextBlock Grid.Column="1" Text="ROUTE" Style="{StaticResource Suite.ColHeader}" />
+                        <TextBlock Grid.Column="2" Text="AIRCRAFT" Style="{StaticResource Suite.ColHeader}" />
+                        <TextBlock Grid.Column="3" Text="DATE" Style="{StaticResource Suite.ColHeader}" />
+                        <TextBlock Grid.Column="4" Text="BLOCK" Style="{StaticResource Suite.ColHeader}" />
+                        <TextBlock Grid.Column="5" Text="AIR" Style="{StaticResource Suite.ColHeader}" />
+                        <TextBlock Grid.Column="6" Text="LANDING" Style="{StaticResource Suite.ColHeader}" />
+                        <TextBlock Grid.Column="7" Text="SCORE" Style="{StaticResource Suite.ColHeader}" />
+                        <TextBlock Grid.Column="8" Text="STATUS" Style="{StaticResource Suite.ColHeader}" />
                     </Grid>
                 </Border>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Pireps}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderBrush="{StaticResource Brand.Border}" BorderThickness="0,0,0,1" Padding="18,12">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="1.1*" />
-                                            <ColumnDefinition Width="1.2*" />
-                                            <ColumnDefinition Width="1*" />
-                                            <ColumnDefinition Width="1.2*" />
-                                            <ColumnDefinition Width="0.9*" />
-                                            <ColumnDefinition Width="0.9*" />
-                                            <ColumnDefinition Width="0.9*" />
-                                            <ColumnDefinition Width="0.8*" />
-                                            <ColumnDefinition Width="1*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding FlightNumber}" Style="{StaticResource Cell}" FontWeight="SemiBold" />
-                                        <TextBlock Grid.Column="1" Text="{Binding LegLabel}" Style="{StaticResource Cell}" />
-                                        <TextBlock Grid.Column="2" Text="{Binding Registration}" Style="{StaticResource Cell}" />
-                                        <TextBlock Grid.Column="3" Text="{Binding DateLabel}" Style="{StaticResource Cell}" />
-                                        <TextBlock Grid.Column="4" Text="{Binding BlockLabel}" Style="{StaticResource Cell}" />
-                                        <TextBlock Grid.Column="5" Text="{Binding AirLabel}" Style="{StaticResource Cell}" />
-                                        <TextBlock Grid.Column="6" Text="{Binding LandingLabel}" Style="{StaticResource Cell}" />
-                                        <TextBlock Grid.Column="7" Text="{Binding Score}" Style="{StaticResource Cell}" FontWeight="SemiBold" />
-                                        <TextBlock Grid.Column="8" Text="{Binding StatusLabel}" Style="{StaticResource Cell}" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                <Grid Grid.Row="1">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Pireps}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource Suite.TblRow}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="115" />
+                                                <ColumnDefinition Width="85" />
+                                                <ColumnDefinition Width="85" />
+                                                <ColumnDefinition Width="85" />
+                                                <ColumnDefinition Width="65" />
+                                                <ColumnDefinition Width="110" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding FlightNumber}" Style="{StaticResource Suite.FlightNo}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding LegLabel}" Style="{StaticResource Suite.Leg}" />
+                                            <Border Grid.Column="2" Style="{StaticResource Suite.Chip}">
+                                                <TextBlock Text="{Binding Registration}" Style="{StaticResource Suite.ChipText}" />
+                                            </Border>
+                                            <TextBlock Grid.Column="3" Text="{Binding DateLabel}" Style="{StaticResource Suite.Num}" />
+                                            <TextBlock Grid.Column="4" Text="{Binding BlockLabel}" Style="{StaticResource Suite.Num}" />
+                                            <TextBlock Grid.Column="5" Text="{Binding AirLabel}" Style="{StaticResource Suite.Num}" />
+                                            <TextBlock Grid.Column="6" Text="{Binding LandingLabel}" Style="{StaticResource Suite.Num}" />
+                                            <TextBlock Grid.Column="7" Text="{Binding Score}" Style="{StaticResource Suite.Num}"
+                                                       Foreground="{StaticResource Suite.Cloud}" FontWeight="SemiBold" />
+                                            <Border Grid.Column="8">
+                                                <Border.Style>
+                                                    <Style TargetType="Border" BasedOn="{StaticResource Suite.BadgeAmber}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding StatusLabel}" Value="Accepted">
+                                                                <Setter Property="Background" Value="#2434D399" />
+                                                                <Setter Property="BorderBrush" Value="#5C34D399" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding StatusLabel}" Value="Rejected">
+                                                                <Setter Property="Background" Value="#29D8203F" />
+                                                                <Setter Property="BorderBrush" Value="#66D8203F" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding StatusLabel}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource Suite.BadgeText}">
+                                                            <Setter Property="Foreground" Value="#FFFFE2B0" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding StatusLabel}" Value="Accepted">
+                                                                    <Setter Property="Foreground" Value="#FFBDF3DD" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding StatusLabel}" Value="Rejected">
+                                                                    <Setter Property="Foreground" Value="#FFFFD2DA" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="No flights logged yet. Your submitted PIREPs will appear here."
+                               Foreground="{StaticResource Suite.MistDim}" FontSize="13"
+                               HorizontalAlignment="Center" Margin="16,42"
+                               Visibility="{Binding Pireps.Count, Converter={StaticResource ZeroToVisConverter}}" />
+                </Grid>
             </Grid>
         </Border>
     </Grid>

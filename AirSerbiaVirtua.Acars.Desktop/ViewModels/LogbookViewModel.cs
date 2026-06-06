@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,7 +8,7 @@ namespace AirSerbiaVirtua.Acars.Desktop.ViewModels;
 
 /// <summary>
 /// Logbook (Phase 3): lists the pilot's submitted PIREPs from
-/// <c>GET /api/pireps/mine</c>, filterable by status, with summary totals.
+/// <c>GET /api/v1/pireps/mine</c>, filterable by status, with summary totals.
 /// </summary>
 public sealed partial class LogbookViewModel : ObservableObject
 {
@@ -18,7 +18,7 @@ public sealed partial class LogbookViewModel : ObservableObject
     [ObservableProperty] private string? _statusMessage;
     [ObservableProperty] private bool _hasError;
     [ObservableProperty] private string _selectedFilter = "All";
-    [ObservableProperty] private string _totalsText = "—";
+    [ObservableProperty] private string _totalsText = "â€”";
 
     public string[] Filters { get; } = { "All", "Accepted", "Pending", "Rejected", "UnderReview" };
 
@@ -36,7 +36,7 @@ public sealed partial class LogbookViewModel : ObservableObject
         if (!_session.IsAuthenticated)
         {
             Pireps.Clear();
-            TotalsText = "—";
+            TotalsText = "â€”";
             HasError = false;
             StatusMessage = "Sign in to view your logbook.";
             return;
@@ -56,8 +56,8 @@ public sealed partial class LogbookViewModel : ObservableObject
             var accepted = items.Where(i => i.Status == 1).ToList();
             var totalMin = accepted.Sum(i => i.BlockMin);
             var avgScore = accepted.Count > 0 ? (int)Math.Round(accepted.Average(i => i.Score)) : 0;
-            TotalsText = $"{items.Count} flight{(items.Count == 1 ? "" : "s")}  •  "
-                       + $"{totalMin / 60}h {totalMin % 60:D2}m logged  •  avg score {avgScore}";
+            TotalsText = $"{items.Count} flight{(items.Count == 1 ? "" : "s")}  â€¢  "
+                       + $"{totalMin / 60}h {totalMin % 60:D2}m logged  â€¢  avg score {avgScore}";
 
             if (items.Count == 0)
                 StatusMessage = "No flights logged yet.";
@@ -93,12 +93,12 @@ public sealed class PirepRow
     {
         Id = p.Id;
         FlightNumber = p.FlightNumber;
-        LegLabel = $"{p.DepIcao} → {p.ArrIcao}";
+        LegLabel = $"{p.DepIcao} â†’ {p.ArrIcao}";
         Registration = p.AircraftRegistration;
         DateLabel = p.DepActual.UtcDateTime.ToString("d MMM yyyy");
         BlockLabel = $"{p.BlockMin / 60}h {p.BlockMin % 60:D2}m";
         AirLabel = $"{p.AirMin / 60}h {p.AirMin % 60:D2}m";
-        LandingLabel = p.LandingRateFpm != 0 ? $"{p.LandingRateFpm} fpm" : "—";
+        LandingLabel = p.LandingRateFpm != 0 ? $"{p.LandingRateFpm} fpm" : "â€”";
         Score = p.Score;
         StatusLabel = ((PirepStatusLabel)p.Status).ToString();
     }

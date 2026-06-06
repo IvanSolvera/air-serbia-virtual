@@ -1,5 +1,95 @@
 # Continuation log — pick-up notes
 
+## Update 2026-06-06 (later) — per-page Suite redesign v2
+
+User supplied a second mockup (`Air Serbia Virtual - ACARS App (standalone) 2.html`,
+same bundler format; page markup lives in the gzip-compressed JS resource in the
+manifest). All inner pages reworked to match it:
+- **Page framework**: Sora 30px titles (no kicker), 13.5 mist subs, actions
+  top-right; content area gradient (#061328→#040D1C + royal radial glow) behind
+  every page (`MainWindow`).
+- **New shared styles** (App.xaml): `Suite.PageTitle/PageSub`, `Suite.Tile`,
+  `Suite.TblWrap/TblRow` (hover royal tint), `Suite.Chip(+Text)`,
+  `Suite.Badge{Crimson,Amber,Green,Mist}(+Text)`, `Suite.Banner`,
+  buttons reworked: `Suite.BtnCrimson` (gradient, main actions: Refresh, Book,
+  Start flight, Connect), `Suite.BtnPrimary` (royal: Update password, Submit
+  PIREP), `Suite.BtnGhost` (dark .btn base: Cancel).
+- **Pages**: PilotCentre (74px avatar, crimson callsign + amber/green status
+  badges, hairline-topped stats row, ACCOUNT SECURITY card), Bookings (chips,
+  badges, hover rows, MY BOOKINGS empty-state text), Briefing (banner + ghost
+  DEP/ROUTE/ARR cards when idle), ACARS Live (phase dots: royal=done,
+  crimson glow=current — `PhaseItem.IsDone` added; tele tiles, state strip,
+  kv milestones/metrics), Debriefing (gradient hero w/ crimson radial glow,
+  Sora 54 score, landing strip, status-colored tiles), Logbook (mono summary
+  sub, dark select + crimson refresh, badge statuses, empty state), Placeholder
+  (84px radial ring + PHASE 5 badge).
+- Sidebar pilot card: shows initials when signed in, click → Pilot Centre.
+- Status bar: FSUIPC red LED + "Disconnected" when sim not connected (per mockup).
+- `ZeroToVisConverter` added for table empty states.
+- Build green, app launches. **User to click through pages for visual sign-off.**
+
+## Update 2026-06-06
+
+**Prod items #7–#10 done — production-readiness checklist 10/10 (core), only GVA
+extras 12–14 remain.**
+- **#7 API versioning** — `Asp.Versioning.Mvc(.ApiExplorer)` 10.0.0; URL segment
+  `/api/v1/...`; all 8 controllers `[ApiVersion("1.0")]`; `ApiService` now calls
+  `api/v1/...`. Live-verified: old `/api/auth/login` → 404, new → 401/200,
+  Swagger paths show `/api/v1/...`. `/health` deliberately unversioned.
+- **#8 Serilog** — bootstrap logger + `UseSerilog`; console readable in dev /
+  CompactJson in prod; file CompactJson `logs/asv-YYYYMMDD.log` rolling daily,
+  30 kept; `UseSerilogRequestLogging` + post-auth middleware pushes `PilotId`
+  onto every authenticated request's log context; Login/FlightStart/POSREP log
+  Information with `RouteId`/`FlightSessionId`. Verified `"PilotId":1` in file.
+- **#9 CORS** — config-driven (`Cors:AllowedOrigins`, default empty = deny all
+  cross-origin); `DisallowCredentials` (web UI will use JWT header, not cookies);
+  decision commented in `Program.cs`.
+- **#10 Deployment doc** — `doc/deployment.md`: Caddy/nginx + Let's Encrypt,
+  systemd + docker-compose, `dotnet ef migrations bundle` step, env vars,
+  pg_dump cron + restore drill, deploy checklist.
+- Build green (0 errors). Smoke-tested live against dev Postgres: health, 404 on
+  unversioned, login ASL001, `GET /api/v1/routes` → 6 routes.
+- **Breaking note:** any older client build talks `/api/...` and will 404 — use
+  current `ApiService` (now on `api/v1/`).
+
+**"Flight Crew Suite" redesign implemented (2026-06-06).** Source: standalone
+HTML mockup at `e:\Programiranje\Projects\AirSerbiaVirtual\Acars\` (bundler
+format — real HTML is JSON-encoded in the `__bundler/template` script block).
+User explicitly requested it, superseding the old "chocolate dark + Cambria"
+brand lock.
+- **Design system in `App.xaml`**: `Suite.*` tokens — ink-navy palette
+  (#04101F…#16365F), royal (#2563D6/#3F86F4), crimson (#D8203F), mist text,
+  hairlines, surface gradients; styles `Suite.NavItem`, `Suite.Input`,
+  `Suite.Password`, `Suite.Switch`, `Suite.SignIn`, `Suite.IconBtn`,
+  `Suite.WinBtn(Close)`. Old `Brand.*` keys kept untouched — inner pages
+  (Bookings/ACARS/etc.) still render their old light style inside the new
+  dark shell; restyling them is the next UI task.
+- **Fonts embedded** (`Fonts/*.ttf`, OFL): Sora 600/700/800, Manrope 400–800,
+  JetBrains Mono 400/500/600. Use via `Suite.Display/Sans/Mono`.
+- **Hero image** extracted from the mockup manifest → `Resources/login-hero.png`.
+- **MainWindow**: borderless `Window` + `WindowChrome` (CaptionHeight 46),
+  1320×840. Titlebar: Serbian-flag stripe, chevron logo (vector Paths), brand,
+  "ACARS TERMINAL", real version, custom min/max/close. Sidebar 236px:
+  OPERATIONS + LOCKED chip, 8 nav items (METARs, Pilot Centre, Bookings,
+  Briefing | ACARS, Debriefing, Outstation Flights, Logbook), pilot card with
+  sign-out icon. Statusbar 34px: API/FSUIPC/ACARS LEDs, HUB, live Zulu clock,
+  real PING (new `ApiService.PingAsync()` → /health every 15 s).
+- **Nav is now LOCKED until login** (CanExecute = IsAuthenticated) — Phase 2a
+  open-nav behavior intentionally removed.
+- **LoginView**: hero + 372px auth panel per mockup — ASV ID/password fields
+  with icons, password reveal (eye), Remember me (persists callsign via new
+  `UiSettings` → `%LOCALAPPDATA%/AirSerbiaVirtua/ui-settings.json`), Auto Login
+  flag (stored; takes effect once refresh-token persistence lands), gradient
+  sign-in button with busy spinner, crimson error banner, secure chip showing
+  real API host. Hero stats strip (17 flights / 24/28 / 92% / JU380) is static
+  decoration for now.
+- **New nav targets** `Metars` + `Outstation` → PlaceholderView (Phase 5).
+- Verified: solution builds 0 errors, app launched, screenshot confirmed —
+  matches mockup (UTC ticking, PING real, LEDs correct).
+- **TODO next (UI)**: restyle inner pages (Bookings, ACARS Live, Pilot Centre,
+  Briefing, Debriefing, Logbook, Placeholder) to the Suite design system;
+  consider wiring hero METAR chips + stats to real data post-Phase 5.
+
 ## Update 2026-06-03 (mid-session)
 
 Investigated the user's Delta Virtual ACARS client — it's the **Global Virtual
@@ -175,8 +265,11 @@ Once Phase 2b is verified:
 - **API port (dev):** 5036 HTTP (`launchSettings.json` http profile).
 - **Desktop API base URL:** `appsettings.json` → `Api:BaseUrl =
   http://localhost:5036/`.
-- **Brand palette + style:** locked in `App.xaml` (chocolate dark + Air Serbia
-  red + Cambria serif). Don't redesign without asking.
+- **Brand palette + style:** "Flight Crew Suite" design system (`Suite.*` keys
+  in `App.xaml`) — ink-navy + royal blue + crimson, Sora/Manrope/JetBrains Mono
+  (embedded TTFs). Replaced the old chocolate/Cambria look on 2026-06-06 at the
+  user's request. Old `Brand.*` keys remain only for not-yet-restyled inner
+  pages. Don't redesign without asking.
 - **Project structure:** `Acars.Core` is the shared library, `Acars.Desktop`
   is WPF, `Acars.PoC` is `--selftest` harness only, `Api` is the ASP.NET host.
 - **Single-singleton ViewModels:** `AcarsViewModel` and `BookingsViewModel`

@@ -1,12 +1,14 @@
 using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Services;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AirSerbiaVirtua.Api.Controllers;
 
 [ApiController]
-[Route("api/metar")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/metar")]
 [Authorize]
 public class MetarController : ControllerBase
 {

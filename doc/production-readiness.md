@@ -85,6 +85,7 @@ Lista je poređana po redu izvršenja — svaka stavka je samostalna, ima jasnu 
 - Kontroleri označeni `[ApiVersion("1.0")]`.
 - Klijent u `ApiService` koristi `api/v1/...` prefix.
 **Gotovo kad:** `/api/v1/auth/login` radi, `/api/auth/login` vraća 404, Swagger prikazuje verziju.
+**✅ Urađeno 2026-06-06:** `Asp.Versioning.Mvc` + `Asp.Versioning.Mvc.ApiExplorer` 10.0.0. URL-segment reader, svi (8) kontroleri `[ApiVersion("1.0")]` + `Route("api/v{version:apiVersion}/...")`. `ApiService` prebačen na `api/v1/`. Verifikovano uživo: `/api/auth/login` → 404, `/api/v1/auth/login` → 401/200, Swagger paths pokazuju `/api/v1/...`. `/health` namerno ostaje bez verzije.
 
 ### 8. Strukturisani logovi (Serilog)
 **Trenutno:** default `ILogger` u Console, nečitljivo preko više pilota.
@@ -93,6 +94,7 @@ Lista je poređana po redu izvršenja — svaka stavka je samostalna, ima jasnu 
 - Properti `PilotId` na request scope (iz JWT claims) → svaki log line ima pilot-context.
 - Health, /api/auth/login i POSREP endpointi logovani na Information; greške na Warning/Error sa stack-om.
 **Gotovo kad:** `logs/asv-YYYYMMDD.log` sadrži JSON linije sa `pilotId`, `routeId`, `flightSessionId`.
+**✅ Urađeno 2026-06-06:** `Serilog.AspNetCore` 10.0.0, bootstrap logger + `UseSerilog`. Console: čitljiv u dev-u, CompactJson u prod-u; File: CompactJson `logs/asv-.log` rolling daily (30 dana). `UseSerilogRequestLogging` sa `PilotId` u diagnostic context-u + middleware posle `UseAuthentication` koji `LogContext.PushProperty("PilotId", ...)` — svaka linija autentifikovanog zahteva nosi pilota. `AuthController.Login` (Information/Warning) i `FlightsController.Start`/`Position` loguju `RouteId`/`FlightSessionId`. Verifikovano: `logs/asv-20260606.log` sadrži JSON sa `"PilotId":1`.
 
 ### 9. CORS politika (eksplicitno)
 **Trenutno:** nije postavljena — defaultno same-origin, ali nedeklarisano.
@@ -100,6 +102,7 @@ Lista je poređana po redu izvršenja — svaka stavka je samostalna, ima jasnu 
 - Ako ostane samo native ACARS klijent → eksplicitno `app.UseCors(p => p.DisallowCredentials())` ili izostaviti (native HTTP klijent ne radi CORS check).
 - Ako planiraš web UI → konfigurisati allowed origin iz `appsettings:Cors:AllowedOrigins`.
 **Gotovo kad:** politika je svesno doneta i komentarisana u `Program.cs`.
+**✅ Urađeno 2026-06-06:** default policy čita `Cors:AllowedOrigins` iz konfiguracije (`appsettings.json` ima prazan niz = default-deny, nijedan `Access-Control-Allow-Origin` se ne emituje). Kad web UI (doc/website-design.md) krene, origin se dodaje per-environment (`Cors__AllowedOrigins__0`). `DisallowCredentials` jer web UI šalje JWT u header-u, ne cookies. Odluka komentarisana u `Program.cs`.
 
 ### 10. Deployment — TLS, reverse proxy, prod migracije
 **Trenutno:** `Program.cs:64` radi `Database.Migrate()` samo u Developmentu (dobro). Nema dokumentacije za prod.
@@ -112,6 +115,7 @@ Lista je poređana po redu izvršenja — svaka stavka je samostalna, ima jasnu 
   - Backup strategija Postgres-a (pg_dump u cron-u + retention).
 - Health probe konfiguracija (`/health` već postoji).
 **Gotovo kad:** dokument postoji i prati real deployment.
+**✅ Urađeno 2026-06-06:** `doc/deployment.md` — Caddy (auto Let's Encrypt) i nginx+certbot varijante, systemd unit sa `EnvironmentFile` i docker-compose (db + migrator + api), `dotnet ef migrations bundle` korak pre restarta API-ja, env var tabela (`Jwt__Key`, `ConnectionStrings__Default`, `Cors__AllowedOrigins__0`), pg_dump cron sa 14-dnevnom retencijom + restore drill, deploy checklist. Napomena o `ForwardedHeaders` za rate limiter iza proxy-ja.
 
 ---
 
@@ -156,10 +160,10 @@ produkciju; redosled po vrednosti.
 - [x] 4. Refresh token rotacija
 - [x] 5. Idempotencija POSREP-a
 - [x] 6. Klijent: offline buffer + retry/backoff
-- [ ] 7. API versioning
-- [ ] 8. Strukturisani logovi (Serilog)
-- [ ] 9. CORS politika
-- [ ] 10. Deployment dokument
+- [x] 7. API versioning
+- [x] 8. Strukturisani logovi (Serilog)
+- [x] 9. CORS politika
+- [x] 10. Deployment dokument
 - [x] 11. `ISimBridge` apstrakcija simulatora (GVA)
 - [ ] 12. Per-packet kompresija POSREP-a (GVA)
 - [ ] 13. Bogatija telemetrija `FlightData` (GVA)

@@ -7,117 +7,178 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:BriefingViewModel}"
-             d:DesignHeight="700" d:DesignWidth="980"
-             Background="White">
+             d:DesignHeight="700" d:DesignWidth="980">
 
     <UserControl.Resources>
-        <Style x:Key="Tile" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="{StaticResource Brand.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="18,16" />
-        </Style>
-        <Style x:Key="TileLabel" TargetType="TextBlock" BasedOn="{StaticResource Label}">
-            <Setter Property="Margin" Value="0,0,0,6" />
-        </Style>
-        <Style x:Key="TileValue" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource Brand.Sans}" />
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource Brand.Dark}" />
-        </Style>
         <Style x:Key="MetarText" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Consolas, 'Courier New'" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource Brand.Dark}" />
+            <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
             <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="LineHeight" Value="20" />
         </Style>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="40,36">
+        <StackPanel Margin="36,30,36,36">
 
-            <Grid>
+            <!-- phead -->
+            <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Briefing" Style="{StaticResource H1}" />
-                    <TextBlock Style="{StaticResource Body}" Margin="0,6,0,0">
-                        <Run Text="{Binding FlightNumber, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding LegLabel, Mode=OneWay}" />
-                    </TextBlock>
+                    <TextBlock Text="Briefing" Style="{StaticResource Suite.PageTitle}" />
+                    <TextBlock Text="Route, weather and dispatch package for your active flight."
+                               Style="{StaticResource Suite.PageSub}" />
                 </StackPanel>
-                <Button Grid.Column="1" Command="{Binding RefreshCommand}" Style="{StaticResource RedButton}" Padding="14,8" VerticalAlignment="Top">
+                <Button Grid.Column="1" Command="{Binding RefreshCommand}"
+                        Style="{StaticResource Suite.BtnCrimson}" VerticalAlignment="Top">
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Refresh" Width="14" Height="14" VerticalAlignment="Center" />
+                        <iconPacks:PackIconMaterial Kind="Refresh" Width="15" Height="15" VerticalAlignment="Center" />
                         <TextBlock Text="Refresh" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </Grid>
 
-            <ProgressBar IsIndeterminate="True" Height="2" Foreground="{StaticResource Brand.Red}"
-                         Background="Transparent" BorderThickness="0" Margin="0,16,0,0"
+            <ProgressBar IsIndeterminate="True" Height="2" Foreground="{StaticResource Suite.RoyalBright}"
+                         Background="Transparent" BorderThickness="0" Margin="0,0,0,12"
                          Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}" />
 
-            <!-- No-session / status note -->
-            <Border Background="{StaticResource Brand.Surface}" BorderBrush="{StaticResource Brand.Border}" BorderThickness="1"
-                    CornerRadius="6" Padding="16,14" Margin="0,18,0,0"
+            <!-- No-session / status banner -->
+            <Border Style="{StaticResource Suite.Banner}" Margin="0,0,0,18"
                     Visibility="{Binding StatusMessage, Converter={StaticResource NullToCollapsedConverter}}">
-                <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Body}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{StaticResource Suite.Amber}"
+                             VerticalAlignment="Center">
+                        <Ellipse.Effect>
+                            <DropShadowEffect Color="#FFF5B545" BlurRadius="9" ShadowDepth="0" Opacity="0.8" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <TextBlock Grid.Column="1" Text="{Binding StatusMessage}" FontSize="13"
+                               Foreground="{StaticResource Suite.Mist}" Margin="14,0,0,0" VerticalAlignment="Center"
+                               TextWrapping="Wrap" />
+                    <TextBlock Grid.Column="2" FontFamily="{StaticResource Suite.Mono}" FontSize="11"
+                               Foreground="{StaticResource Suite.MistDim}" VerticalAlignment="Center"
+                               Text="OFP —   WX —   NOTAM —" />
+                </Grid>
             </Border>
 
+            <!-- Ghost cards when no active flight -->
+            <UniformGrid Columns="3" Opacity="0.55"
+                         Visibility="{Binding HasActiveSession, Converter={StaticResource InverseBoolToVisConverter}}">
+                <Border Style="{StaticResource Suite.Panel}" Margin="0,0,14,0">
+                    <StackPanel>
+                        <TextBlock Text="DEPARTURE" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,12" />
+                        <TextBlock Text="Awaiting dispatch…" FontFamily="{StaticResource Suite.Mono}"
+                                   FontSize="13" Foreground="{StaticResource Suite.MistDim}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Suite.Panel}" Margin="0,0,14,0">
+                    <StackPanel>
+                        <TextBlock Text="ROUTE" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,12" />
+                        <TextBlock Text="Awaiting dispatch…" FontFamily="{StaticResource Suite.Mono}"
+                                   FontSize="13" Foreground="{StaticResource Suite.MistDim}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Suite.Panel}">
+                    <StackPanel>
+                        <TextBlock Text="ARRIVAL" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,12" />
+                        <TextBlock Text="Awaiting dispatch…" FontFamily="{StaticResource Suite.Mono}"
+                                   FontSize="13" Foreground="{StaticResource Suite.MistDim}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Active flight briefing -->
             <StackPanel Visibility="{Binding HasActiveSession, Converter={StaticResource BoolToVisConverter}}">
+
+                <TextBlock FontFamily="{StaticResource Suite.Mono}" FontSize="12.5"
+                           Foreground="{StaticResource Suite.Mist}" Margin="0,0,0,16">
+                    <Run Text="{Binding FlightNumber, Mode=OneWay}" Foreground="{StaticResource Suite.Cloud}"
+                         FontWeight="SemiBold" /><Run Text="   ·   " /><Run Text="{Binding LegLabel, Mode=OneWay}" />
+                </TextBlock>
+
                 <!-- Route facts -->
-                <UniformGrid Columns="4" Margin="0,22,0,0">
-                    <Border Style="{StaticResource Tile}" Margin="0,0,12,0">
-                        <StackPanel><TextBlock Text="AIRCRAFT" Style="{StaticResource TileLabel}" /><TextBlock Text="{Binding Aircraft}" Style="{StaticResource TileValue}" /></StackPanel>
+                <UniformGrid Columns="4">
+                    <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="AIRCRAFT" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,9" />
+                            <TextBlock Text="{Binding Aircraft}" Style="{StaticResource Suite.TileValue}" />
+                        </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource Tile}" Margin="0,0,12,0">
-                        <StackPanel><TextBlock Text="DISTANCE" Style="{StaticResource TileLabel}" /><TextBlock Text="{Binding Distance}" Style="{StaticResource TileValue}" /></StackPanel>
+                    <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="DISTANCE" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,9" />
+                            <TextBlock Text="{Binding Distance}" Style="{StaticResource Suite.TileValue}" />
+                        </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource Tile}" Margin="0,0,12,0">
-                        <StackPanel><TextBlock Text="PLANNED TIME" Style="{StaticResource TileLabel}" /><TextBlock Text="{Binding PlannedTime}" Style="{StaticResource TileValue}" /></StackPanel>
+                    <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="PLANNED TIME" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,9" />
+                            <TextBlock Text="{Binding PlannedTime}" Style="{StaticResource Suite.TileValue}" />
+                        </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource Tile}">
-                        <StackPanel><TextBlock Text="EST. TOTAL FUEL" Style="{StaticResource TileLabel}" /><TextBlock Text="{Binding FuelTotal}" Style="{StaticResource TileValue}" /></StackPanel>
+                    <Border Style="{StaticResource Suite.Tile}">
+                        <StackPanel>
+                            <TextBlock Text="EST. TOTAL FUEL" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,9" />
+                            <TextBlock Text="{Binding FuelTotal}" Style="{StaticResource Suite.TileValue}" />
+                        </StackPanel>
                     </Border>
                 </UniformGrid>
 
                 <!-- Fuel breakdown -->
-                <Border Style="{StaticResource Tile}" Margin="0,12,0,0">
+                <Border Style="{StaticResource Suite.Panel}" Margin="0,14,0,0">
                     <StackPanel>
-                        <TextBlock Text="FUEL PLAN (rough estimate)" Style="{StaticResource TileLabel}" />
-                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                            <TextBlock Style="{StaticResource Body}" Margin="0,0,24,0"><Run Text="Trip: " /><Run Text="{Binding FuelTrip, Mode=OneWay}" /></TextBlock>
-                            <TextBlock Style="{StaticResource Body}" Margin="0,0,24,0"><Run Text="Reserve/contingency: " /><Run Text="{Binding FuelReserve, Mode=OneWay}" /></TextBlock>
-                            <TextBlock Style="{StaticResource Body}"><Run Text="Total: " /><Run Text="{Binding FuelTotal, Mode=OneWay}" /></TextBlock>
+                        <TextBlock Text="FUEL PLAN (ROUGH ESTIMATE)" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,10" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Suite.Body}" Margin="0,0,24,0">
+                                <Run Text="Trip: " /><Run Text="{Binding FuelTrip, Mode=OneWay}"
+                                     Foreground="{StaticResource Suite.Cloud}" FontWeight="SemiBold" />
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource Suite.Body}" Margin="0,0,24,0">
+                                <Run Text="Reserve/contingency: " /><Run Text="{Binding FuelReserve, Mode=OneWay}"
+                                     Foreground="{StaticResource Suite.Cloud}" FontWeight="SemiBold" />
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource Suite.Body}">
+                                <Run Text="Total: " /><Run Text="{Binding FuelTotal, Mode=OneWay}"
+                                     Foreground="{StaticResource Suite.Cloud}" FontWeight="SemiBold" />
+                            </TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- Weather -->
-                <TextBlock Text="Weather" Style="{StaticResource H2}" Margin="0,28,0,12" />
+                <TextBlock Text="WEATHER" Style="{StaticResource Suite.MonoLabel}" Margin="0,24,0,12" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Style="{StaticResource Tile}" Margin="0,0,8,0">
+                    <Border Grid.Column="0" Style="{StaticResource Suite.Panel}" Margin="0,0,7,0">
                         <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <iconPacks:PackIconMaterial Kind="AirplaneTakeoff" Width="15" Height="15" Foreground="{StaticResource Brand.Red}" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding DepIcao}" Style="{StaticResource TileValue}" FontSize="15" Margin="8,0,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <iconPacks:PackIconMaterial Kind="AirplaneTakeoff" Width="15" Height="15"
+                                                            Foreground="{StaticResource Suite.RoyalBright}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DepIcao}" Style="{StaticResource Suite.TileValue}"
+                                           FontSize="15" Margin="9,0,0,0" />
                             </StackPanel>
                             <TextBlock Text="{Binding DepMetar}" Style="{StaticResource MetarText}" />
                         </StackPanel>
                     </Border>
-                    <Border Grid.Column="1" Style="{StaticResource Tile}" Margin="8,0,0,0">
+                    <Border Grid.Column="1" Style="{StaticResource Suite.Panel}" Margin="7,0,0,0">
                         <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <iconPacks:PackIconMaterial Kind="AirplaneLanding" Width="15" Height="15" Foreground="{StaticResource Brand.Red}" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding ArrIcao}" Style="{StaticResource TileValue}" FontSize="15" Margin="8,0,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <iconPacks:PackIconMaterial Kind="AirplaneLanding" Width="15" Height="15"
+                                                            Foreground="{StaticResource Suite.CrimsonBright}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ArrIcao}" Style="{StaticResource Suite.TileValue}"
+                                           FontSize="15" Margin="9,0,0,0" />
                             </StackPanel>
                             <TextBlock Text="{Binding ArrMetar}" Style="{StaticResource MetarText}" />
                         </StackPanel>

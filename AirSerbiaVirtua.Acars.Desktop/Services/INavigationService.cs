@@ -5,11 +5,13 @@ namespace AirSerbiaVirtua.Acars.Desktop.Services;
 public enum NavTarget
 {
     Login,
+    Metars,
     PilotCentre,
     Bookings,
     Briefing,
     Acars,
     Debriefing,
+    Outstation,
     Logbook
 }
 

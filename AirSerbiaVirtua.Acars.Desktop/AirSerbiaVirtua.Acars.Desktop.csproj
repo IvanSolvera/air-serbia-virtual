@@ -35,6 +35,8 @@
   <ItemGroup>
     <Resource Include="Resources\airserbia-logo.png" />
     <Resource Include="Resources\airserbia-hero.png" />
+    <Resource Include="Resources\login-hero.png" />
+    <Resource Include="Fonts\*.ttf" />
   </ItemGroup>
 
 </Project>

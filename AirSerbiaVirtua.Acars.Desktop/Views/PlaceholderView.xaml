@@ -9,30 +9,52 @@
              d:DataContext="{d:DesignInstance vm:PlaceholderViewModel}"
              d:DesignHeight="540" d:DesignWidth="900">
 
-    <Grid Background="White">
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="540" Margin="48">
+    <Grid Margin="36,30,36,36">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <Border Width="64" Height="64"
-                    Background="{StaticResource Brand.Surface}"
-                    BorderBrush="{StaticResource Brand.Border}"
-                    BorderThickness="1"
-                    CornerRadius="32"
-                    HorizontalAlignment="Center">
-                <iconPacks:PackIconMaterial Kind="ToolboxOutline"
-                                            Width="28" Height="28"
-                                            Foreground="{StaticResource Brand.Red}"
+        <!-- phead -->
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Suite.PageTitle}" />
+        </StackPanel>
+
+        <!-- .empty -->
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="540">
+
+            <Border Width="84" Height="84" CornerRadius="42"
+                    BorderBrush="{StaticResource Suite.HairlineStrong}" BorderThickness="1"
+                    HorizontalAlignment="Center" Margin="0,0,0,24">
+                <Border.Background>
+                    <RadialGradientBrush Center="0.5,0.35" GradientOrigin="0.5,0.35" RadiusX="0.8" RadiusY="0.8">
+                        <GradientStop Color="#2E2563D6" Offset="0" />
+                        <GradientStop Color="#66081628" Offset="1" />
+                    </RadialGradientBrush>
+                </Border.Background>
+                <iconPacks:PackIconMaterial Kind="WrenchClockOutline"
+                                            Width="34" Height="34"
+                                            Foreground="{StaticResource Suite.RoyalBright}"
                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
 
             <TextBlock Text="{Binding Title}"
-                       Style="{StaticResource H1}"
-                       HorizontalAlignment="Center"
-                       Margin="0,22,0,12" />
+                       FontFamily="{StaticResource Suite.Display}" FontWeight="ExtraBold" FontSize="26"
+                       Foreground="{StaticResource Suite.Cloud}"
+                       HorizontalAlignment="Center" />
             <TextBlock Text="{Binding Description}"
-                       Style="{StaticResource Body}"
-                       FontSize="14"
+                       Style="{StaticResource Suite.Body}"
+                       FontSize="13.5"
+                       LineHeight="22" LineStackingStrategy="BlockLineHeight"
                        TextWrapping="Wrap"
-                       TextAlignment="Center" />
+                       TextAlignment="Center"
+                       MaxWidth="440"
+                       Margin="0,12,0,0" />
+
+            <Border Style="{StaticResource Suite.BadgeMist}" HorizontalAlignment="Center" Margin="0,18,0,0">
+                <TextBlock Text="PHASE 5 · PLANNED" Style="{StaticResource Suite.BadgeText}"
+                           Foreground="{StaticResource Suite.Mist}" />
+            </Border>
         </StackPanel>
     </Grid>
 </UserControl>

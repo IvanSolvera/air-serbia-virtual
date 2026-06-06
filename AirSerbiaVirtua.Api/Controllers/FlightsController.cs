@@ -2,6 +2,7 @@ using AirSerbiaVirtua.Api.Auth;
 using AirSerbiaVirtua.Api.Data;
 using AirSerbiaVirtua.Api.Dtos;
 using AirSerbiaVirtua.Api.Models;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,12 +10,19 @@ using Microsoft.EntityFrameworkCore;
 namespace AirSerbiaVirtua.Api.Controllers;
 
 [ApiController]
-[Route("api/flights")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/flights")]
 [Authorize]
 public class FlightsController : ControllerBase
 {
     private readonly AppDbContext _db;
-    public FlightsController(AppDbContext db) => _db = db;
+    private readonly ILogger<FlightsController> _logger;
+
+    public FlightsController(AppDbContext db, ILogger<FlightsController> logger)
+    {
+        _db = db;
+        _logger = logger;
+    }
 
     /// <summary>
     /// Starts a flight session: validates the pilot's booking, locks the aircraft
@@ -63,6 +71,10 @@ public class FlightsController : ControllerBase
 
         await _db.SaveChangesAsync();
 
+        _logger.LogInformation(
+            "Flight session {FlightSessionId} started on route {RouteId} with aircraft {Registration}",
+            pirep.Id, route.Id, aircraft.Registration);
+
         return Ok(new FlightStartResponse(pirep.Id, route.Id, aircraft.Id, aircraft.Registration, now));
     }
 
@@ -110,9 +122,18 @@ public class FlightsController : ControllerBase
             var alreadyStored = await _db.PositionLogs
                 .AnyAsync(p => p.PirepId == id && p.ClientReportId == clientReportId);
             if (alreadyStored)
+            {
+                _logger.LogInformation(
+                    "Duplicate POSREP {ClientReportId} for flight session {FlightSessionId} acknowledged",
+                    clientReportId, id);
                 return Ok(new { message = "Already received." });
+            }
             throw;
         }
+
+        _logger.LogInformation(
+            "POSREP stored for flight session {FlightSessionId}: phase {Phase}, alt {AltFt} ft, gs {GsKts} kts",
+            id, report.Phase, report.AltFt, report.GsKts);
 
         return Accepted();
     }

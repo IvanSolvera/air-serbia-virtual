@@ -1,115 +1,303 @@
 <UserControl x:Class="AirSerbiaVirtua.Acars.Desktop.Views.LoginView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:vm="clr-namespace:AirSerbiaVirtua.Acars.Desktop.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:LoginViewModel}"
-             d:DesignHeight="640" d:DesignWidth="960">
+             d:DesignHeight="760" d:DesignWidth="1084">
 
-    <Grid Background="White">
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="380" />
-            <ColumnDefinition Width="1.2*" MinWidth="320" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="372" />
         </Grid.ColumnDefinitions>
 
-        <!-- ============== Left: form ============== -->
-        <Grid Grid.Column="0" Background="White">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="360" Margin="40,0">
+        <!-- ============================== HERO ============================== -->
+        <Grid Grid.Column="0" Background="{StaticResource Suite.Ink950}" ClipToBounds="True">
 
-                <Image Source="pack://application:,,,/Resources/airserbia-logo.png"
-                       Height="72" Width="72"
-                       HorizontalAlignment="Left" />
+            <Image Source="pack://application:,,,/Resources/login-hero.png"
+                   Stretch="UniformToFill" StretchDirection="Both" />
 
-                <TextBlock Text="Pilot login"
-                           Style="{StaticResource H1}"
-                           Margin="0,28,0,6" />
-                <TextBlock Text="Sign in to your Air Serbia Virtua roster"
-                           Style="{StaticResource Body}"
-                           Margin="0,0,0,32" />
-
-                <TextBlock Text="CALLSIGN" Style="{StaticResource Label}" Margin="0,0,0,6" />
-                <TextBox Style="{StaticResource BrandTextBox}"
-                         Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
-                         mah:TextBoxHelper.Watermark="e.g. ASL001"
-                         IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
-                         Margin="0,0,0,18" />
-
-                <TextBlock Text="PASSWORD" Style="{StaticResource Label}" Margin="0,0,0,6" />
-                <PasswordBox x:Name="PasswordBox"
-                             Style="{StaticResource BrandPasswordBox}"
-                             PasswordChanged="PasswordBox_OnPasswordChanged"
-                             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
-                             Margin="0,0,0,24" />
-
-                <Button Content="SIGN IN"
-                        Command="{Binding LoginCommand}"
-                        Style="{StaticResource RedButton}"
-                        HorizontalAlignment="Stretch"
-                        Height="44" />
-
-                <ProgressBar IsIndeterminate="True"
-                             Height="2"
-                             Foreground="{StaticResource Brand.Red}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Margin="0,14,0,0"
-                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}" />
-
-                <Border Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"
-                        Background="#FFF7E9EE"
-                        BorderBrush="{StaticResource Brand.Red}"
-                        BorderThickness="0,0,0,2"
-                        Padding="12,10"
-                        Margin="0,18,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="AlertCircle" Width="16" Height="16"
-                                                    Foreground="{StaticResource Brand.RedDark}" VerticalAlignment="Top" Margin="0,2,0,0" />
-                        <TextBlock Text="{Binding ErrorMessage}"
-                                   FontSize="12.5"
-                                   Foreground="{StaticResource Brand.RedDark}"
-                                   TextWrapping="Wrap"
-                                   Margin="10,0,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <TextBlock FontSize="11" Foreground="{StaticResource Brand.Muted}" Margin="0,36,0,0">
-                    <Run Text="Don't have an account?" />
-                    <Run Text=" Contact ops to register your callsign." />
-                </TextBlock>
-            </StackPanel>
-        </Grid>
-
-        <!-- ============== Right: hero ============== -->
-        <Grid Grid.Column="1">
-            <Image Source="pack://application:,,,/Resources/airserbia-hero.png"
-                   Stretch="UniformToFill" />
-
-            <!-- Subtle dark gradient at the bottom for tagline legibility -->
-            <Border VerticalAlignment="Bottom" Height="180">
+            <!-- Vertical tint: dark top edge, clear middle, deep bottom for text -->
+            <Border>
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="#00000000" Offset="0" />
-                        <GradientStop Color="#CC1A1A1F" Offset="1" />
+                        <GradientStop Color="#8C04101F" Offset="0" />
+                        <GradientStop Color="#1404101F" Offset="0.26" />
+                        <GradientStop Color="#3304101F" Offset="0.62" />
+                        <GradientStop Color="#EB04101F" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+            <!-- Horizontal tint: anchor both edges into the chrome -->
+            <Border>
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#9E06122A" Offset="0" />
+                        <GradientStop Color="#0006122A" Offset="0.34" />
+                        <GradientStop Color="#0006122A" Offset="0.70" />
+                        <GradientStop Color="#8C06122A" Offset="1" />
                     </LinearGradientBrush>
                 </Border.Background>
             </Border>
 
-            <StackPanel VerticalAlignment="Bottom" Margin="32,0,32,28">
-                <TextBlock Text="Fly the flag."
-                           FontFamily="{StaticResource Brand.Serif}"
-                           FontSize="32"
-                           FontStyle="Italic"
-                           Foreground="White" />
-                <TextBlock Text="Your virtual airline — schedule, dispatch, ACARS in one cockpit."
-                           FontFamily="{StaticResource Brand.Sans}"
-                           FontSize="13"
-                           Foreground="#E6FFFFFF"
-                           Margin="0,4,0,0" />
+            <!-- Top chips -->
+            <Grid VerticalAlignment="Top" Margin="24,20,24,0">
+                <Border HorizontalAlignment="Left" CornerRadius="8" Padding="12,7"
+                        Background="#80040C1C" BorderBrush="{StaticResource Suite.Hairline}" BorderThickness="1">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="7" Height="7" Fill="{StaticResource Suite.Green}" VerticalAlignment="Center">
+                            <Ellipse.Effect>
+                                <DropShadowEffect Color="#FF34D399" BlurRadius="10" ShadowDepth="0" Opacity="0.9" />
+                            </Ellipse.Effect>
+                        </Ellipse>
+                        <TextBlock Text="NETWORK ONLINE · LYBE HUB" FontFamily="{StaticResource Suite.Mono}"
+                                   FontSize="10" Foreground="{StaticResource Suite.Cloud}" Margin="9,0,0,0" />
+                    </StackPanel>
+                </Border>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Border CornerRadius="8" Padding="11,7" Background="#80040C1C"
+                            BorderBrush="{StaticResource Suite.Hairline}" BorderThickness="1">
+                        <TextBlock FontFamily="{StaticResource Suite.Mono}" FontSize="10"
+                                   Foreground="{StaticResource Suite.Mist}">
+                            <Run Text="LYBE" /><Run Text=" " /><Run Text="30013KT" FontWeight="SemiBold"
+                                Foreground="{StaticResource Suite.Cloud}" /><Run Text=" CAVOK " /><Run
+                                Text="21/09" FontWeight="SemiBold" Foreground="{StaticResource Suite.Cloud}" />
+                        </TextBlock>
+                    </Border>
+                    <Border CornerRadius="8" Padding="11,7" Background="#80040C1C" Margin="8,0,0,0"
+                            BorderBrush="{StaticResource Suite.Hairline}" BorderThickness="1">
+                        <TextBlock FontFamily="{StaticResource Suite.Mono}" FontSize="10"
+                                   Foreground="{StaticResource Suite.Mist}">
+                            <Run Text="METAR" /><Run Text=" " /><Run Text="1150Z" FontWeight="SemiBold"
+                                Foreground="{StaticResource Suite.Cloud}" />
+                        </TextBlock>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- Bottom block -->
+            <StackPanel VerticalAlignment="Bottom" Margin="34,0,34,28">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,13">
+                    <Rectangle Width="26" Height="1" Fill="{StaticResource Suite.RoyalBright}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="BELGRADE NIKOLA TESLA · HUB OPERATIONS"
+                               FontFamily="{StaticResource Suite.Mono}" FontSize="10.5"
+                               Foreground="#FF9CC2FF" Margin="10,0,0,0" />
+                </StackPanel>
+
+                <TextBlock FontFamily="{StaticResource Suite.Display}" FontWeight="ExtraBold"
+                           FontSize="40" Foreground="{StaticResource Suite.Cloud}"
+                           LineHeight="42" LineStackingStrategy="BlockLineHeight" MaxWidth="560"
+                           HorizontalAlignment="Left" TextWrapping="Wrap">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="#FF040C1C" BlurRadius="22" ShadowDepth="2" Opacity="0.5" />
+                    </TextBlock.Effect>
+                    <Run Text="Welcome back, Captain." /><LineBreak /><Run
+                        Text="Your aircraft is " /><Run Text="ready" Foreground="{StaticResource Suite.CrimsonBright}" /><Run Text="." />
+                </TextBlock>
+
+                <TextBlock Text="Sign in to file your operational flight plan, pull live weather, and connect ACARS for real-time flight tracking across the network."
+                           FontSize="14.5" Foreground="{StaticResource Suite.Mist}" MaxWidth="480"
+                           HorizontalAlignment="Left" TextWrapping="Wrap" LineHeight="22"
+                           LineStackingStrategy="BlockLineHeight" Margin="0,14,0,0" />
+
+                <!-- Stats strip -->
+                <Border HorizontalAlignment="Left" Margin="0,24,0,0" CornerRadius="12"
+                        Background="#73040C1C" BorderBrush="{StaticResource Suite.Hairline}" BorderThickness="1">
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Margin="20,13">
+                            <TextBlock Text="ACTIVE FLIGHTS" Style="{StaticResource Suite.MonoLabel}" FontSize="9.5" />
+                            <TextBlock Text="17" FontFamily="{StaticResource Suite.Display}" FontWeight="Bold"
+                                       FontSize="19" Foreground="{StaticResource Suite.Cloud}" Margin="0,5,0,0" />
+                        </StackPanel>
+                        <Rectangle Width="1" Fill="{StaticResource Suite.Hairline}" />
+                        <StackPanel Margin="20,13">
+                            <TextBlock Text="FLEET READY" Style="{StaticResource Suite.MonoLabel}" FontSize="9.5" />
+                            <TextBlock FontFamily="{StaticResource Suite.Display}" FontWeight="Bold" FontSize="19"
+                                       Foreground="{StaticResource Suite.Cloud}" Margin="0,5,0,0">
+                                <Run Text="24" /><Run Text=" / 28" FontSize="11"
+                                    Foreground="{StaticResource Suite.Mist}" FontWeight="SemiBold" />
+                            </TextBlock>
+                        </StackPanel>
+                        <Rectangle Width="1" Fill="{StaticResource Suite.Hairline}" />
+                        <StackPanel Margin="20,13">
+                            <TextBlock Text="ON-TIME PERF" Style="{StaticResource Suite.MonoLabel}" FontSize="9.5" />
+                            <TextBlock FontFamily="{StaticResource Suite.Display}" FontWeight="Bold" FontSize="19"
+                                       Foreground="{StaticResource Suite.Cloud}" Margin="0,5,0,0">
+                                <Run Text="92" /><Run Text=" %" FontSize="11"
+                                    Foreground="{StaticResource Suite.Mist}" FontWeight="SemiBold" />
+                            </TextBlock>
+                        </StackPanel>
+                        <Rectangle Width="1" Fill="{StaticResource Suite.Hairline}" />
+                        <StackPanel Margin="20,13">
+                            <TextBlock Text="NEXT SLOT" Style="{StaticResource Suite.MonoLabel}" FontSize="9.5" />
+                            <TextBlock FontFamily="{StaticResource Suite.Display}" FontWeight="Bold" FontSize="19"
+                                       Foreground="{StaticResource Suite.Cloud}" Margin="0,5,0,0">
+                                <Run Text="JU380" /><Run Text=" →AMS" FontSize="11"
+                                    Foreground="{StaticResource Suite.Mist}" FontWeight="SemiBold" />
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </Grid>
+
+        <!-- ============================ AUTH PANEL ============================ -->
+        <Border Grid.Column="1" Background="{StaticResource Suite.AuthBg}"
+                BorderBrush="{StaticResource Suite.Hairline}" BorderThickness="1,0,0,0">
+            <Grid Margin="34,34,34,26">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <!-- Head -->
+                    <TextBlock Text="C R E W   A U T H E N T I C A T I O N"
+                               Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,12" />
+                    <TextBlock Text="Sign in to ACARS" FontFamily="{StaticResource Suite.Display}"
+                               FontWeight="ExtraBold" FontSize="25" Foreground="{StaticResource Suite.Cloud}" />
+                    <TextBlock Text="Use your Air Serbia Virtual pilot credentials to access dispatch and flight tracking."
+                               FontSize="13" Foreground="{StaticResource Suite.Mist}" TextWrapping="Wrap"
+                               LineHeight="19.5" LineStackingStrategy="BlockLineHeight" Margin="0,7,0,26" />
+
+                    <!-- ASV ID -->
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock Text="ASV ID" FontSize="11" FontWeight="Bold"
+                                   Foreground="{StaticResource Suite.Mist}" />
+                        <TextBlock Text="e.g. ASL001" FontFamily="{StaticResource Suite.Mono}" FontSize="9.5"
+                                   Foreground="{StaticResource Suite.MistDim}" HorizontalAlignment="Right" />
+                    </Grid>
+                    <Grid Margin="0,0,0,16">
+                        <TextBox Style="{StaticResource Suite.Input}"
+                                 Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
+                                 IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+                        <iconPacks:PackIconMaterial Kind="CardAccountDetailsOutline" Width="16" Height="16"
+                                                    Foreground="{StaticResource Suite.MistDim}"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                    Margin="14,0,0,0" IsHitTestVisible="False" />
+                    </Grid>
+
+                    <!-- Password -->
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock Text="PASSWORD" FontSize="11" FontWeight="Bold"
+                                   Foreground="{StaticResource Suite.Mist}" />
+                        <TextBlock Text="case-sensitive" FontFamily="{StaticResource Suite.Mono}" FontSize="9.5"
+                                   Foreground="{StaticResource Suite.MistDim}" HorizontalAlignment="Right" />
+                    </Grid>
+                    <Grid Margin="0,0,0,10">
+                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource Suite.Password}"
+                                     PasswordChanged="PasswordBox_OnPasswordChanged"
+                                     IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+                        <TextBox x:Name="PasswordPlain" Style="{StaticResource Suite.Input}"
+                                 Padding="42,0,40,0" Visibility="Collapsed"
+                                 FontFamily="{StaticResource Suite.Sans}" FontWeight="SemiBold"
+                                 TextChanged="PasswordPlain_OnTextChanged"
+                                 IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+                        <iconPacks:PackIconMaterial Kind="LockOutline" Width="16" Height="16"
+                                                    Foreground="{StaticResource Suite.MistDim}"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                    Margin="14,0,0,0" IsHitTestVisible="False" />
+                        <Button x:Name="RevealButton" Style="{StaticResource Suite.IconBtn}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"
+                                Click="Reveal_OnClick" ToolTip="Show password">
+                            <iconPacks:PackIconMaterial x:Name="RevealIcon" Kind="EyeOutline" Width="16" Height="16" />
+                        </Button>
+                    </Grid>
+
+                    <!-- Toggles -->
+                    <Grid Margin="0,4,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Remember me" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Suite.Cloud}" />
+                            <TextBlock Text="Keep this ID signed in on this workstation" FontSize="11"
+                                       Foreground="{StaticResource Suite.MistDim}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <ToggleButton Style="{StaticResource Suite.Switch}" HorizontalAlignment="Right"
+                                      VerticalAlignment="Center" IsChecked="{Binding RememberMe}" />
+                    </Grid>
+                    <Grid Margin="0,14,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Auto Login" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Suite.Cloud}" />
+                            <TextBlock Text="Connect ACARS automatically on launch" FontSize="11"
+                                       Foreground="{StaticResource Suite.MistDim}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <ToggleButton Style="{StaticResource Suite.Switch}" HorizontalAlignment="Right"
+                                      VerticalAlignment="Center" IsChecked="{Binding AutoLogin}" />
+                    </Grid>
+
+                    <!-- Sign in -->
+                    <Button Style="{StaticResource Suite.SignIn}" Command="{Binding LoginCommand}"
+                            Margin="0,18,0,0" IsDefault="True">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding IsBusy, Converter={StaticResource InverseBoolToVisConverter}}">
+                                <iconPacks:PackIconMaterial Kind="LoginVariant" Width="17" Height="17"
+                                                            VerticalAlignment="Center" />
+                                <TextBlock Text="Sign in &amp; connect" Margin="10,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}">
+                                <iconPacks:PackIconMaterial Kind="Loading" Width="17" Height="17"
+                                                            VerticalAlignment="Center" Spin="True" />
+                                <TextBlock Text="Connecting to ACARS…" Margin="10,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
+
+                    <!-- Error -->
+                    <Border Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"
+                            Background="#26D8203F" BorderBrush="{StaticResource Suite.Crimson}"
+                            BorderThickness="1" CornerRadius="9" Padding="12,10" Margin="0,14,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="AlertCircleOutline" Width="15" Height="15"
+                                                        Foreground="{StaticResource Suite.CrimsonBright}"
+                                                        VerticalAlignment="Top" Margin="0,1,0,0" />
+                            <TextBlock Text="{Binding ErrorMessage}" FontSize="12"
+                                       Foreground="{StaticResource Suite.Cloud}" TextWrapping="Wrap"
+                                       MaxWidth="250" Margin="9,0,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Links -->
+                    <Grid Margin="0,16,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="InformationOutline" Width="13" Height="13"
+                                                        Foreground="{StaticResource Suite.Mist}"
+                                                        VerticalAlignment="Center" />
+                            <TextBlock Text="Forgot password?" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource Suite.Mist}" Margin="6,0,0,0"
+                                       ToolTip="Contact operations to reset your password." />
+                        </StackPanel>
+                        <TextBlock Text="Request crew account →" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource Suite.Mist}" HorizontalAlignment="Right"
+                                   ToolTip="Registration is handled by Air Serbia Virtual operations." />
+                    </Grid>
+                </StackPanel>
+
+                <!-- Footer secure chip -->
+                <Border Grid.Row="1" Background="#80040C1C" BorderBrush="{StaticResource Suite.Hairline}"
+                        BorderThickness="1" CornerRadius="10" Padding="14,12" Margin="0,22,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ShieldCheckOutline" Width="16" Height="16"
+                                                    Foreground="{StaticResource Suite.Green}"
+                                                    VerticalAlignment="Center" />
+                        <StackPanel Margin="10,0,0,0">
+                            <TextBlock Text="Encrypted crew session" FontSize="11.5" FontWeight="Bold"
+                                       Foreground="{StaticResource Suite.Cloud}" />
+                            <TextBlock FontFamily="{StaticResource Suite.Mono}" FontSize="10.5"
+                                       Foreground="{StaticResource Suite.MistDim}">
+                                <Run Text="JWT · " /><Run Text="{Binding ApiHostText, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

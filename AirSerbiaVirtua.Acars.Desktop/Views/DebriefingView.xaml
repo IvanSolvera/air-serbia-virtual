@@ -7,109 +7,152 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:DebriefingViewModel}"
-             d:DesignHeight="700" d:DesignWidth="980"
-             Background="White">
-
-    <UserControl.Resources>
-        <Style x:Key="Tile" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="{StaticResource Brand.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="18,16" />
-        </Style>
-        <Style x:Key="TileLabel" TargetType="TextBlock" BasedOn="{StaticResource Label}">
-            <Setter Property="Margin" Value="0,0,0,6" />
-        </Style>
-        <Style x:Key="TileValue" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource Brand.Sans}" />
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource Brand.Dark}" />
-        </Style>
-    </UserControl.Resources>
+             d:DesignHeight="700" d:DesignWidth="980">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="40,36">
+        <StackPanel Margin="36,30,36,36">
 
-            <Grid>
+            <!-- phead -->
+            <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Debriefing" Style="{StaticResource H1}" />
-                    <TextBlock Text="Analysis of your most recent flight." Style="{StaticResource Body}" Margin="0,6,0,0" />
+                    <TextBlock Text="Debriefing" Style="{StaticResource Suite.PageTitle}" />
+                    <TextBlock Text="Analysis of your most recent flight." Style="{StaticResource Suite.PageSub}" />
                 </StackPanel>
-                <Button Grid.Column="1" Command="{Binding RefreshCommand}" Style="{StaticResource RedButton}" Padding="14,8" VerticalAlignment="Top">
+                <Button Grid.Column="1" Command="{Binding RefreshCommand}"
+                        Style="{StaticResource Suite.BtnCrimson}" VerticalAlignment="Top">
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Refresh" Width="14" Height="14" VerticalAlignment="Center" />
+                        <iconPacks:PackIconMaterial Kind="Refresh" Width="15" Height="15" VerticalAlignment="Center" />
                         <TextBlock Text="Refresh" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </Grid>
 
-            <ProgressBar IsIndeterminate="True" Height="2" Foreground="{StaticResource Brand.Red}"
-                         Background="Transparent" BorderThickness="0" Margin="0,16,0,0"
+            <ProgressBar IsIndeterminate="True" Height="2" Foreground="{StaticResource Suite.RoyalBright}"
+                         Background="Transparent" BorderThickness="0" Margin="0,0,0,12"
                          Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}" />
 
-            <Border Background="{StaticResource Brand.Surface}" BorderBrush="{StaticResource Brand.Border}" BorderThickness="1"
-                    CornerRadius="6" Padding="16,14" Margin="0,18,0,0"
+            <Border Style="{StaticResource Suite.Banner}" Margin="0,0,0,18"
                     Visibility="{Binding StatusMessage, Converter={StaticResource NullToCollapsedConverter}}">
-                <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Body}" />
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="8" Height="8" Fill="{StaticResource Suite.Amber}" VerticalAlignment="Center">
+                        <Ellipse.Effect>
+                            <DropShadowEffect Color="#FFF5B545" BlurRadius="9" ShadowDepth="0" Opacity="0.8" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="13" Foreground="{StaticResource Suite.Mist}"
+                               Margin="14,0,0,0" VerticalAlignment="Center" TextWrapping="Wrap" />
+                </StackPanel>
             </Border>
 
             <StackPanel Visibility="{Binding HasPirep, Converter={StaticResource BoolToVisConverter}}">
 
                 <!-- Hero: flight + score -->
-                <Border Background="{StaticResource Brand.Dark}" CornerRadius="8" Padding="28" Margin="0,22,0,0">
+                <Border CornerRadius="16" Padding="28,26" Margin="0,0,0,18" ClipToBounds="True"
+                        BorderBrush="{StaticResource Suite.HairlineStrong}" BorderThickness="1">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#FF0A1020" Offset="0" />
+                            <GradientStop Color="#FF0C1C3A" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
                     <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding FlightNumber}" Foreground="White" FontFamily="{StaticResource Brand.Serif}" FontSize="28" />
-                            <TextBlock Text="{Binding LegLabel}" Foreground="#E6FFFFFF" FontSize="15" Margin="0,2,0,0" />
-                            <TextBlock Style="{StaticResource Body}" Foreground="{StaticResource Brand.MutedOnDark}" Margin="0,8,0,0">
-                                <Run Text="{Binding Aircraft, Mode=OneWay}" /><Run Text="   ·   " /><Run Text="{Binding DateLabel, Mode=OneWay}" />
-                            </TextBlock>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
-                            <TextBlock Text="SCORE" Foreground="{StaticResource Brand.MutedOnDark}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <TextBlock Text="{Binding Score}" Foreground="White" FontFamily="{StaticResource Brand.Serif}" FontSize="52" />
-                                <TextBlock Text="/100" Foreground="{StaticResource Brand.MutedOnDark}" FontSize="18" VerticalAlignment="Bottom" Margin="4,0,0,10" />
+                        <!-- crimson radial glow, top-right -->
+                        <Border IsHitTestVisible="False" Margin="-28,-26">
+                            <Border.Background>
+                                <RadialGradientBrush Center="0.95,0" GradientOrigin="0.95,0" RadiusX="0.45" RadiusY="0.9">
+                                    <GradientStop Color="#29D8203F" Offset="0" />
+                                    <GradientStop Color="#00D8203F" Offset="1" />
+                                </RadialGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding FlightNumber}" Foreground="{StaticResource Suite.Cloud}"
+                                           FontFamily="{StaticResource Suite.Display}" FontWeight="ExtraBold" FontSize="30" />
+                                <TextBlock Text="{Binding LegLabel}" Foreground="#FFCFE0FF"
+                                           FontFamily="{StaticResource Suite.Mono}" FontSize="14" Margin="0,6,0,0" />
+                                <TextBlock FontFamily="{StaticResource Suite.Mono}" FontSize="11.5"
+                                           Foreground="{StaticResource Suite.MistDim}" Margin="0,14,0,0">
+                                    <Run Text="{Binding Aircraft, Mode=OneWay}" /><Run Text="   ·   " /><Run Text="{Binding DateLabel, Mode=OneWay}" />
+                                </TextBlock>
                             </StackPanel>
-                            <TextBlock Text="{Binding ScoreGrade}" Foreground="{StaticResource Brand.Red}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                        </StackPanel>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right">
+                                <TextBlock Text="SCORE" Style="{StaticResource Suite.MonoLabel}" FontSize="9.5"
+                                           HorizontalAlignment="Right" Margin="0,0,0,6" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding Score}" Foreground="{StaticResource Suite.Cloud}"
+                                               FontFamily="{StaticResource Suite.Display}" FontWeight="ExtraBold" FontSize="54" />
+                                    <TextBlock Text="/100" Foreground="{StaticResource Suite.Mist}" FontSize="18"
+                                               FontWeight="SemiBold" VerticalAlignment="Bottom" Margin="4,0,0,10" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding ScoreGrade}" Foreground="{StaticResource Suite.CrimsonBright}"
+                                           FontFamily="{StaticResource Suite.Mono}" FontSize="12"
+                                           HorizontalAlignment="Right" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Grid>
                     </Grid>
                 </Border>
 
-                <!-- Landing verdict -->
-                <Border Style="{StaticResource Tile}" Margin="0,12,0,0">
+                <!-- Landing strip -->
+                <Border Style="{StaticResource Suite.Panel}" Margin="0,0,0,18">
                     <StackPanel>
-                        <TextBlock Text="LANDING" Style="{StaticResource TileLabel}" />
+                        <TextBlock Text="LANDING" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,10" />
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding LandingRate}" Style="{StaticResource TileValue}" />
-                            <TextBlock Text="{Binding LandingVerdict}" Style="{StaticResource Body}" VerticalAlignment="Center" Margin="14,0,0,0" />
+                            <TextBlock Text="{Binding LandingRate}" FontFamily="{StaticResource Suite.Mono}"
+                                       FontSize="15" Foreground="{StaticResource Suite.Cloud}" Margin="0,0,30,0" />
+                            <TextBlock Text="{Binding LandingVerdict}" FontFamily="{StaticResource Suite.Mono}"
+                                       FontSize="15" Foreground="{StaticResource Suite.MistDim}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <!-- Metrics -->
-                <UniformGrid Columns="4" Margin="0,12,0,0">
-                    <Border Style="{StaticResource Tile}" Margin="0,0,12,0">
-                        <StackPanel><TextBlock Text="BLOCK TIME" Style="{StaticResource TileLabel}" /><TextBlock Text="{Binding BlockTime}" Style="{StaticResource TileValue}" /></StackPanel>
+                <!-- Metric tiles -->
+                <UniformGrid Columns="4">
+                    <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="BLOCK TIME" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,9" />
+                            <TextBlock Text="{Binding BlockTime}" Style="{StaticResource Suite.TileValue}" />
+                        </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource Tile}" Margin="0,0,12,0">
-                        <StackPanel><TextBlock Text="AIR TIME" Style="{StaticResource TileLabel}" /><TextBlock Text="{Binding AirTime}" Style="{StaticResource TileValue}" /></StackPanel>
+                    <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="AIR TIME" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,9" />
+                            <TextBlock Text="{Binding AirTime}" Style="{StaticResource Suite.TileValue}" />
+                        </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource Tile}" Margin="0,0,12,0">
-                        <StackPanel><TextBlock Text="FUEL USED" Style="{StaticResource TileLabel}" /><TextBlock Text="{Binding FuelUsed}" Style="{StaticResource TileValue}" /></StackPanel>
+                    <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,0">
+                        <StackPanel>
+                            <TextBlock Text="FUEL USED" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,9" />
+                            <TextBlock Text="{Binding FuelUsed}" Style="{StaticResource Suite.TileValue}" />
+                        </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource Tile}">
-                        <StackPanel><TextBlock Text="STATUS" Style="{StaticResource TileLabel}" /><TextBlock Text="{Binding StatusLabel}" Style="{StaticResource TileValue}" /></StackPanel>
+                    <Border Style="{StaticResource Suite.Tile}">
+                        <StackPanel>
+                            <TextBlock Text="STATUS" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,9" />
+                            <TextBlock Text="{Binding StatusLabel}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Suite.TileValue}">
+                                        <Setter Property="Foreground" Value="{StaticResource Suite.Amber}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding StatusLabel}" Value="Accepted">
+                                                <Setter Property="Foreground" Value="{StaticResource Suite.Green}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding StatusLabel}" Value="Rejected">
+                                                <Setter Property="Foreground" Value="{StaticResource Suite.CrimsonBright}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
                     </Border>
                 </UniformGrid>
             </StackPanel>

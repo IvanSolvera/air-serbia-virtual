@@ -6,9 +6,10 @@ using System.Text.Json;
 namespace AirSerbiaVirtua.Acars.Core;
 
 /// <summary>
-/// Typed HTTPS client for the Air Serbia Virtua API. Holds the bearer + refresh
-/// tokens, attaches the access token to every authenticated request, and
-/// automatically refreshes (once per call) when the server returns 401.
+/// Typed HTTPS client for the Air Serbia Virtua API (v1 — all endpoints live
+/// under api/v1/). Holds the bearer + refresh tokens, attaches the access token
+/// to every authenticated request, and automatically refreshes (once per call)
+/// when the server returns 401.
 ///
 /// PoC note: tokens are held in memory only. For the WPF/hybrid port, persist
 /// the refresh token via the Windows Credential Manager / DPAPI rather than
@@ -27,6 +28,9 @@ public sealed class ApiService : IDisposable
     public PilotProfile? Pilot { get; private set; }
     public bool IsAuthenticated => _accessToken is not null && _refreshToken is not null;
 
+    /// <summary>Host name of the configured API endpoint (for display in the UI).</summary>
+    public string BaseHost => _http.BaseAddress?.Host ?? "unknown";
+
     /// <param name="baseUrl">e.g. https://localhost:7001/</param>
     /// <param name="handler">Optional handler (inject for tests or cert pinning).</param>
     public ApiService(string baseUrl, HttpMessageHandler? handler = null)
@@ -39,7 +43,7 @@ public sealed class ApiService : IDisposable
     // ---- Auth ---------------------------------------------------------------
     public async Task<LoginResponse> LoginAsync(string callsign, string password, CancellationToken ct = default)
     {
-        using var resp = await _http.PostAsJsonAsync("api/auth/login", new LoginRequest(callsign, password), Json, ct);
+        using var resp = await _http.PostAsJsonAsync("api/v1/auth/login", new LoginRequest(callsign, password), Json, ct);
         await EnsureSuccess(resp, "Login");
         var result = (await resp.Content.ReadFromJsonAsync<LoginResponse>(Json, ct))!;
         StoreTokens(result.Tokens);
@@ -57,7 +61,7 @@ public sealed class ApiService : IDisposable
 
         try
         {
-            using var resp = await _http.PostAsJsonAsync("api/auth/refresh", new RefreshRequest(_refreshToken), Json, ct);
+            using var resp = await _http.PostAsJsonAsync("api/v1/auth/refresh", new RefreshRequest(_refreshToken), Json, ct);
             if (!resp.IsSuccessStatusCode)
             {
                 ClearTokens();
@@ -81,7 +85,7 @@ public sealed class ApiService : IDisposable
         try
         {
             using var _ = await SendWithAuthRetryAsync(
-                () => _http.PostAsJsonAsync("api/auth/logout", new RefreshRequest(_refreshToken!), Json, ct),
+                () => _http.PostAsJsonAsync("api/v1/auth/logout", new RefreshRequest(_refreshToken!), Json, ct),
                 ct);
         }
         catch { /* best-effort */ }
@@ -92,11 +96,33 @@ public sealed class ApiService : IDisposable
         }
     }
 
+    // ---- Health / ping --------------------------------------------------------
+    /// <summary>
+    /// Round-trip latency to the API's anonymous /health endpoint in ms, or null
+    /// when unreachable. Drives the status-bar API LED + PING cell.
+    /// </summary>
+    public async Task<long?> PingAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(4));
+            using var resp = await _http.GetAsync("health", timeout.Token);
+            sw.Stop();
+            return resp.IsSuccessStatusCode ? sw.ElapsedMilliseconds : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     // ---- Airport sync -------------------------------------------------------
     public async Task<AirportSyncResponse> SyncAirportsAsync(int sinceRevision, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(
-            () => _http.GetAsync($"api/sync/airports?since={sinceRevision}", ct), ct);
+            () => _http.GetAsync($"api/v1/sync/airports?since={sinceRevision}", ct), ct);
         await EnsureSuccess(resp, "Airport sync");
         return (await resp.Content.ReadFromJsonAsync<AirportSyncResponse>(Json, ct))!;
     }
@@ -105,7 +131,7 @@ public sealed class ApiService : IDisposable
     public async Task<FlightStartResponse> StartFlightAsync(int routeId, int aircraftId, DateOnly date, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(
-            () => _http.PostAsJsonAsync("api/flights/start", new FlightStartRequest(routeId, aircraftId, date), Json, ct),
+            () => _http.PostAsJsonAsync("api/v1/flights/start", new FlightStartRequest(routeId, aircraftId, date), Json, ct),
             ct);
         await EnsureSuccess(resp, "Flight start");
         return (await resp.Content.ReadFromJsonAsync<FlightStartResponse>(Json, ct))!;
@@ -115,7 +141,7 @@ public sealed class ApiService : IDisposable
     public async Task PushPositionAsync(int flightSessionId, PositionReport report, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(
-            () => _http.PostAsJsonAsync($"api/flights/{flightSessionId}/position", report, Json, ct),
+            () => _http.PostAsJsonAsync($"api/v1/flights/{flightSessionId}/position", report, Json, ct),
             ct);
         await EnsureSuccess(resp, "POSREP");
     }
@@ -127,7 +153,7 @@ public sealed class ApiService : IDisposable
     // ---- Routes -------------------------------------------------------------
     public async Task<List<ApiRoute>> GetRoutesAsync(string? hubIcao = null, CancellationToken ct = default)
     {
-        var url = string.IsNullOrWhiteSpace(hubIcao) ? "api/routes" : $"api/routes?hub={Uri.EscapeDataString(hubIcao)}";
+        var url = string.IsNullOrWhiteSpace(hubIcao) ? "api/v1/routes" : $"api/v1/routes?hub={Uri.EscapeDataString(hubIcao)}";
         using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync(url, ct), ct);
         await EnsureSuccess(resp, "Routes list");
         return (await resp.Content.ReadFromJsonAsync<List<ApiRoute>>(Json, ct)) ?? new();
@@ -136,7 +162,7 @@ public sealed class ApiService : IDisposable
     // ---- Bookings -----------------------------------------------------------
     public async Task<List<ApiBooking>> GetMyBookingsAsync(CancellationToken ct = default)
     {
-        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync("api/bookings/mine", ct), ct);
+        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync("api/v1/bookings/mine", ct), ct);
         await EnsureSuccess(resp, "Bookings (mine)");
         return (await resp.Content.ReadFromJsonAsync<List<ApiBooking>>(Json, ct)) ?? new();
     }
@@ -144,7 +170,7 @@ public sealed class ApiService : IDisposable
     public async Task<ApiBooking> CreateBookingAsync(int routeId, DateOnly date, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(
-            () => _http.PostAsJsonAsync("api/bookings", new CreateBookingRequest(routeId, date), Json, ct),
+            () => _http.PostAsJsonAsync("api/v1/bookings", new CreateBookingRequest(routeId, date), Json, ct),
             ct);
         await EnsureSuccess(resp, "Create booking");
         return (await resp.Content.ReadFromJsonAsync<ApiBooking>(Json, ct))!;
@@ -153,7 +179,7 @@ public sealed class ApiService : IDisposable
     public async Task CancelBookingAsync(int bookingId, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(
-            () => _http.DeleteAsync($"api/bookings/{bookingId}", ct),
+            () => _http.DeleteAsync($"api/v1/bookings/{bookingId}", ct),
             ct);
         await EnsureSuccess(resp, "Cancel booking");
     }
@@ -164,7 +190,7 @@ public sealed class ApiService : IDisposable
         var qs = new List<string>();
         if (!string.IsNullOrWhiteSpace(type))   qs.Add($"type={Uri.EscapeDataString(type)}");
         if (!string.IsNullOrWhiteSpace(status)) qs.Add($"status={Uri.EscapeDataString(status)}");
-        var url = qs.Count == 0 ? "api/aircraft" : $"api/aircraft?{string.Join("&", qs)}";
+        var url = qs.Count == 0 ? "api/v1/aircraft" : $"api/v1/aircraft?{string.Join("&", qs)}";
 
         using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync(url, ct), ct);
         await EnsureSuccess(resp, "Aircraft list");
@@ -175,7 +201,7 @@ public sealed class ApiService : IDisposable
     public async Task<PirepResult> SubmitPirepAsync(PirepSubmitRequest request, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(
-            () => _http.PostAsJsonAsync("api/pireps", request, Json, ct),
+            () => _http.PostAsJsonAsync("api/v1/pireps", request, Json, ct),
             ct);
         await EnsureSuccess(resp, "PIREP submit");
         return (await resp.Content.ReadFromJsonAsync<PirepResult>(Json, ct))!;
@@ -184,7 +210,7 @@ public sealed class ApiService : IDisposable
     /// <summary>Returns the signed-in pilot's PIREPs (newest first), optionally filtered by status name.</summary>
     public async Task<List<PirepListItem>> GetMyPirepsAsync(string? status = null, CancellationToken ct = default)
     {
-        var url = string.IsNullOrWhiteSpace(status) ? "api/pireps/mine" : $"api/pireps/mine?status={Uri.EscapeDataString(status)}";
+        var url = string.IsNullOrWhiteSpace(status) ? "api/v1/pireps/mine" : $"api/v1/pireps/mine?status={Uri.EscapeDataString(status)}";
         using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync(url, ct), ct);
         await EnsureSuccess(resp, "Logbook");
         return (await resp.Content.ReadFromJsonAsync<List<PirepListItem>>(Json, ct)) ?? new();
@@ -193,7 +219,7 @@ public sealed class ApiService : IDisposable
     // ---- Route detail -------------------------------------------------------
     public async Task<ApiRoute> GetRouteAsync(int id, CancellationToken ct = default)
     {
-        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync($"api/routes/{id}", ct), ct);
+        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync($"api/v1/routes/{id}", ct), ct);
         await EnsureSuccess(resp, "Route");
         return (await resp.Content.ReadFromJsonAsync<ApiRoute>(Json, ct))!;
     }
@@ -203,7 +229,7 @@ public sealed class ApiService : IDisposable
     {
         var ids = string.Join(",", icaos);
         using var resp = await SendWithAuthRetryAsync(
-            () => _http.GetAsync($"api/metar?icaos={Uri.EscapeDataString(ids)}", ct), ct);
+            () => _http.GetAsync($"api/v1/metar?icaos={Uri.EscapeDataString(ids)}", ct), ct);
         await EnsureSuccess(resp, "METAR");
         return (await resp.Content.ReadFromJsonAsync<List<MetarInfo>>(Json, ct)) ?? new();
     }
@@ -212,7 +238,7 @@ public sealed class ApiService : IDisposable
     public async Task ChangePasswordAsync(string currentPassword, string newPassword, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(
-            () => _http.PostAsJsonAsync("api/auth/change-password",
+            () => _http.PostAsJsonAsync("api/v1/auth/change-password",
                 new ChangePasswordRequest(currentPassword, newPassword), Json, ct),
             ct);
         await EnsureSuccess(resp, "Change password");

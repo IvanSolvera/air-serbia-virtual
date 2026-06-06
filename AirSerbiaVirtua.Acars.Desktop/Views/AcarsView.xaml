@@ -7,262 +7,340 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:AcarsViewModel}"
-             d:DesignHeight="640" d:DesignWidth="960"
-             Background="White">
+             d:DesignHeight="640" d:DesignWidth="960">
 
     <UserControl.Resources>
-        <!-- Telemetry tile -->
-        <Style x:Key="TileBorder" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource Brand.Surface}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Brand.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Padding" Value="18,14" />
+        <!-- .tele value -->
+        <Style x:Key="TeleValue" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+            <Setter Property="Margin" Value="0,12,0,0" />
+        </Style>
+        <!-- .kv row -->
+        <Style x:Key="KvLabel" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="KvValue" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+        <Style x:Key="KvRow" TargetType="Border">
+            <Setter Property="BorderBrush" Value="{StaticResource Suite.Hairline}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="2,10" />
         </Style>
     </UserControl.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="36,30,36,36">
 
-        <!-- ============== Header ============== -->
-        <Border Grid.Row="0" Padding="36,28,36,20" BorderBrush="{StaticResource Brand.Border}" BorderThickness="0,0,0,1">
-            <StackPanel>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="ACARS Live" Style="{StaticResource H1}" />
-                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                            <TextBlock Text="FLIGHT" Style="{StaticResource Label}" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding FlightNumber}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="6,0,18,0" VerticalAlignment="Center" />
-                            <TextBlock Text="REG" Style="{StaticResource Label}" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding TailNumber}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="6,0,0,0" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </StackPanel>
-
-                    <Button Grid.Column="1"
-                            Style="{StaticResource RedButton}"
-                            Content="Submit PIREP"
-                            Command="{Binding SubmitPirepCommand}"
-                            VerticalAlignment="Center"
-                            MinWidth="150" Margin="0,0,12,0"
-                            Visibility="{Binding HasActiveSession, Converter={StaticResource BoolToVisConverter}}" />
-
-                    <Button Grid.Column="2"
-                            Style="{StaticResource RedButton}"
-                            Content="{Binding ConnectionButtonText}"
-                            Command="{Binding ToggleConnectionCommand}"
-                            VerticalAlignment="Center"
-                            MinWidth="170" />
-                </Grid>
-
-                <!-- Session strip -->
-                <Border Margin="0,18,0,0"
-                        Padding="14,10"
-                        BorderThickness="0,0,0,2">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="{StaticResource Brand.Surface}" />
-                            <Setter Property="BorderBrush" Value="{StaticResource Brand.Border}" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasActiveSession}" Value="True">
-                                    <Setter Property="BorderBrush" Value="{StaticResource Brand.Red}" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{Binding SessionHeaderText}" FontSize="12.5" Foreground="{StaticResource Brand.Dark}" VerticalAlignment="Center" />
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="LAST POSREP" Style="{StaticResource Label}" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding LastPosRepText}" FontFamily="{StaticResource Brand.Sans}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding QueueStatusText}" FontFamily="{StaticResource Brand.Sans}" FontSize="11" Foreground="{StaticResource Brand.Dark}" Opacity="0.7" Margin="14,0,0,0" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <TextBlock Text="{Binding SubmitErrorMessage}"
-                           FontSize="12"
-                           Foreground="{StaticResource Brand.Red}"
-                           Margin="0,10,0,0"
-                           Visibility="{Binding SubmitErrorMessage, Converter={StaticResource NullToCollapsedConverter}}" />
-            </StackPanel>
-        </Border>
-
-        <!-- ============== Main area ============== -->
-        <Grid Grid.Row="1" Margin="36,24,36,28">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="280" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- =========== Left: phase + milestones + metrics =========== -->
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="FLIGHT PHASE" Style="{StaticResource Label}" Margin="0,0,0,10" />
-                <ItemsControl ItemsSource="{Binding Phases}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="0,3">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Ellipse Grid.Column="0" Width="9" Height="9" VerticalAlignment="Center">
-                                    <Ellipse.Style>
-                                        <Style TargetType="Ellipse">
-                                            <Setter Property="Fill" Value="{StaticResource Brand.Border}" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsCurrent}" Value="True">
-                                                    <Setter Property="Fill" Value="{StaticResource Brand.Red}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Ellipse.Style>
-                                </Ellipse>
-                                <TextBlock Grid.Column="1" Text="{Binding Label}" Margin="14,0,0,0" FontSize="13" VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="{StaticResource Brand.Muted}" />
-                                            <Setter Property="FontWeight" Value="Regular" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsCurrent}" Value="True">
-                                                    <Setter Property="Foreground" Value="{StaticResource Brand.Dark}" />
-                                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <TextBlock Text="MILESTONES" Style="{StaticResource Label}" Margin="0,28,0,10" />
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Off block"  Style="{StaticResource Body}" Margin="0,3" />
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding OffBlockText}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="0,3" />
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Takeoff"   Style="{StaticResource Body}" Margin="0,3" />
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TakeoffText}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="0,3" />
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Landing"   Style="{StaticResource Body}" Margin="0,3" />
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding LandingText}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="0,3" />
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="On block"  Style="{StaticResource Body}" Margin="0,3" />
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding OnBlockText}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="0,3" />
-                </Grid>
-
-                <TextBlock Text="METRICS" Style="{StaticResource Label}" Margin="0,28,0,10" />
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Block time" Style="{StaticResource Body}" Margin="0,3" />
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding BlockTimeText}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="0,3" />
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Air time"   Style="{StaticResource Body}" Margin="0,3" />
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AirTimeText}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="0,3" />
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Fuel used"  Style="{StaticResource Body}" Margin="0,3" />
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FuelUsedText}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="0,3" />
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Landing rate" Style="{StaticResource Body}" Margin="0,3" />
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LandingRateText}" FontFamily="{StaticResource Brand.Sans}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Brand.Red}" Margin="0,3" />
-                </Grid>
-            </StackPanel>
-
-            <!-- =========== Right: telemetry tiles =========== -->
-            <Grid Grid.Column="1" Margin="36,0,0,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+            <!-- phead -->
+            <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="ACARS Live" Style="{StaticResource Suite.PageTitle}" />
+                    <TextBlock FontFamily="{StaticResource Suite.Mono}" FontSize="12"
+                               Foreground="{StaticResource Suite.MistDim}" Margin="0,9,0,0">
+                        <Run Text="FLIGHT " /><Run Text="{Binding FlightNumber, Mode=OneWay}"
+                            Foreground="{StaticResource Suite.Mist}" FontWeight="SemiBold" /><Run
+                            Text="   ·   REG " /><Run Text="{Binding TailNumber, Mode=OneWay}"
+                            Foreground="{StaticResource Suite.Mist}" FontWeight="SemiBold" />
+                    </TextBlock>
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Style="{StaticResource Suite.BtnPrimary}"
+                        Command="{Binding SubmitPirepCommand}"
+                        VerticalAlignment="Top" Margin="0,0,10,0"
+                        Visibility="{Binding HasActiveSession, Converter={StaticResource BoolToVisConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="SendOutline" Width="15" Height="15" VerticalAlignment="Center" />
+                        <TextBlock Text="Submit PIREP" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="2"
+                        Style="{StaticResource Suite.BtnCrimson}"
+                        Command="{Binding ToggleConnectionCommand}"
+                        VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="RadioTower" Width="15" Height="15" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding ConnectionButtonText}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Session banner -->
+            <Border Margin="0,0,0,24">
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource Suite.Banner}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasActiveSession}" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource Suite.RoyalBright}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{StaticResource Suite.Amber}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasActiveSession}" Value="True">
+                                        <Setter Property="Fill" Value="{StaticResource Suite.Green}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                        <Ellipse.Effect>
+                            <DropShadowEffect Color="#FFF5B545" BlurRadius="9" ShadowDepth="0" Opacity="0.8" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <TextBlock Grid.Column="1" Text="{Binding SessionHeaderText}" FontSize="13"
+                               Foreground="{StaticResource Suite.Mist}" Margin="14,0,0,0" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="2" FontFamily="{StaticResource Suite.Mono}" FontSize="11"
+                               Foreground="{StaticResource Suite.MistDim}" VerticalAlignment="Center">
+                        <Run Text="LAST POSREP " /><Run Text="{Binding LastPosRepText, Mode=OneWay}"
+                            Foreground="{StaticResource Suite.Mist}" FontWeight="SemiBold" /><Run
+                            Text="   " /><Run Text="{Binding QueueStatusText, Mode=OneWay}" />
+                    </TextBlock>
+                </Grid>
+            </Border>
+
+            <TextBlock Text="{Binding SubmitErrorMessage}" FontSize="12"
+                       Foreground="{StaticResource Suite.CrimsonBright}" Margin="0,-12,0,16"
+                       Visibility="{Binding SubmitErrorMessage, Converter={StaticResource NullToCollapsedConverter}}" />
+
+            <!-- live-grid: phases | telemetry -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="230" />
+                    <ColumnDefinition Width="26" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="TELEMETRY" Style="{StaticResource Label}" Margin="0,0,0,14" />
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="FLIGHT PHASE" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,12" />
+                    <ItemsControl ItemsSource="{Binding Phases}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse Grid.Column="0" Width="9" Height="9" VerticalAlignment="Center">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill" Value="#409DB1D2" />
+                                                <Setter Property="Effect" Value="{x:Null}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDone}" Value="True">
+                                                        <Setter Property="Fill" Value="{StaticResource Suite.RoyalBright}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                        <Setter Property="Fill" Value="{StaticResource Suite.Crimson}" />
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#FFD8203F" BlurRadius="9"
+                                                                                  ShadowDepth="0" Opacity="0.9" />
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <TextBlock Grid.Column="1" Text="{Binding Label}" Margin="11,8" FontSize="13.5"
+                                               FontWeight="SemiBold" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource Suite.MistDim}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDone}" Value="True">
+                                                        <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                        <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
 
-                <!-- Row 1 -->
-                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource TileBorder}" Margin="0,0,8,8">
-                    <StackPanel>
-                        <TextBlock Text="POSITION" Style="{StaticResource Label}" />
-                        <TextBlock Text="{Binding LatText}" FontFamily="{StaticResource Brand.Sans}" FontSize="20" FontWeight="Light" Foreground="{StaticResource Brand.Dark}" Margin="0,8,0,0" />
-                        <TextBlock Text="{Binding LonText}" FontFamily="{StaticResource Brand.Sans}" FontSize="20" FontWeight="Light" Foreground="{StaticResource Brand.Dark}" />
-                    </StackPanel>
-                </Border>
-                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource TileBorder}" Margin="8,0,8,8">
-                    <StackPanel>
-                        <TextBlock Text="ALTITUDE" Style="{StaticResource Label}" />
-                        <TextBlock Text="{Binding AltitudeText}" FontFamily="{StaticResource Brand.Sans}" FontSize="26" FontWeight="Light" Foreground="{StaticResource Brand.Dark}" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource TileBorder}" Margin="8,0,0,8">
-                    <StackPanel>
-                        <TextBlock Text="FUEL" Style="{StaticResource Label}" />
-                        <TextBlock Text="{Binding FuelText}" FontFamily="{StaticResource Brand.Sans}" FontSize="26" FontWeight="Light" Foreground="{StaticResource Brand.Dark}" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="TELEMETRY" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,12" />
+                    <UniformGrid Columns="3">
+                        <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,14" MinHeight="92">
+                            <StackPanel>
+                                <TextBlock Text="POSITION" Style="{StaticResource Suite.MonoLabel}" />
+                                <TextBlock Text="{Binding LatText}" Style="{StaticResource TeleValue}" FontSize="15" />
+                                <TextBlock Text="{Binding LonText}" Style="{StaticResource TeleValue}" FontSize="15" Margin="0,3,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,14" MinHeight="92">
+                            <StackPanel>
+                                <TextBlock Text="ALTITUDE" Style="{StaticResource Suite.MonoLabel}" />
+                                <TextBlock Text="{Binding AltitudeText}" Style="{StaticResource TeleValue}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Suite.Tile}" Margin="0,0,0,14" MinHeight="92">
+                            <StackPanel>
+                                <TextBlock Text="FUEL" Style="{StaticResource Suite.MonoLabel}" />
+                                <TextBlock Text="{Binding FuelText}" Style="{StaticResource TeleValue}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,0" MinHeight="92">
+                            <StackPanel>
+                                <TextBlock Text="IAS" Style="{StaticResource Suite.MonoLabel}" />
+                                <TextBlock Text="{Binding IasText}" Style="{StaticResource TeleValue}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Suite.Tile}" Margin="0,0,14,0" MinHeight="92">
+                            <StackPanel>
+                                <TextBlock Text="GROUND SPEED" Style="{StaticResource Suite.MonoLabel}" />
+                                <TextBlock Text="{Binding GsText}" Style="{StaticResource TeleValue}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Suite.Tile}" MinHeight="92">
+                            <StackPanel>
+                                <TextBlock Text="VERTICAL SPEED" Style="{StaticResource Suite.MonoLabel}" />
+                                <TextBlock Text="{Binding VsText}" Style="{StaticResource TeleValue}" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
 
-                <!-- Row 2 -->
-                <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource TileBorder}" Margin="0,0,8,0">
-                    <StackPanel>
-                        <TextBlock Text="IAS" Style="{StaticResource Label}" />
-                        <TextBlock Text="{Binding IasText}" FontFamily="{StaticResource Brand.Sans}" FontSize="26" FontWeight="Light" Foreground="{StaticResource Brand.Dark}" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource TileBorder}" Margin="8,0,8,0">
-                    <StackPanel>
-                        <TextBlock Text="GROUND SPEED" Style="{StaticResource Label}" />
-                        <TextBlock Text="{Binding GsText}" FontFamily="{StaticResource Brand.Sans}" FontSize="26" FontWeight="Light" Foreground="{StaticResource Brand.Dark}" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource TileBorder}" Margin="8,0,0,0">
-                    <StackPanel>
-                        <TextBlock Text="VERTICAL SPEED" Style="{StaticResource Label}" />
-                        <TextBlock Text="{Binding VsText}" FontFamily="{StaticResource Brand.Sans}" FontSize="26" FontWeight="Light" Foreground="{StaticResource Brand.Dark}" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Row 3: aircraft state strip -->
-                <Border Grid.Row="3" Grid.ColumnSpan="3" Style="{StaticResource TileBorder}" Margin="0,16,0,0" VerticalAlignment="Top">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Airplane" Width="18" Height="18" Foreground="{StaticResource Brand.Red}" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding GroundStateText}" FontFamily="{StaticResource Brand.Sans}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="10,0,28,0" VerticalAlignment="Center" />
-                        <iconPacks:PackIconMaterial Kind="CarBrakeParking" Width="18" Height="18" Foreground="{StaticResource Brand.Muted}" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding BrakeStateText}" FontFamily="{StaticResource Brand.Sans}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource Brand.Dark}" Margin="10,0,0,0" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
+                    <!-- aircraft state strip -->
+                    <Border Style="{StaticResource Suite.Banner}" Margin="0,0,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,26,0">
+                                <iconPacks:PackIconMaterial Kind="Airplane" Width="17" Height="17"
+                                                            Foreground="{StaticResource Suite.CrimsonBright}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding GroundStateText}" FontFamily="{StaticResource Suite.Mono}"
+                                           FontSize="13" Foreground="{StaticResource Suite.Mist}"
+                                           Margin="9,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="CarBrakeParking" Width="17" Height="17"
+                                                            Foreground="{StaticResource Suite.CrimsonBright}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding BrakeStateText}" FontFamily="{StaticResource Suite.Mono}"
+                                           FontSize="13" Foreground="{StaticResource Suite.Mist}"
+                                           Margin="9,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="3" Text="GROUND · PARKING BRAKE"
+                                       FontFamily="{StaticResource Suite.Mono}" FontSize="11"
+                                       Foreground="{StaticResource Suite.MistDim}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
             </Grid>
-        </Grid>
-    </Grid>
+
+            <!-- milestones + metrics -->
+            <Grid Margin="0,24,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="230" />
+                    <ColumnDefinition Width="26" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="MILESTONES" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,8" />
+                    <Border Style="{StaticResource KvRow}">
+                        <Grid>
+                            <TextBlock Text="Off block" Style="{StaticResource KvLabel}" />
+                            <TextBlock Text="{Binding OffBlockText}" Style="{StaticResource KvValue}" />
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource KvRow}">
+                        <Grid>
+                            <TextBlock Text="Takeoff" Style="{StaticResource KvLabel}" />
+                            <TextBlock Text="{Binding TakeoffText}" Style="{StaticResource KvValue}" />
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource KvRow}">
+                        <Grid>
+                            <TextBlock Text="Landing" Style="{StaticResource KvLabel}" />
+                            <TextBlock Text="{Binding LandingText}" Style="{StaticResource KvValue}" />
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource KvRow}" BorderThickness="0">
+                        <Grid>
+                            <TextBlock Text="On block" Style="{StaticResource KvLabel}" />
+                            <TextBlock Text="{Binding OnBlockText}" Style="{StaticResource KvValue}" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="METRICS" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,8" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <Border Style="{StaticResource KvRow}">
+                                <Grid>
+                                    <TextBlock Text="Block time" Style="{StaticResource KvLabel}" />
+                                    <TextBlock Text="{Binding BlockTimeText}" Style="{StaticResource KvValue}" />
+                                </Grid>
+                            </Border>
+                            <Border Style="{StaticResource KvRow}" BorderThickness="0">
+                                <Grid>
+                                    <TextBlock Text="Air time" Style="{StaticResource KvLabel}" />
+                                    <TextBlock Text="{Binding AirTimeText}" Style="{StaticResource KvValue}" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource KvRow}">
+                                <Grid>
+                                    <TextBlock Text="Fuel used" Style="{StaticResource KvLabel}" />
+                                    <TextBlock Text="{Binding FuelUsedText}" Style="{StaticResource KvValue}" />
+                                </Grid>
+                            </Border>
+                            <Border Style="{StaticResource KvRow}" BorderThickness="0">
+                                <Grid>
+                                    <TextBlock Text="Landing rate" Style="{StaticResource KvLabel}" />
+                                    <TextBlock Text="{Binding LandingRateText}" Style="{StaticResource KvValue}"
+                                               Foreground="{StaticResource Suite.CrimsonBright}" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

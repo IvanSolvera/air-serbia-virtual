@@ -1,37 +1,24 @@
 <UserControl x:Class="AirSerbiaVirtua.Acars.Desktop.Views.PilotCentreView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:vm="clr-namespace:AirSerbiaVirtua.Acars.Desktop.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:PilotCentreViewModel}"
-             d:DesignHeight="700" d:DesignWidth="960"
-             Background="White">
-
-    <UserControl.Resources>
-        <Style x:Key="StatLabel" TargetType="TextBlock" BasedOn="{StaticResource Label}">
-            <Setter Property="Margin" Value="0,0,0,4" />
-        </Style>
-        <Style x:Key="StatValue" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource Brand.Sans}" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource Brand.Dark}" />
-        </Style>
-    </UserControl.Resources>
+             d:DesignHeight="700" d:DesignWidth="960">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="40,36" MaxWidth="900" HorizontalAlignment="Left">
+        <StackPanel Margin="36,30,36,36">
 
-            <TextBlock Text="Pilot Centre" Style="{StaticResource H1}" />
+            <!-- phead -->
+            <TextBlock Text="Pilot Centre" Style="{StaticResource Suite.PageTitle}" />
             <TextBlock Text="Your roster profile, rank progression and account settings."
-                       Style="{StaticResource Body}" Margin="0,6,0,28" />
+                       Style="{StaticResource Suite.PageSub}" Margin="0,9,0,24" />
 
             <!-- Profile card -->
-            <Border Background="White" BorderBrush="{StaticResource Brand.Border}" BorderThickness="1" CornerRadius="6" Padding="28">
+            <Border Style="{StaticResource Suite.Panel}" Padding="26,24" Margin="0,0,0,30">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -39,48 +26,92 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Avatar -->
-                    <Border Grid.Column="0" Width="84" Height="84" CornerRadius="42"
-                            Background="{StaticResource Brand.Dark}" VerticalAlignment="Top" Margin="0,0,28,0">
-                        <TextBlock Text="{Binding Initials}" Foreground="White"
-                                   FontFamily="{StaticResource Brand.Serif}" FontSize="30"
+                    <Border Grid.Column="0" Width="74" Height="74" CornerRadius="16"
+                            Background="{StaticResource Suite.AvatarBg}"
+                            BorderBrush="{StaticResource Suite.HairlineStrong}" BorderThickness="1"
+                            VerticalAlignment="Top" Margin="0,0,22,0">
+                        <TextBlock Text="{Binding Initials}" Foreground="#FFDFE9FF"
+                                   FontFamily="{StaticResource Suite.Display}" FontWeight="ExtraBold" FontSize="26"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
 
                     <StackPanel Grid.Column="1">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Name}" Style="{StaticResource H2}" VerticalAlignment="Center" />
-                            <Border Background="{StaticResource Brand.Surface}" BorderBrush="{StaticResource Brand.Border}" BorderThickness="1"
-                                    CornerRadius="3" Padding="8,3" Margin="14,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Callsign}" FontFamily="{StaticResource Brand.Sans}" FontSize="12.5"
-                                           FontWeight="SemiBold" Foreground="{StaticResource Brand.Red}" />
+                            <TextBlock Text="{Binding Name}" FontFamily="{StaticResource Suite.Display}"
+                                       FontWeight="ExtraBold" FontSize="22" Foreground="{StaticResource Suite.Cloud}"
+                                       VerticalAlignment="Center" />
+                            <Border Style="{StaticResource Suite.BadgeCrimson}" Margin="12,0,0,0">
+                                <TextBlock Text="{Binding Callsign}" Style="{StaticResource Suite.BadgeText}"
+                                           Foreground="#FFFFD2DA" />
+                            </Border>
+                            <Border Margin="8,0,0,0" VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource Suite.BadgeAmber}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding StatusText}" Value="Active">
+                                                <Setter Property="Background" Value="#2434D399" />
+                                                <Setter Property="BorderBrush" Value="#5C34D399" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding StatusText}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource Suite.BadgeText}">
+                                            <Setter Property="Foreground" Value="#FFFFE2B0" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding StatusText}" Value="Active">
+                                                    <Setter Property="Foreground" Value="#FFBDF3DD" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="{Binding Email}" Style="{StaticResource Body}" Margin="0,4,0,20" />
+                        <TextBlock Text="{Binding Email}" Style="{StaticResource Suite.Body}" Margin="0,3,0,0" />
 
-                        <UniformGrid Columns="4" >
-                            <StackPanel Margin="0,0,16,0">
-                                <TextBlock Text="RANK" Style="{StaticResource StatLabel}" />
-                                <TextBlock Text="{Binding RankName}" Style="{StaticResource StatValue}" />
+                        <!-- stats row -->
+                        <Border BorderBrush="{StaticResource Suite.Hairline}" BorderThickness="0,1,0,0"
+                                Padding="0,16,0,0" Margin="0,18,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel Margin="0,0,40,0">
+                                    <TextBlock Text="RANK" Style="{StaticResource Suite.MonoLabel}" FontSize="9" Margin="0,0,0,6" />
+                                    <TextBlock Text="{Binding RankName}" Style="{StaticResource Suite.TileValue}" FontSize="16" />
+                                </StackPanel>
+                                <StackPanel Margin="0,0,40,0">
+                                    <TextBlock Text="TOTAL HOURS" Style="{StaticResource Suite.MonoLabel}" FontSize="9" Margin="0,0,0,6" />
+                                    <TextBlock Text="{Binding TotalHours}" Style="{StaticResource Suite.TileValue}" FontSize="16" />
+                                </StackPanel>
+                                <StackPanel Margin="0,0,40,0">
+                                    <TextBlock Text="HUB" Style="{StaticResource Suite.MonoLabel}" FontSize="9" Margin="0,0,0,6" />
+                                    <TextBlock Text="{Binding Hub}" Style="{StaticResource Suite.TileValue}" FontSize="16" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="STATUS" Style="{StaticResource Suite.MonoLabel}" FontSize="9" Margin="0,0,0,6" />
+                                    <TextBlock Text="{Binding StatusText}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource Suite.TileValue}">
+                                                <Setter Property="FontSize" Value="16" />
+                                                <Setter Property="Foreground" Value="{StaticResource Suite.Amber}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding StatusText}" Value="Active">
+                                                        <Setter Property="Foreground" Value="{StaticResource Suite.Green}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
                             </StackPanel>
-                            <StackPanel Margin="0,0,16,0">
-                                <TextBlock Text="TOTAL HOURS" Style="{StaticResource StatLabel}" />
-                                <TextBlock Text="{Binding TotalHours}" Style="{StaticResource StatValue}" />
-                            </StackPanel>
-                            <StackPanel Margin="0,0,16,0">
-                                <TextBlock Text="HUB" Style="{StaticResource StatLabel}" />
-                                <TextBlock Text="{Binding Hub}" Style="{StaticResource StatValue}" />
-                            </StackPanel>
-                            <StackPanel>
-                                <TextBlock Text="STATUS" Style="{StaticResource StatLabel}" />
-                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource StatValue}" />
-                            </StackPanel>
-                        </UniformGrid>
+                        </Border>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                             <iconPacks:PackIconMaterial Kind="CalendarAccount" Width="14" Height="14"
-                                                        Foreground="{StaticResource Brand.Muted}" VerticalAlignment="Center" />
-                            <TextBlock Style="{StaticResource Body}" Margin="8,0,0,0" VerticalAlignment="Center">
-                                <Run Text="Joined" /><Run Text=" " /><Run Text="{Binding Joined, Mode=OneWay}" />
+                                                        Foreground="{StaticResource Suite.MistDim}" VerticalAlignment="Center" />
+                            <TextBlock FontFamily="{StaticResource Suite.Mono}" FontSize="12"
+                                       Foreground="{StaticResource Suite.MistDim}" Margin="8,0,0,0" VerticalAlignment="Center">
+                                <Run Text="Joined" /><Run Text=" " /><Run Text="{Binding Joined, Mode=OneWay}" /><Run Text=" · Belgrade Nikola Tesla" />
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
@@ -88,52 +119,63 @@
             </Border>
 
             <!-- Change password -->
-            <TextBlock Text="Change password" Style="{StaticResource H2}" Margin="0,32,0,4" />
-            <TextBlock Text="Changing your password signs you out on all other devices."
-                       Style="{StaticResource Body}" Margin="0,0,0,16" />
-
-            <Border Background="White" BorderBrush="{StaticResource Brand.Border}" BorderThickness="1" CornerRadius="6" Padding="24" MaxWidth="460" HorizontalAlignment="Left">
+            <TextBlock Text="ACCOUNT SECURITY" Style="{StaticResource Suite.MonoLabel}" Margin="0,0,0,12" />
+            <Border Style="{StaticResource Suite.Panel}" MaxWidth="520" HorizontalAlignment="Left">
                 <StackPanel>
-                    <TextBlock Text="CURRENT PASSWORD" Style="{StaticResource Label}" Margin="0,0,0,6" />
-                    <PasswordBox x:Name="CurrentPasswordBox" Style="{StaticResource BrandPasswordBox}"
-                                 PasswordChanged="CurrentPasswordBox_OnPasswordChanged" Margin="0,0,0,16" />
+                    <TextBlock Text="Change password" FontFamily="{StaticResource Suite.Display}"
+                               FontWeight="Bold" FontSize="17" Foreground="{StaticResource Suite.Cloud}" />
+                    <TextBlock Text="Changing your password signs you out on all other devices."
+                               Style="{StaticResource Suite.Body}" FontSize="12.5" Margin="0,4,0,20" />
 
-                    <TextBlock Text="NEW PASSWORD" Style="{StaticResource Label}" Margin="0,0,0,6" />
-                    <PasswordBox x:Name="NewPasswordBox" Style="{StaticResource BrandPasswordBox}"
-                                 PasswordChanged="NewPasswordBox_OnPasswordChanged" Margin="0,0,0,16" />
+                    <StackPanel MaxWidth="420" HorizontalAlignment="Left" MinWidth="420">
+                        <TextBlock Text="CURRENT PASSWORD" FontSize="10.5" FontWeight="Bold"
+                                   Foreground="{StaticResource Suite.Mist}" Margin="0,0,0,8" />
+                        <PasswordBox x:Name="CurrentPasswordBox" Style="{StaticResource Suite.Password}"
+                                     Height="44" Padding="14,0"
+                                     PasswordChanged="CurrentPasswordBox_OnPasswordChanged" Margin="0,0,0,16" />
 
-                    <TextBlock Text="CONFIRM NEW PASSWORD" Style="{StaticResource Label}" Margin="0,0,0,6" />
-                    <PasswordBox x:Name="ConfirmPasswordBox" Style="{StaticResource BrandPasswordBox}"
-                                 PasswordChanged="ConfirmPasswordBox_OnPasswordChanged" Margin="0,0,0,20" />
+                        <TextBlock Text="NEW PASSWORD" FontSize="10.5" FontWeight="Bold"
+                                   Foreground="{StaticResource Suite.Mist}" Margin="0,0,0,8" />
+                        <PasswordBox x:Name="NewPasswordBox" Style="{StaticResource Suite.Password}"
+                                     Height="44" Padding="14,0"
+                                     PasswordChanged="NewPasswordBox_OnPasswordChanged" Margin="0,0,0,16" />
 
-                    <Button Content="UPDATE PASSWORD" Command="{Binding ChangePasswordCommand}"
-                            Style="{StaticResource RedButton}" HorizontalAlignment="Left" />
+                        <TextBlock Text="CONFIRM NEW PASSWORD" FontSize="10.5" FontWeight="Bold"
+                                   Foreground="{StaticResource Suite.Mist}" Margin="0,0,0,8" />
+                        <PasswordBox x:Name="ConfirmPasswordBox" Style="{StaticResource Suite.Password}"
+                                     Height="44" Padding="14,0"
+                                     PasswordChanged="ConfirmPasswordBox_OnPasswordChanged" Margin="0,0,0,20" />
 
-                    <ProgressBar IsIndeterminate="True" Height="2" Foreground="{StaticResource Brand.Red}"
-                                 Background="Transparent" BorderThickness="0" Margin="0,12,0,0"
-                                 Visibility="{Binding IsChangingPassword, Converter={StaticResource BoolToVisConverter}}" />
+                        <Button Content="Update password" Command="{Binding ChangePasswordCommand}"
+                                Style="{StaticResource Suite.BtnPrimary}" HorizontalAlignment="Left" />
 
-                    <TextBlock Text="{Binding PasswordMessage}" TextWrapping="Wrap" FontSize="12.5" Margin="0,12,0,0"
-                               Visibility="{Binding PasswordMessage, Converter={StaticResource NullToCollapsedConverter}}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{StaticResource Brand.Muted}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding PasswordError}" Value="True">
-                                        <Setter Property="Foreground" Value="{StaticResource Brand.RedDark}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                        <ProgressBar IsIndeterminate="True" Height="2" Foreground="{StaticResource Suite.RoyalBright}"
+                                     Background="Transparent" BorderThickness="0" Margin="0,12,0,0"
+                                     Visibility="{Binding IsChangingPassword, Converter={StaticResource BoolToVisConverter}}" />
+
+                        <TextBlock Text="{Binding PasswordMessage}" TextWrapping="Wrap" FontSize="12.5" Margin="0,12,0,0"
+                                   Visibility="{Binding PasswordMessage, Converter={StaticResource NullToCollapsedConverter}}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource Suite.Green}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding PasswordError}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource Suite.CrimsonBright}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
             <!-- Signed-out hint -->
-            <Border Visibility="{Binding IsSignedIn, Converter={StaticResource InvertBoolConverter}}"
-                    Background="#FFF7E9EE" BorderBrush="{StaticResource Brand.Red}" BorderThickness="0,0,0,2"
-                    Padding="14,12" Margin="0,18,0,0" HorizontalAlignment="Left">
-                <TextBlock Text="Sign in to view your pilot profile." Foreground="{StaticResource Brand.RedDark}" FontSize="12.5" />
+            <Border Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolToVisConverter}}"
+                    Background="#26D8203F" BorderBrush="{StaticResource Suite.Crimson}" BorderThickness="1"
+                    CornerRadius="9" Padding="14,12" Margin="0,18,0,0" HorizontalAlignment="Left">
+                <TextBlock Text="Sign in to view your pilot profile."
+                           Foreground="{StaticResource Suite.Cloud}" FontSize="12.5" />
             </Border>
         </StackPanel>
     </ScrollViewer>

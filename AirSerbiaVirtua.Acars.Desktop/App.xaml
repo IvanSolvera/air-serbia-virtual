@@ -1,6 +1,7 @@
 <Application x:Class="AirSerbiaVirtua.Acars.Desktop.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:conv="clr-namespace:AirSerbiaVirtua.Acars.Desktop.Converters">
     <Application.Resources>
         <ResourceDictionary>
@@ -191,9 +192,722 @@
                 </Setter>
             </Style>
 
+            <!-- ================================================================== -->
+            <!-- ============ "FLIGHT CREW SUITE" design system (2026-06) ========= -->
+            <!-- Dark ink-navy chrome, royal-blue + crimson accents, Sora/Manrope/  -->
+            <!-- JetBrains Mono. Source mockup: doc 'new acars look' (login).      -->
+            <!-- ================================================================== -->
+
+            <!-- Palette -->
+            <Color x:Key="Suite.Ink950Color">#FF04101F</Color>
+            <Color x:Key="Suite.Ink900Color">#FF06122A</Color>
+            <Color x:Key="Suite.Ink850Color">#FF0A1C38</Color>
+            <Color x:Key="Suite.Ink800Color">#FF0C2244</Color>
+            <Color x:Key="Suite.Ink700Color">#FF16365F</Color>
+            <Color x:Key="Suite.RoyalColor">#FF2563D6</Color>
+            <Color x:Key="Suite.RoyalBrightColor">#FF3F86F4</Color>
+            <Color x:Key="Suite.RoyalDeepColor">#FF1546A8</Color>
+            <Color x:Key="Suite.CrimsonColor">#FFD8203F</Color>
+            <Color x:Key="Suite.CrimsonBrightColor">#FFEF3A57</Color>
+            <Color x:Key="Suite.MistColor">#FF9DB1D2</Color>
+            <Color x:Key="Suite.MistDimColor">#FF6C83A8</Color>
+            <Color x:Key="Suite.CloudColor">#FFF4F7FB</Color>
+            <Color x:Key="Suite.HairlineColor">#249DB1D2</Color>
+            <Color x:Key="Suite.HairlineStrongColor">#3D9DB1D2</Color>
+            <Color x:Key="Suite.GreenColor">#FF34D399</Color>
+            <Color x:Key="Suite.AmberColor">#FFF5B545</Color>
+
+            <SolidColorBrush x:Key="Suite.Ink950" Color="{StaticResource Suite.Ink950Color}" />
+            <SolidColorBrush x:Key="Suite.Ink900" Color="{StaticResource Suite.Ink900Color}" />
+            <SolidColorBrush x:Key="Suite.Ink850" Color="{StaticResource Suite.Ink850Color}" />
+            <SolidColorBrush x:Key="Suite.Ink800" Color="{StaticResource Suite.Ink800Color}" />
+            <SolidColorBrush x:Key="Suite.Ink700" Color="{StaticResource Suite.Ink700Color}" />
+            <SolidColorBrush x:Key="Suite.Royal" Color="{StaticResource Suite.RoyalColor}" />
+            <SolidColorBrush x:Key="Suite.RoyalBright" Color="{StaticResource Suite.RoyalBrightColor}" />
+            <SolidColorBrush x:Key="Suite.RoyalDeep" Color="{StaticResource Suite.RoyalDeepColor}" />
+            <SolidColorBrush x:Key="Suite.Crimson" Color="{StaticResource Suite.CrimsonColor}" />
+            <SolidColorBrush x:Key="Suite.CrimsonBright" Color="{StaticResource Suite.CrimsonBrightColor}" />
+            <SolidColorBrush x:Key="Suite.Mist" Color="{StaticResource Suite.MistColor}" />
+            <SolidColorBrush x:Key="Suite.MistDim" Color="{StaticResource Suite.MistDimColor}" />
+            <SolidColorBrush x:Key="Suite.Cloud" Color="{StaticResource Suite.CloudColor}" />
+            <SolidColorBrush x:Key="Suite.Hairline" Color="{StaticResource Suite.HairlineColor}" />
+            <SolidColorBrush x:Key="Suite.HairlineStrong" Color="{StaticResource Suite.HairlineStrongColor}" />
+            <SolidColorBrush x:Key="Suite.Green" Color="{StaticResource Suite.GreenColor}" />
+            <SolidColorBrush x:Key="Suite.Amber" Color="{StaticResource Suite.AmberColor}" />
+
+            <!-- Surface gradients -->
+            <LinearGradientBrush x:Key="Suite.TitlebarBg" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#FF0B1F3D" Offset="0" />
+                <GradientStop Color="#FF081830" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Suite.SidebarBg" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#FF081831" Offset="0" />
+                <GradientStop Color="#FF06122A" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Suite.AuthBg" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#FF0A1B37" Offset="0" />
+                <GradientStop Color="#FF07142A" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Suite.StatusbarBg" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#FF081830" Offset="0" />
+                <GradientStop Color="#FF061123" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Suite.WindowBg" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#FF0A1A35" Offset="0" />
+                <GradientStop Color="#FF071426" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Suite.SignInBg" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="{StaticResource Suite.RoyalBrightColor}" Offset="0" />
+                <GradientStop Color="{StaticResource Suite.RoyalColor}" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Suite.NavActiveBg" StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="#382563D6" Offset="0" />
+                <GradientStop Color="#0A2563D6" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Suite.FlagStripe" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="{StaticResource Suite.CrimsonColor}" Offset="0" />
+                <GradientStop Color="{StaticResource Suite.CrimsonColor}" Offset="0.34" />
+                <GradientStop Color="{StaticResource Suite.RoyalDeepColor}" Offset="0.34" />
+                <GradientStop Color="{StaticResource Suite.RoyalDeepColor}" Offset="0.67" />
+                <GradientStop Color="{StaticResource Suite.CloudColor}" Offset="0.67" />
+                <GradientStop Color="{StaticResource Suite.CloudColor}" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Suite.AvatarBg" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{StaticResource Suite.RoyalDeepColor}" Offset="0" />
+                <GradientStop Color="{StaticResource Suite.Ink900Color}" Offset="1" />
+            </LinearGradientBrush>
+
+            <!-- Typography (embedded: Sora display / Manrope sans / JetBrains Mono) -->
+            <FontFamily x:Key="Suite.Display">pack://application:,,,/Fonts/#Sora</FontFamily>
+            <FontFamily x:Key="Suite.Sans">pack://application:,,,/Fonts/#Manrope</FontFamily>
+            <FontFamily x:Key="Suite.Mono">pack://application:,,,/Fonts/#JetBrains Mono</FontFamily>
+
+            <Style x:Key="Suite.MonoLabel" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.MistDim}" />
+            </Style>
+
+            <!-- Titlebar window button -->
+            <Style x:Key="Suite.WinBtn" TargetType="Button">
+                <Setter Property="Width" Value="46" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="root" Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="root" Property="Background" Value="#1A9DB1D2" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="Suite.WinBtnClose" TargetType="Button" BasedOn="{StaticResource Suite.WinBtn}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="root" Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="root" Property="Background" Value="{StaticResource Suite.Crimson}" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Sidebar nav item. Tag = active flag (bound via EqualsParameterConverter). -->
+            <Style x:Key="Suite.NavItem" TargetType="Button">
+                <Setter Property="Height" Value="40" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+                <Setter Property="FontSize" Value="13.5" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Border x:Name="root" Background="{TemplateBinding Background}" CornerRadius="9"
+                                        Padding="12,0">
+                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                      TextElement.Foreground="{TemplateBinding Foreground}" />
+                                </Border>
+                                <Border x:Name="bar" Width="3" CornerRadius="3" HorizontalAlignment="Left"
+                                        Margin="0,8" Background="{StaticResource Suite.RoyalBright}"
+                                        Visibility="Collapsed" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="root" Property="Background" Value="#143F86F4" />
+                                    <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                                </Trigger>
+                                <Trigger Property="Tag">
+                                    <Trigger.Value>
+                                        <sys:Boolean>True</sys:Boolean>
+                                    </Trigger.Value>
+                                    <Setter TargetName="root" Property="Background" Value="{StaticResource Suite.NavActiveBg}" />
+                                    <Setter TargetName="bar" Property="Visibility" Value="Visible" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.55" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Auth-panel input -->
+            <Style x:Key="Suite.Input" TargetType="TextBox">
+                <Setter Property="Height" Value="46" />
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontWeight" Value="Medium" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="CaretBrush" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="Background" Value="#A6040C1C" />
+                <Setter Property="BorderBrush" Value="{StaticResource Suite.HairlineStrong}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Padding" Value="42,0,14,0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border x:Name="b" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="10">
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Suite.RoyalBright}" />
+                                    <Setter TargetName="b" Property="Background" Value="#E6081626" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="Suite.Password" TargetType="PasswordBox">
+                <Setter Property="Height" Value="46" />
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="CaretBrush" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="Background" Value="#A6040C1C" />
+                <Setter Property="BorderBrush" Value="{StaticResource Suite.HairlineStrong}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Padding" Value="42,0,40,0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="PasswordBox">
+                            <Border x:Name="b" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="10">
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Suite.RoyalBright}" />
+                                    <Setter TargetName="b" Property="Background" Value="#E6081626" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- 40x23 switch toggle -->
+            <Style x:Key="Suite.Switch" TargetType="ToggleButton">
+                <Setter Property="Width" Value="40" />
+                <Setter Property="Height" Value="23" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="track" CornerRadius="12" Background="#2E9DB1D2"
+                                    BorderBrush="{StaticResource Suite.HairlineStrong}" BorderThickness="1">
+                                <Ellipse x:Name="knob" Width="17" Height="17" Fill="#FFCDD9EC"
+                                         HorizontalAlignment="Left" Margin="2,0,0,0" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="track" Property="Background">
+                                        <Setter.Value>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="{StaticResource Suite.RoyalDeepColor}" Offset="0" />
+                                                <GradientStop Color="{StaticResource Suite.RoyalColor}" Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter TargetName="knob" Property="HorizontalAlignment" Value="Right" />
+                                    <Setter TargetName="knob" Property="Margin" Value="0,0,2,0" />
+                                    <Setter TargetName="knob" Property="Fill" Value="White" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Primary gradient sign-in button -->
+            <Style x:Key="Suite.SignIn" TargetType="Button">
+                <Setter Property="Height" Value="50" />
+                <Setter Property="Background" Value="{StaticResource Suite.SignInBg}" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Display}" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="root" Background="{TemplateBinding Background}" CornerRadius="11">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#FF2563D6" BlurRadius="26" ShadowDepth="6"
+                                                      Direction="270" Opacity="0.55" />
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}"
+                                                  TextElement.FontWeight="{TemplateBinding FontWeight}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="root" Property="Opacity" Value="0.92" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Frameless icon button (password reveal, pilot-card sign-out) -->
+            <Style x:Key="Suite.IconBtn" TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.MistDim}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="root" Background="{TemplateBinding Background}" CornerRadius="7"
+                                    Padding="4">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="root" Property="Background" Value="#149DB1D2" />
+                                    <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ============ Suite page-level styles (inner views) ============ -->
+            <Style x:Key="Suite.H1" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Display}" />
+                <Setter Property="FontWeight" Value="ExtraBold" />
+                <Setter Property="FontSize" Value="26" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+            </Style>
+            <Style x:Key="Suite.H2" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Display}" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="17" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+            </Style>
+            <Style x:Key="Suite.Body" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
+            </Style>
+            <!-- .card -->
+            <Style x:Key="Suite.Panel" TargetType="Border">
+                <Setter Property="Background" Value="#A8081628" />
+                <Setter Property="BorderBrush" Value="{StaticResource Suite.Hairline}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="14" />
+                <Setter Property="Padding" Value="24,22" />
+            </Style>
+            <!-- .tile -->
+            <Style x:Key="Suite.Tile" TargetType="Border" BasedOn="{StaticResource Suite.Panel}">
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="Padding" Value="18,16" />
+            </Style>
+            <!-- .tbl-wrap -->
+            <Style x:Key="Suite.TblWrap" TargetType="Border">
+                <Setter Property="Background" Value="#80061228" />
+                <Setter Property="BorderBrush" Value="{StaticResource Suite.Hairline}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="14" />
+                <Setter Property="Padding" Value="0" />
+            </Style>
+            <!-- .tbl tbody tr (hover royal tint) -->
+            <Style x:Key="Suite.TblRow" TargetType="Border">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="{StaticResource Suite.Hairline}" />
+                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                <Setter Property="Padding" Value="16,13" />
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#0F3F86F4" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <!-- .banner -->
+            <Style x:Key="Suite.Banner" TargetType="Border">
+                <Setter Property="Background" Value="#80061228" />
+                <Setter Property="BorderBrush" Value="{StaticResource Suite.Hairline}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="Padding" Value="18,14" />
+            </Style>
+            <Style x:Key="Suite.ColHeader" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+                <Setter Property="FontSize" Value="9.5" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.MistDim}" />
+                <Setter Property="Margin" Value="0,0,12,0" />
+            </Style>
+            <Style x:Key="Suite.Cell" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Margin" Value="0,0,12,0" />
+            </Style>
+            <Style x:Key="Suite.MutedCell" TargetType="TextBlock" BasedOn="{StaticResource Suite.Cell}">
+                <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
+            </Style>
+            <Style x:Key="Suite.TileValue" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Display}" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="22" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+            </Style>
+
+            <!-- .phead title + sub -->
+            <Style x:Key="Suite.PageTitle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Display}" />
+                <Setter Property="FontWeight" Value="ExtraBold" />
+                <Setter Property="FontSize" Value="30" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+            </Style>
+            <Style x:Key="Suite.PageSub" TargetType="TextBlock" BasedOn="{StaticResource Suite.Body}">
+                <Setter Property="FontSize" Value="13.5" />
+                <Setter Property="Margin" Value="0,9,0,0" />
+            </Style>
+
+            <!-- table cell text -->
+            <Style x:Key="Suite.FlightNo" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Display}" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="Suite.Leg" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+                <Setter Property="FontWeight" Value="Medium" />
+                <Setter Property="FontSize" Value="12.5" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="Suite.Num" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <!-- .chip.ac -->
+            <Style x:Key="Suite.Chip" TargetType="Border">
+                <Setter Property="Background" Value="#99081628" />
+                <Setter Property="BorderBrush" Value="{StaticResource Suite.HairlineStrong}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="7" />
+                <Setter Property="Padding" Value="9,4" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="Suite.ChipText" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+                <Setter Property="FontSize" Value="10.5" />
+                <Setter Property="Foreground" Value="#FFBCD2F6" />
+            </Style>
+
+            <!-- .badge variants -->
+            <Style x:Key="Suite.Badge" TargetType="Border">
+                <Setter Property="CornerRadius" Value="6" />
+                <Setter Property="Padding" Value="8,3" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="Suite.BadgeCrimson" TargetType="Border" BasedOn="{StaticResource Suite.Badge}">
+                <Setter Property="Background" Value="#29D8203F" />
+                <Setter Property="BorderBrush" Value="#66D8203F" />
+            </Style>
+            <Style x:Key="Suite.BadgeAmber" TargetType="Border" BasedOn="{StaticResource Suite.Badge}">
+                <Setter Property="Background" Value="#24F5B545" />
+                <Setter Property="BorderBrush" Value="#5CF5B545" />
+            </Style>
+            <Style x:Key="Suite.BadgeGreen" TargetType="Border" BasedOn="{StaticResource Suite.Badge}">
+                <Setter Property="Background" Value="#2434D399" />
+                <Setter Property="BorderBrush" Value="#5C34D399" />
+            </Style>
+            <Style x:Key="Suite.BadgeMist" TargetType="Border" BasedOn="{StaticResource Suite.Badge}">
+                <Setter Property="Background" Value="#1A9DB1D2" />
+                <Setter Property="BorderBrush" Value="{StaticResource Suite.HairlineStrong}" />
+            </Style>
+            <Style x:Key="Suite.BadgeText" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Mono}" />
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+
+            <!-- Page buttons: .btn (ghost base) / .btn.crimson / .btn.primary -->
+            <LinearGradientBrush x:Key="Suite.CrimsonBtnBg" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="{StaticResource Suite.CrimsonBrightColor}" Offset="0" />
+                <GradientStop Color="{StaticResource Suite.CrimsonColor}" Offset="1" />
+            </LinearGradientBrush>
+
+            <Style x:Key="Suite.BtnGhost" TargetType="Button">
+                <Setter Property="Height" Value="38" />
+                <Setter Property="Background" Value="#99081628" />
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Padding" Value="16,0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="r" Background="{TemplateBinding Background}"
+                                    BorderBrush="{StaticResource Suite.HairlineStrong}" BorderThickness="1"
+                                    CornerRadius="9" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="r" Property="Background" Value="#D90E203C" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="Suite.BtnCrimson" TargetType="Button">
+                <Setter Property="Height" Value="38" />
+                <Setter Property="Background" Value="{StaticResource Suite.CrimsonBtnBg}" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Padding" Value="16,0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="r" Background="{TemplateBinding Background}" CornerRadius="9"
+                                    Padding="{TemplateBinding Padding}">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#FFD8203F" BlurRadius="20" ShadowDepth="5"
+                                                      Direction="270" Opacity="0.45" />
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="r" Property="Opacity" Value="0.92" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="Suite.BtnPrimary" TargetType="Button" BasedOn="{StaticResource Suite.BtnCrimson}">
+                <Setter Property="Background" Value="{StaticResource Suite.SignInBg}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="r" Background="{TemplateBinding Background}" CornerRadius="9"
+                                    Padding="{TemplateBinding Padding}">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#FF2563D6" BlurRadius="20" ShadowDepth="5"
+                                                      Direction="270" Opacity="0.5" />
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="r" Property="Opacity" Value="0.92" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <!-- Legacy alias kept so nothing breaks if referenced -->
+            <Style x:Key="Suite.Btn" TargetType="Button" BasedOn="{StaticResource Suite.BtnCrimson}" />
+
+            <!-- Dark ComboBox -->
+            <Style x:Key="Suite.ComboItem" TargetType="ComboBoxItem">
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+                <Setter Property="FontSize" Value="12.5" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBoxItem">
+                            <Border x:Name="r" Background="Transparent" CornerRadius="6" Padding="12,7" Margin="4,1">
+                                <ContentPresenter />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="r" Property="Background" Value="#143F86F4" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="r" Property="Background" Value="{StaticResource Suite.NavActiveBg}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="Suite.Combo" TargetType="ComboBox">
+                <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                <Setter Property="FontFamily" Value="{StaticResource Suite.Sans}" />
+                <Setter Property="FontSize" Value="12.5" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Height" Value="38" />
+                <Setter Property="MinWidth" Value="130" />
+                <Setter Property="ItemContainerStyle" Value="{StaticResource Suite.ComboItem}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBox">
+                            <Grid>
+                                <ToggleButton Focusable="False" ClickMode="Press"
+                                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border Background="#A6040C1C"
+                                                    BorderBrush="{StaticResource Suite.HairlineStrong}"
+                                                    BorderThickness="1" CornerRadius="8">
+                                                <Path Data="M0,0 L4,4 L8,0" Stroke="{StaticResource Suite.MistDim}"
+                                                      StrokeThickness="1.6" HorizontalAlignment="Right"
+                                                      VerticalAlignment="Center" Margin="0,0,12,0" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+                                <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                  Margin="12,0,30,0" VerticalAlignment="Center"
+                                                  IsHitTestVisible="False"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                                <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom"
+                                       AllowsTransparency="True" StaysOpen="False"
+                                       MinWidth="{TemplateBinding ActualWidth}">
+                                    <Border Background="#FF0B1D3A"
+                                            BorderBrush="{StaticResource Suite.HairlineStrong}"
+                                            BorderThickness="1" CornerRadius="9" Margin="0,4,0,0" Padding="0,4">
+                                        <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto">
+                                            <StackPanel IsItemsHost="True" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Slim dark scrollbars, app-wide -->
+            <Style TargetType="ScrollBar">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Width" Value="9" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Grid Background="Transparent">
+                                <Track x:Name="PART_Track" IsDirectionReversed="True" IsEnabled="{TemplateBinding IsMouseOver}">
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Template>
+                                                <ControlTemplate TargetType="Thumb">
+                                                    <Border Background="#3D9DB1D2" CornerRadius="4" Margin="2" />
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="Orientation" Value="Horizontal">
+                                    <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="Orientation" Value="Horizontal">
+                        <Setter Property="Width" Value="Auto" />
+                        <Setter Property="Height" Value="9" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
             <conv:InvertBoolConverter x:Key="InvertBoolConverter" />
             <conv:BoolToVisConverter x:Key="BoolToVisConverter" />
             <conv:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
+            <conv:InverseBoolToVisConverter x:Key="InverseBoolToVisConverter" />
+            <conv:EqualsParameterConverter x:Key="EqualsParameterConverter" />
+            <conv:ZeroToVisConverter x:Key="ZeroToVisConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
