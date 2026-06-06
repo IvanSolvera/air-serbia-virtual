@@ -1,5 +1,34 @@
 # Continuation log — pick-up notes
 
+## ⏸ SESSION CLOSED 2026-06-06 — resume here
+
+**Everything is committed** (HEAD `e2069cd` on `dev`, clean tree). The giant
+2026-06-06 session delivered, in order: prod items #7-10, the full "Flight
+Crew Suite" desktop redesign (v1+v2 mockups), quick wins (Auto Login via DPAPI,
+Aborted flights, Brand.* cleanup), Phase 5 (METARs page, Roster Admin,
+Outstation flights — **desktop app is feature-complete**), and the website
+W1+W2+W3 (Blazor public site + WASM pilot portal) + VATSIM ID on applications.
+
+**First things next session (verification debt — built but not human-tested):**
+1. **Browser pass on the portal** (http://localhost:5166/portal): login ASL001,
+   book a leg, dashboard, logbook, change-password round-trip. curl couldn't
+   execute WASM.
+2. **Join-form submit from a browser** (antiforgery blocked CLI testing), then
+   approve the applicant in desktop Roster Admin (ASL888 w/ VATSIM 1234567 and
+   ASL999 are already waiting as test entries — approve or delete).
+3. **Auto Login round-trip**: desktop login with toggle ON → restart app →
+   should land in Pilot Centre.
+4. **Phase 2b verification flight** (MSFS, JU360 LYBE→LOWW + mid-cruise Wi-Fi
+   pull) — STILL the oldest open item; checklist further down this file.
+
+**Then: phase W4** — desktop slim-down: pull "active dispatch" from web
+bookings (`GET /api/bookings/active` concept), Briefing on the web with
+dispatch-ready state, converge desktop DTOs into AirSerbiaVirtua.Contracts.
+After that W5 (admin web), W6 (ASV Dispatch AI). **Hetzner not provisioned.**
+
+**Dev run order:** Postgres → API (:5036) → Web (:5166) → Desktop
+(bin\x64\Debug — build with `-p:Platform=x64`!).
+
 ## Update 2026-06-06 (W3 + VATSIM ID)
 
 **VATSIM ID on applications:** `Pilot.VatsimId` (+ migration `AddPilotVatsimId`),
