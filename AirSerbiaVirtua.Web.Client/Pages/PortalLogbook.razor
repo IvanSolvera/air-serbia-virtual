@@ -103,8 +103,15 @@
 
     private static string FormatMin(int min) => min <= 0 ? "—" : $"{min / 60}h {min % 60:00}m";
 
-    private static string StatusLabel(PirepStatus status) =>
-        status.ToString().ToUpperInvariant();
+    private static string StatusLabel(PirepStatus status) => status switch
+    {
+        PirepStatus.Pending => "PENDING",
+        PirepStatus.Accepted => "ACCEPTED",
+        PirepStatus.Rejected => "REJECTED",
+        PirepStatus.UnderReview => "REVIEW",
+        PirepStatus.Aborted => "ABORTED",
+        _ => status.ToString().ToUpperInvariant()
+    };
 
     private static string StatusClasses(PirepStatus status) => status switch
     {

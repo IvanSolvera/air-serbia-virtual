@@ -95,7 +95,11 @@ public class WireShapeTests
     }
 
     [Test]
-    public void EnumOrdinals_MatchTheDatabaseAndClients()
+    // Ordinals are frozen because they are the wire protocol (JSON numbers) consumed by all
+    // clients (ACARS desktop, Blazor WASM, mobile). The database stores enum names, not
+    // numbers (HasConversion<string>()), so reordering would not break the DB — it would
+    // break the wire protocol. Do not renumber or reorder these enums.
+    public void EnumOrdinals_AreFrozen_WireProtocolContract()
     {
         ((int)BookingStatus.Open).Should().Be(0);
         ((int)BookingStatus.Confirmed).Should().Be(1);
