@@ -1,6 +1,62 @@
 # Continuation log — pick-up notes
 
-## ⏸ SESSION CLOSED 2026-06-06 — resume here
+## ⏸ SESSION CLOSED 2026-06-06 (evening) — W4 MID-EXECUTION, resume here
+
+**Everything is committed** (clean tree apart from `.claude/settings.local.json`,
+which is harness permission noise — leave it). We are **mid-way through phase W4**,
+executed task-by-task via subagents from the approved plan.
+
+**The two documents that drive everything:**
+- `doc/w4-desktop-slimdown-design.md` — approved W4 spec (decisions: desktop
+  KEEPS Bookings/Briefing + gains dispatch pull; explicit `DispatchReadyAtUtc`
+  flag set from web Briefing; full Desktop+API DTO convergence into Contracts;
+  tests for every segment: NUnit/Moq/FluentAssertions + Testcontainers Postgres
+  + bUnit).
+- `doc/w4-implementation-plan.md` — 13 bite-sized TDD tasks with complete code.
+  **Resume = execute Task 5 onward** (each task: implementer subagent → spec
+  compliance review → code quality review, per superpowers
+  subagent-driven-development).
+
+**W4 progress: Tasks 1–4 of 13 DONE, all reviewed + approved:**
+- T1 `59bd61d` — `AirSerbiaVirtua.Tests.Unit` scaffolded (NUnit 4.3.2, Moq,
+  FluentAssertions 8.10.0 — pinned, do NOT bump FA to 9.x = paid license;
+  net10.0-windows, x64; sln platform mappings fixed).
+- T2 `316caaa` — `Contracts/FuelEstimator.cs` + 8 tests.
+- T3 `22e04c3` + fix `6b67b8d` — Contracts convergence: `Contracts/Enums.cs`
+  (5 enums), `VaContracts.cs` rewritten (enum-typed Status fields,
+  `BookingInfo.DispatchReadyAtUtc`, all missing records added), 9 golden-JSON
+  `WireShapeTests`, Web.Client int→enum fallout fixed (PortalBook/Dashboard/
+  Logbook; UnderReview keeps label "REVIEW").
+- T4 `3e3e356` — API serves Contracts directly: `Api/Dtos/ApiDtos.cs` +
+  `Api/Models/Enums.cs` DELETED, renames across 8 controllers + MetarService,
+  `public partial class Program;` appended (WebApplicationFactory-ready).
+  Live smoke verified wire unchanged.
+- **Tests.Unit: 18/18 green** (`dotnet test AirSerbiaVirtua.Tests.Unit\...csproj -p:Platform=x64`).
+
+**NEXT: Task 5** — scaffold `AirSerbiaVirtua.Tests.Api` (Testcontainers
+PostgreSql fixture `ApiTestHost`, `TestData` seeding, `WireCompatTests`).
+⚠ Docker Desktop must be RUNNING before Task 5's test run (first run pulls
+postgres:16-alpine). Then T6 (dispatch migration + endpoints), T7 (desktop
+convergence + IApiService), T8 (DispatchService), T9 (Pilot Centre card),
+T10 (READY chip), T11 (IPortalApi + Tests.Web), T12 (web Briefing page),
+T13 (full verification + docs).
+
+**Discoveries that correct plan assumptions (already accounted for):**
+- `AppDbContext` stores enums as **strings** (`HasConversion<string>()`), not
+  ints — enum move was still safe (identical names); don't add migrations for it.
+- `AircraftStatus` crosses the wire as a **string** (AircraftInfo.Status) — by
+  design, leave it.
+- Stale comment at `Acars.Core/ApiContracts.cs:139` ("must match
+  Api.Models.FlightPhase") — file gets rewritten in T7 anyway.
+- A leftover smoke-test API process was killed (T4); if builds fail with file
+  locks, check `Get-Process AirSerbiaVirtua.Api`.
+
+**Pre-W4 verification debt still open** (browser pass on portal, join-form
+submit, Auto Login round-trip, Phase 2b MSFS flight) — see the list below.
+
+---
+
+## ⏸ SESSION CLOSED 2026-06-06 — (superseded by the entry above)
 
 **Everything is committed** (HEAD `e2069cd` on `dev`, clean tree). The giant
 2026-06-06 session delivered, in order: prod items #7-10, the full "Flight
