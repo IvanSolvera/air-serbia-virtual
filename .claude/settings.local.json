@@ -73,7 +73,23 @@
       "PowerShell(Get-Content \"AirSerbiaVirtua.Web\\\\Properties\\\\launchSettings.json\"; \"====\"; Test-Path \"AirSerbiaVirtua.Api\\\\appsettings.Development.json\"; Get-Content \"AirSerbiaVirtua.Api\\\\appsettings.Development.json\" -ErrorAction SilentlyContinue)",
       "PowerShell(Add-Content *)",
       "PowerShell($api = Get-Process -Name \"AirSerbiaVirtua.Api\" -ErrorAction SilentlyContinue; $web = Get-Process -Name \"AirSerbiaVirtua.Web\" -ErrorAction SilentlyContinue; $app = Get-Process -Name \"AirSerbiaVirtua.Acars.Desktop\" -ErrorAction SilentlyContinue; \"API: \" + $\\(if \\($api\\) { \"running\" } else { \"stopped\" }\\); \"Web: \" + $\\(if \\($web\\) { \"running\" } else { \"stopped\" }\\); \"ACARS: \" + $\\(if \\($app\\) { \"running\" } else { \"stopped\" }\\))",
-      "PowerShell($exe = Resolve-Path \"AirSerbiaVirtua.Acars.Desktop\\\\bin\\\\x64\\\\Debug\\\\net10.0-windows\\\\AirSerbiaVirtua.Acars.Desktop.exe\"; Start-Process -FilePath $exe; Start-Sleep -Seconds 4; $h = Invoke-RestMethod http://localhost:5036/health -TimeoutSec 3; $w = Invoke-WebRequest http://localhost:5166/ -TimeoutSec 5 -UseBasicParsing; $p = Get-Process -Name \"AirSerbiaVirtua.Acars.Desktop\" -ErrorAction SilentlyContinue; \"API     : $\\($h.status\\) \\(http://localhost:5036\\)\"; \"Website : $\\($w.StatusCode\\) \\(http://localhost:5166\\)\"; \"ACARS   : \" + $\\(if \\($p -and -not $p.HasExited\\) { \"running \\(pid $\\($p.Id\\)\\)\" } else { \"FAILED\" }\\))"
+      "PowerShell($exe = Resolve-Path \"AirSerbiaVirtua.Acars.Desktop\\\\bin\\\\x64\\\\Debug\\\\net10.0-windows\\\\AirSerbiaVirtua.Acars.Desktop.exe\"; Start-Process -FilePath $exe; Start-Sleep -Seconds 4; $h = Invoke-RestMethod http://localhost:5036/health -TimeoutSec 3; $w = Invoke-WebRequest http://localhost:5166/ -TimeoutSec 5 -UseBasicParsing; $p = Get-Process -Name \"AirSerbiaVirtua.Acars.Desktop\" -ErrorAction SilentlyContinue; \"API     : $\\($h.status\\) \\(http://localhost:5036\\)\"; \"Website : $\\($w.StatusCode\\) \\(http://localhost:5166\\)\"; \"ACARS   : \" + $\\(if \\($p -and -not $p.HasExited\\) { \"running \\(pid $\\($p.Id\\)\\)\" } else { \"FAILED\" }\\))",
+      "Bash(dotnet *)",
+      "Bash(Remove-Item *)",
+      "Bash(del *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(dir doc *)",
+      "PowerShell(dotnet test *)",
+      "Bash(git check-ignore *)",
+      "Bash(grep -v \"^commit\\\\|^Author\\\\|^Date\\\\|^feat\\\\|^$\\\\|^ \")",
+      "Bash(powershell -Command \"Get-ChildItem AirSerbiaVirtua.Web, AirSerbiaVirtua.Web.Client -Recurse -Include *.razor,*.cs | Select-String -Pattern '\\\\.Status' | Select-Object Path, LineNumber, Line\")",
+      "Bash(powershell -Command \"Get-Content 'AirSerbiaVirtua.Web\\\\Components\\\\Pages\\\\Fleet.razor' | Select-Object -Index 35,36,37,38,39,40,41,42\")",
+      "Bash(powershell -Command \"Get-Content 'AirSerbiaVirtua.Web\\\\Components\\\\Pages\\\\Join.razor' | Select-Object -Index 128,129,130,131,132,133,134,135\")",
+      "Bash(powershell -Command \"Get-Content 'AirSerbiaVirtua.Web.Client\\\\Services\\\\PortalApi.cs' | Select-Object -Index 103,104,105,106,107,108,109,110,140,141,142,143,144,145,146,147,148\")",
+      "Bash(powershell -Command \"Select-String -Path 'AirSerbiaVirtua.Tests.Unit/Contracts/WireShapeTests.cs' -Pattern '^\\\\s+\\\\[Test\\\\]' | Measure-Object | Select-Object -ExpandProperty Count\")",
+      "Bash(Select-String -Pattern \"StatusLabel|=>\" -Context 0,0)",
+      "Bash(git commit *)"
     ]
   }
 }
