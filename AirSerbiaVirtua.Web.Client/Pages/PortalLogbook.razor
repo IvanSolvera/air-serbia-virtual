@@ -77,14 +77,14 @@
     {
         get
         {
-            var totalMin = _pireps?.Where(p => p.Status == 1).Sum(p => p.BlockMin) ?? 0;
+            var totalMin = _pireps?.Where(p => p.Status == PirepStatus.Accepted).Sum(p => p.BlockMin) ?? 0;
             return $"{totalMin / 60}h {totalMin % 60:00}m";
         }
     }
 
     private string AvgScore =>
-        _pireps is { Count: > 0 } list && list.Any(p => p.Status == 1)
-            ? list.Where(p => p.Status == 1).Average(p => p.Score).ToString("0")
+        _pireps is { Count: > 0 } list && list.Any(p => p.Status == PirepStatus.Accepted)
+            ? list.Where(p => p.Status == PirepStatus.Accepted).Average(p => p.Score).ToString("0")
             : "—";
 
     protected override async Task OnInitializedAsync()
@@ -103,16 +103,14 @@
 
     private static string FormatMin(int min) => min <= 0 ? "—" : $"{min / 60}h {min % 60:00}m";
 
-    private static string StatusLabel(int status) => status switch
-    {
-        0 => "PENDING", 1 => "ACCEPTED", 2 => "REJECTED", 3 => "REVIEW", 4 => "ABORTED", _ => "?"
-    };
+    private static string StatusLabel(PirepStatus status) =>
+        status.ToString().ToUpperInvariant();
 
-    private static string StatusClasses(int status) => status switch
+    private static string StatusClasses(PirepStatus status) => status switch
     {
-        1 => "bg-emerald-400/10 border border-emerald-400/30 text-emerald-200",
-        2 => "bg-crimson/15 border border-crimson/40 text-rose-200",
-        4 => "bg-ink-800/70 border hairline text-mist",
+        PirepStatus.Accepted => "bg-emerald-400/10 border border-emerald-400/30 text-emerald-200",
+        PirepStatus.Rejected => "bg-crimson/15 border border-crimson/40 text-rose-200",
+        PirepStatus.Aborted => "bg-ink-800/70 border hairline text-mist",
         _ => "bg-amber-400/10 border border-amber-400/30 text-amber-200"
     };
 }

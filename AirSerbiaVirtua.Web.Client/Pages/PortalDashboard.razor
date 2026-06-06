@@ -35,7 +35,7 @@
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-mist text-[13px]">Flights flown</span>
-                        <span class="font-mono font-semibold text-white">@(_pireps?.Count(p => p.Status == 1).ToString() ?? "—")</span>
+                        <span class="font-mono font-semibold text-white">@(_pireps?.Count(p => p.Status == PirepStatus.Accepted).ToString() ?? "—")</span>
                     </div>
                 </div>
             </div>
@@ -109,7 +109,7 @@
     private List<PirepListItem>? _pireps;
 
     private IEnumerable<BookingInfo> ActiveBookings =>
-        _bookings?.Where(b => b.Status is 0 or 1) ?? [];
+        _bookings?.Where(b => b.Status is BookingStatus.Open or BookingStatus.Confirmed) ?? [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,8 +132,6 @@
         _ready = true;
     }
 
-    private static string StatusLabel(int status) => status switch
-    {
-        0 => "OPEN", 1 => "CONFIRMED", 2 => "FLOWN", 3 => "CANCELLED", _ => "EXPIRED"
-    };
+    private static string StatusLabel(BookingStatus status) =>
+        status.ToString().ToUpperInvariant();
 }

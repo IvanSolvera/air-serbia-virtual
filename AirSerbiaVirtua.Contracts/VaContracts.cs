@@ -1,13 +1,11 @@
 namespace AirSerbiaVirtua.Contracts;
 
 // =============================================================================
-// Shared DTO contracts for all AirSerbiaVirtua clients (website, desktop ACARS).
-// Mirrors the server DTOs in AirSerbiaVirtua.Api — property names serialize to
-// camelCase (System.Text.Json default).
-//
-// NOTE (W1): the desktop client still carries its own copies of these records
-// in AirSerbiaVirtua.Acars.Core/ApiContracts.cs. They converge here in phase W4
-// (desktop slim-down) — until then, keep field changes in sync in both files.
+// Shared DTO contracts for ALL AirSerbiaVirtua parties: the API serves these,
+// the desktop ACARS client and the web portal consume them. Property names
+// serialize to camelCase (System.Text.Json web defaults); enums serialize as
+// numbers (no JsonStringEnumConverter anywhere — keep it that way or every
+// client breaks). Wire shapes are locked by Tests.Unit/Contracts/WireShapeTests.
 // =============================================================================
 
 // ---- Auth -------------------------------------------------------------------
@@ -24,7 +22,7 @@ public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 public record PilotProfile(
     int Id, string Callsign, string Name, string Email,
     int RankId, string RankName, decimal TotalHours,
-    int Status, string HubId, DateTimeOffset DateJoined,
+    PilotStatus Status, string HubId, DateTimeOffset DateJoined,
     bool IsAdmin = false);
 
 public record AuthTokens(
@@ -66,11 +64,45 @@ public record BookingInfo(
     string AircraftType,
     int PlannedMinutes,
     DateOnly Date,
-    int Status);
+    BookingStatus Status,
+    DateTimeOffset? DispatchReadyAtUtc = null);
 
 public record CreateBookingRequest(int RouteId, DateOnly Date);
 
-// ---- PIREPs ---------------------------------------------------------------------
+// ---- Flight session ---------------------------------------------------------
+public record FlightStartRequest(int RouteId, int AircraftId, DateOnly Date);
+
+public record FlightStartResponse(
+    int FlightSessionId, int RouteId, int AircraftId,
+    string AircraftRegistration, DateTimeOffset StartedAtUtc);
+
+// ---- Outstation (ad-hoc charter) -----------------------------------------------
+public record OutstationStartRequest(
+    string DepIcao, string ArrIcao, int AircraftId, string FlightNumber);
+
+// ---- Position report (POSREP) ----------------------------------------------
+/// <summary>
+/// POSREP wire payload. <see cref="ClientReportId"/> is generated once per
+/// sample and stays stable across retries so the server can dedupe
+/// (production-readiness item #5). The telemetry-to-report factory lives in
+/// Acars.Core (PositionReports.FromTelemetry) — it needs sim-side types.
+/// </summary>
+public record PositionReport(
+    Guid ClientReportId,
+    DateTimeOffset Timestamp, double Lat, double Lon,
+    int AltFt, int GsKts, FlightPhase Phase);
+
+// ---- PIREP submission -------------------------------------------------------
+public record PirepSubmitRequest(
+    int FlightSessionId, DateTimeOffset DepActual, DateTimeOffset ArrActual,
+    int BlockMin, int AirMin, int FuelUsedKg, int LandingRateFpm,
+    string Source, string? RawJson);
+
+public record PirepResult(
+    int PirepId, PirepStatus Status, int Score, int LandingRateFpm,
+    int BlockMin, decimal PilotTotalHours, int RankId, string RankName, bool Promoted);
+
+// ---- Logbook ----------------------------------------------------------------
 public record PirepListItem(
     int Id,
     string FlightNumber,
@@ -85,7 +117,14 @@ public record PirepListItem(
     int FuelUsedKg,
     int LandingRateFpm,
     int Score,
-    int Status);
+    PirepStatus Status);
+
+// ---- Airport sync -----------------------------------------------------------
+public record AirportDto(
+    string Icao, string? Iata, string Name, string Country,
+    double Lat, double Lon, int Elevation, int Revision);
+
+public record AirportSyncResponse(int Since, int LatestRevision, int Count, List<AirportDto> Airports);
 
 // ---- Weather ----------------------------------------------------------------------
 public record MetarInfo(string Icao, string? Raw, DateTimeOffset? ObservedAtUtc);
@@ -97,5 +136,5 @@ public record VaStats(int Pilots, int FlightsFlown, decimal HoursLogged, int Rou
 public record AdminPilot(
     int Id, string Callsign, string Name, string Email,
     string RankName, decimal TotalHours,
-    int Status, string HubId, DateTimeOffset DateJoined,
+    PilotStatus Status, string HubId, DateTimeOffset DateJoined,
     bool IsAdmin, string? VatsimId = null);

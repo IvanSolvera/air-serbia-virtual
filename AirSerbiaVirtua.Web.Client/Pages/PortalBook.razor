@@ -103,7 +103,7 @@
     private List<BookingInfo>? _bookings;
 
     private IEnumerable<BookingInfo> ActiveBookings =>
-        _bookings?.Where(b => b.Status is 0 or 1) ?? [];
+        _bookings?.Where(b => b.Status is BookingStatus.Open or BookingStatus.Confirmed) ?? [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -153,8 +153,6 @@
         _busy = false;
     }
 
-    private static string StatusLabel(int status) => status switch
-    {
-        0 => "OPEN", 1 => "CONFIRMED", 2 => "FLOWN", 3 => "CANCELLED", _ => "EXPIRED"
-    };
+    private static string StatusLabel(BookingStatus status) =>
+        status.ToString().ToUpperInvariant();
 }
