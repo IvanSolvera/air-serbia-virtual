@@ -174,6 +174,46 @@ public sealed partial class AcarsViewModel : ObservableObject, IDisposable
     private bool CanSubmitPirep() =>
         !IsSubmitting && _flightState.HasActiveSession && _currentPhase == FlightState.Arrived;
 
+    /// <summary>
+    /// Abandons the active flight (GVA item #14): PIREP → Aborted server-side,
+    /// aircraft released, booking re-opened so the leg can be flown again.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanAbortFlight))]
+    private async Task AbortFlightAsync()
+    {
+        if (_flightState.FlightSessionId is not { } sessionId) return;
+
+        var confirm = MessageBox.Show(
+            $"Abort flight {_flightState.FlightNumber}?\n\n" +
+            "The PIREP will be recorded as Aborted, the aircraft released, and the " +
+            "booking re-opened so you can fly the leg again.",
+            "Abort flight",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        IsSubmitting = true;
+        SubmitErrorMessage = null;
+        try
+        {
+            await _session.Api.AbortFlightAsync(sessionId);
+            _flightState.Clear();
+            SessionHeaderText = "Flight aborted — the booking is open again.";
+        }
+        catch (Exception ex)
+        {
+            SubmitErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsSubmitting = false;
+            SubmitPirepCommand.NotifyCanExecuteChanged();
+            AbortFlightCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    private bool CanAbortFlight() => !IsSubmitting && _flightState.HasActiveSession;
+
     /// <summary>HTTP statuses a POSREP can never recover from — drop rather than retry.</summary>
     private static bool IsPermanent(HttpStatusCode code) => code is
         HttpStatusCode.BadRequest or       // 400 — malformed sample
@@ -229,6 +269,7 @@ public sealed partial class AcarsViewModel : ObservableObject, IDisposable
                 _ = StopPosRepLoopAsync();
             }
             SubmitPirepCommand.NotifyCanExecuteChanged();
+            AbortFlightCommand.NotifyCanExecuteChanged();
         });
 
     private void StartPosRepLoop()

@@ -122,6 +122,10 @@
                                                                 <Setter Property="Background" Value="#29D8203F" />
                                                                 <Setter Property="BorderBrush" Value="#66D8203F" />
                                                             </DataTrigger>
+                                                            <DataTrigger Binding="{Binding StatusLabel}" Value="Aborted">
+                                                                <Setter Property="Background" Value="#1A9DB1D2" />
+                                                                <Setter Property="BorderBrush" Value="{StaticResource Suite.HairlineStrong}" />
+                                                            </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
@@ -135,6 +139,9 @@
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding StatusLabel}" Value="Rejected">
                                                                     <Setter Property="Foreground" Value="#FFFFD2DA" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding StatusLabel}" Value="Aborted">
+                                                                    <Setter Property="Foreground" Value="{StaticResource Suite.Mist}" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>

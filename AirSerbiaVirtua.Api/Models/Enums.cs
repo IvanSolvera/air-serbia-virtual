@@ -36,7 +36,9 @@ public enum PirepStatus
     Pending = 0,
     Accepted = 1,
     Rejected = 2,
-    UnderReview = 3
+    UnderReview = 3,
+    /// <summary>Flight was abandoned (sim crash, user abort) — first-class outcome, not a stuck Pending.</summary>
+    Aborted = 4
 }
 
 /// <summary>Phase of flight for a recorded position sample.</summary>

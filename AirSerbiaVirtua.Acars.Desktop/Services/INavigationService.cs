@@ -12,7 +12,8 @@ public enum NavTarget
     Acars,
     Debriefing,
     Outstation,
-    Logbook
+    Logbook,
+    Admin
 }
 
 /// <summary>Swaps the active view in the shell's content area.</summary>

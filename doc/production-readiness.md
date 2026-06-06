@@ -149,6 +149,7 @@ produkciju; redosled po vrednosti.
 **Zašto:** GVA `FlightPhase` ima 14 faza uključujući Aborted i Error — neuspeli letovi su first-class. Naš `FlightState` nema način da obeleži prekinut let.
 **Uradi:** dodati `Aborted` i opciono `Pushback` u `FlightState`; state machine prelazi u `Aborted` na crash/prekid; PIREP to beleži umesto da visi u Pending.
 **Gotovo kad:** crash u simu ili user-abort rezultuje `Aborted` PIREP-om, ne zaglavljenim Pending-om.
+**🔶 Delimično urađeno 2026-06-06 (user-abort):** `PirepStatus.Aborted = 4`, `POST /api/v1/flights/{id}/abort` (PIREP → Aborted, avion → Active, booking → Open), klijent: Abort dugme na ACARS strani sa potvrdom, `ApiService.AbortFlightAsync`, Logbook/Debrief prikazuju Aborted (mist badge). Verifikovano E2E (book→start→abort→provere + dup abort → 409); usput očišćena 2 zaglavljena Pending leta (YU-API/YU-APB vraćeni u Active). **Ostaje:** automatska detekcija sim crash-a (FSUIPC crash flag) → auto-abort.
 
 ---
 

@@ -17,6 +17,10 @@ public interface ISessionService
     event EventHandler? StateChanged;
 
     Task<LoginResult> LoginAsync(string callsign, string password, CancellationToken ct = default);
+
+    /// <summary>Silent sign-in from the persisted refresh token (Auto Login).</summary>
+    Task<bool> TryAutoLoginAsync(CancellationToken ct = default);
+
     Task LogoutAsync(CancellationToken ct = default);
 }
 

@@ -1,0 +1,71 @@
+@inherits LayoutComponentBase
+
+<div class="min-h-screen flex flex-col">
+
+    <!-- ===== Top bar ===== -->
+    <header class="sticky top-0 z-40 border-b hairline bg-ink-900/85 backdrop-blur">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6">
+            <div class="flex h-16 items-center justify-between gap-6">
+
+                <!-- Brand -->
+                <a href="/" class="flex items-center gap-3 shrink-0">
+                    <svg class="h-9 w-9" viewBox="0 0 120 120" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="lgbg" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#1b3e6e" />
+                                <stop offset="1" stop-color="#08152e" />
+                            </linearGradient>
+                        </defs>
+                        <rect x="2" y="2" width="116" height="116" rx="28" fill="url(#lgbg)" stroke="#ffffff" stroke-opacity="0.14" stroke-width="1.5" />
+                        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M27 58 L46 40 L60 51 L74 40 L93 58" stroke="#F4F7FB" stroke-width="8.5" />
+                            <path d="M22 77 L60 58 L98 77" stroke="#F4F7FB" stroke-width="8" />
+                            <path d="M34 91 L60 77 L86 91" stroke="#D8203F" stroke-width="7.5" />
+                        </g>
+                    </svg>
+                    <span class="leading-tight">
+                        <span class="block font-display font-extrabold text-[15px] tracking-tight text-white">Air Serbia Virtual</span>
+                        <span class="block font-mono text-[9px] tracking-[0.28em] text-mist">FLIGHT CREW CENTER</span>
+                    </span>
+                </a>
+
+                <!-- Tabs -->
+                <nav class="hidden md:flex items-center gap-1 text-[13.5px] font-semibold text-mist">
+                    <NavLink href="/" Match="NavLinkMatch.All" class="tab-btn px-3 py-5 hover:text-white transition-colors" ActiveClass="active">Home</NavLink>
+                    <NavLink href="schedules" class="tab-btn px-3 py-5 hover:text-white transition-colors" ActiveClass="active">Schedules</NavLink>
+                    <NavLink href="fleet" class="tab-btn px-3 py-5 hover:text-white transition-colors" ActiveClass="active">Fleet</NavLink>
+                    <NavLink href="join" class="tab-btn px-3 py-5 hover:text-white transition-colors" ActiveClass="active">Join us</NavLink>
+                </nav>
+
+                <!-- Pilot portal -->
+                <div class="flex items-center gap-3 shrink-0">
+                    <a href="portal"
+                       class="rounded-lg bg-gradient-to-b from-crimson-bright to-crimson px-4 py-2 text-[13px] font-bold text-white shadow-lg shadow-crimson/30 hover:brightness-110 transition">
+                        Pilot portal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== Page ===== -->
+    <main class="flex-1 page-fade">
+        @Body
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <footer class="border-t hairline mt-16">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="font-mono text-[11px] tracking-wide text-mist/70">© Air Serbia Virtual — community build</p>
+            <p class="text-[11.5px] text-mist/60 max-w-xl text-center sm:text-right">
+                Non-commercial flight-simulation community. Original community mark — not affiliated with Air Serbia a.d.
+            </p>
+        </div>
+    </footer>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

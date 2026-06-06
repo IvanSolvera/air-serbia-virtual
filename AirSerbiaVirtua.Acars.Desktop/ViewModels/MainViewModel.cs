@@ -23,6 +23,7 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly DispatcherTimer _ping;
 
     [ObservableProperty] private bool _isAuthenticated;
+    [ObservableProperty] private bool _isAdmin;
 
     // ---- Status bar ------------------------------------------------------------
     [ObservableProperty] private string _serverStatusText = "Offline";
@@ -129,6 +130,9 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsAuthenticated))]
     private void NavigateLogbook() => _navigation.NavigateTo(NavTarget.Logbook);
 
+    [RelayCommand(CanExecute = nameof(IsAdmin))]
+    private void NavigateAdmin() => _navigation.NavigateTo(NavTarget.Admin);
+
     [RelayCommand(CanExecute = nameof(IsAuthenticated))]
     private async Task LogoutAsync()
     {
@@ -139,6 +143,7 @@ public sealed partial class MainViewModel : ObservableObject
     private void OnSessionChanged(object? sender, EventArgs e)
     {
         IsAuthenticated = _session.IsAuthenticated;
+        IsAdmin = IsAuthenticated && _session.Pilot?.IsAdmin == true;
 
         if (_session.Pilot is { } p)
         {
@@ -163,6 +168,7 @@ public sealed partial class MainViewModel : ObservableObject
         NavigateDebriefingCommand.NotifyCanExecuteChanged();
         NavigateOutstationCommand.NotifyCanExecuteChanged();
         NavigateLogbookCommand.NotifyCanExecuteChanged();
+        NavigateAdminCommand.NotifyCanExecuteChanged();
         LogoutCommand.NotifyCanExecuteChanged();
 
         // Auto-jump to the Pilot Centre when login succeeds.

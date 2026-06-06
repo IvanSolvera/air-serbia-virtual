@@ -305,6 +305,9 @@ namespace AirSerbiaVirtua.Api.Migrations
                         .HasMaxLength(4)
                         .HasColumnType("character varying(4)");
 
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -595,6 +598,9 @@ namespace AirSerbiaVirtua.Api.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<bool>("IsOutstation")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("PlannedTime")
                         .HasColumnType("integer");
 
@@ -619,6 +625,7 @@ namespace AirSerbiaVirtua.Api.Migrations
                             DepIcao = "LYBE",
                             Distance = 215,
                             FlightNumber = "JU360",
+                            IsOutstation = false,
                             PlannedTime = 50
                         },
                         new
@@ -630,6 +637,7 @@ namespace AirSerbiaVirtua.Api.Migrations
                             DepIcao = "LYBE",
                             Distance = 195,
                             FlightNumber = "JU450",
+                            IsOutstation = false,
                             PlannedTime = 45
                         },
                         new
@@ -641,6 +649,7 @@ namespace AirSerbiaVirtua.Api.Migrations
                             DepIcao = "LYBE",
                             Distance = 580,
                             FlightNumber = "JU380",
+                            IsOutstation = false,
                             PlannedTime = 95
                         },
                         new
@@ -652,6 +661,7 @@ namespace AirSerbiaVirtua.Api.Migrations
                             DepIcao = "LYBE",
                             Distance = 500,
                             FlightNumber = "JU410",
+                            IsOutstation = false,
                             PlannedTime = 90
                         },
                         new
@@ -663,6 +673,7 @@ namespace AirSerbiaVirtua.Api.Migrations
                             DepIcao = "LYBE",
                             Distance = 480,
                             FlightNumber = "JU800",
+                            IsOutstation = false,
                             PlannedTime = 85
                         },
                         new
@@ -674,6 +685,7 @@ namespace AirSerbiaVirtua.Api.Migrations
                             DepIcao = "LYBE",
                             Distance = 615,
                             FlightNumber = "JU390",
+                            IsOutstation = false,
                             PlannedTime = 105
                         });
                 });

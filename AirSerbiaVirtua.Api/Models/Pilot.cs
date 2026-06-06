@@ -36,6 +36,9 @@ public class Pilot
 
     public PilotStatus Status { get; set; } = PilotStatus.Pending;
 
+    /// <summary>Grants access to the roster admin endpoints (promote/deactivate pilots).</summary>
+    public bool IsAdmin { get; set; }
+
     /// <summary>Home hub ICAO, references <see cref="Airport.Icao"/>.</summary>
     [MaxLength(4)]
     public string HubId { get; set; } = null!;

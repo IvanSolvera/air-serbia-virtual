@@ -1,4 +1,4 @@
-using AirSerbiaVirtua.Acars.Core;
+﻿using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -7,7 +7,7 @@ namespace AirSerbiaVirtua.Acars.Desktop.ViewModels;
 
 /// <summary>
 /// Debriefing (Phase 4): post-flight analysis of the most recently submitted
-/// PIREP — score, landing quality, block/air time and fuel.
+/// PIREP â€” score, landing quality, block/air time and fuel.
 /// </summary>
 public sealed partial class DebriefingViewModel : ObservableObject
 {
@@ -17,18 +17,18 @@ public sealed partial class DebriefingViewModel : ObservableObject
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string? _statusMessage;
 
-    [ObservableProperty] private string _flightNumber = "—";
-    [ObservableProperty] private string _legLabel = "—";
-    [ObservableProperty] private string _aircraft = "—";
-    [ObservableProperty] private string _dateLabel = "—";
+    [ObservableProperty] private string _flightNumber = "â€”";
+    [ObservableProperty] private string _legLabel = "â€”";
+    [ObservableProperty] private string _aircraft = "â€”";
+    [ObservableProperty] private string _dateLabel = "â€”";
     [ObservableProperty] private int _score;
-    [ObservableProperty] private string _scoreGrade = "—";
-    [ObservableProperty] private string _landingRate = "—";
-    [ObservableProperty] private string _landingVerdict = "—";
-    [ObservableProperty] private string _blockTime = "—";
-    [ObservableProperty] private string _airTime = "—";
-    [ObservableProperty] private string _fuelUsed = "—";
-    [ObservableProperty] private string _statusLabel = "—";
+    [ObservableProperty] private string _scoreGrade = "â€”";
+    [ObservableProperty] private string _landingRate = "â€”";
+    [ObservableProperty] private string _landingVerdict = "â€”";
+    [ObservableProperty] private string _blockTime = "â€”";
+    [ObservableProperty] private string _airTime = "â€”";
+    [ObservableProperty] private string _fuelUsed = "â€”";
+    [ObservableProperty] private string _statusLabel = "â€”";
 
     public DebriefingViewModel(ISessionService session)
     {
@@ -61,12 +61,12 @@ public sealed partial class DebriefingViewModel : ObservableObject
 
             HasPirep = true;
             FlightNumber = p.FlightNumber;
-            LegLabel = $"{p.DepIcao} → {p.ArrIcao}";
-            Aircraft = $"{p.AircraftType} · {p.AircraftRegistration}";
+            LegLabel = $"{p.DepIcao} â†’ {p.ArrIcao}";
+            Aircraft = $"{p.AircraftType} Â· {p.AircraftRegistration}";
             DateLabel = p.DepActual.UtcDateTime.ToString("d MMM yyyy HH:mm") + " UTC";
             Score = p.Score;
             ScoreGrade = Grade(p.Score);
-            LandingRate = p.LandingRateFpm != 0 ? $"{p.LandingRateFpm} fpm" : "—";
+            LandingRate = p.LandingRateFpm != 0 ? $"{p.LandingRateFpm} fpm" : "â€”";
             LandingVerdict = LandingQuality(p.LandingRateFpm);
             BlockTime = $"{p.BlockMin / 60}h {p.BlockMin % 60:D2}m";
             AirTime = $"{p.AirMin / 60}h {p.AirMin % 60:D2}m";
@@ -97,14 +97,14 @@ public sealed partial class DebriefingViewModel : ObservableObject
         int a = Math.Abs(fpm);
         return a switch
         {
-            0 => "—",
-            <= 100 => "Butter — greaser landing.",
+            0 => "â€”",
+            <= 100 => "Butter â€” greaser landing.",
             <= 200 => "Smooth landing.",
             <= 350 => "Firm but acceptable.",
             <= 600 => "Hard landing.",
-            _ => "Very hard — inspect required in the real world."
+            _ => "Very hard â€” inspect required in the real world."
         };
     }
 
-    private enum PirepStatusLabel { Pending = 0, Accepted = 1, Rejected = 2, UnderReview = 3 }
+    private enum PirepStatusLabel { Pending = 0, Accepted = 1, Rejected = 2, UnderReview = 3, Aborted = 4 }
 }

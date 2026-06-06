@@ -23,7 +23,8 @@ public class RoutesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<RouteDto>>> List([FromQuery] string? hub = null)
     {
-        var query = _db.Routes.AsNoTracking().AsQueryable();
+        // Outstation legs are one-offs — they never appear in the bookable schedule.
+        var query = _db.Routes.AsNoTracking().Where(r => !r.IsOutstation);
         if (!string.IsNullOrWhiteSpace(hub))
         {
             var h = hub.Trim().ToUpperInvariant();

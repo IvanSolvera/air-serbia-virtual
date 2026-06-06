@@ -19,7 +19,19 @@ public record RefreshRequest(string RefreshToken);
 public record PilotProfileDto(
     int Id, string Callsign, string Name, string Email,
     int RankId, string RankName, decimal TotalHours,
-    PilotStatus Status, string HubId, DateTimeOffset DateJoined);
+    PilotStatus Status, string HubId, DateTimeOffset DateJoined,
+    bool IsAdmin);
+
+// ---- Admin (roster management) ------------------------------------------------
+public record AdminPilotDto(
+    int Id, string Callsign, string Name, string Email,
+    string RankName, decimal TotalHours,
+    PilotStatus Status, string HubId, DateTimeOffset DateJoined,
+    bool IsAdmin);
+
+// ---- Outstation (ad-hoc charter) -----------------------------------------------
+public record OutstationStartRequest(
+    string DepIcao, string ArrIcao, int AircraftId, string FlightNumber);
 
 /// <summary>Both tokens issued by login or refresh.</summary>
 public record AuthTokensDto(

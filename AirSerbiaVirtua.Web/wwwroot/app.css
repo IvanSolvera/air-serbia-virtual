@@ -1,0 +1,90 @@
+/* ============================================================
+   Air Serbia Virtual — Flight Crew Center
+   Base styles ported from the approved static design
+   (design reference: doc/design/website/). Tailwind handles
+   utility classes; this file holds the non-utility layer.
+   ============================================================ */
+
+:root { color-scheme: dark; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(37, 99, 214, 0.18), transparent 60%),
+        radial-gradient(900px 500px at 0% 0%, rgba(216, 32, 63, 0.10), transparent 55%),
+        #06122a;
+}
+
+/* Frosted card */
+.panel {
+    background: linear-gradient(180deg, rgba(20, 48, 87, 0.55), rgba(10, 28, 56, 0.55));
+    border: 1px solid rgba(157, 177, 210, 0.14);
+    backdrop-filter: blur(10px);
+}
+
+/* Opaque card */
+.panel-solid {
+    background: linear-gradient(180deg, #0e2649, #0a1d3a);
+    border: 1px solid rgba(157, 177, 210, 0.12);
+}
+
+.hairline { border-color: rgba(157, 177, 210, 0.12); }
+
+/* Top nav tabs: active = white text + royal→crimson underline */
+.tab-btn { position: relative; white-space: nowrap; }
+.tab-btn.active, .tab-btn[aria-selected="true"] { color: #fff; }
+.tab-btn.active::after, .tab-btn[aria-selected="true"]::after {
+    content: "";
+    position: absolute;
+    left: 12px; right: 12px; bottom: -1px; height: 2px;
+    background: linear-gradient(90deg, #2563d6, #d8203f);
+    border-radius: 2px;
+}
+
+.stat-num { font-variant-numeric: tabular-nums; }
+
+/* Faint blueprint grid overlay for hero sections */
+.grid-overlay {
+    background-image:
+        linear-gradient(rgba(157, 177, 210, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(157, 177, 210, 0.05) 1px, transparent 1px);
+    background-size: 38px 38px;
+}
+
+/* Page transition */
+@media (prefers-reduced-motion: no-preference) {
+    .page-fade { animation: fade .35s ease; }
+}
+@keyframes fade {
+    from { transform: translateY(8px); opacity: 0.6; }
+    to   { transform: none; opacity: 1; }
+}
+
+/* Forms (Blazor validation, restyled to brand) */
+h1:focus { outline: none; }
+.valid.modified:not([type=checkbox]) { outline: 1px solid #34d399; }
+.invalid { outline: 1px solid #ef3a57; }
+.validation-message { color: #ef3a57; }
+
+/* Blazor error UI (kept from template, restyled to brand) */
+#blazor-error-ui {
+    background: #0e2649;
+    color: #f4f7fb;
+    border-top: 2px solid #d8203f;
+    bottom: 0;
+    box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.4);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}

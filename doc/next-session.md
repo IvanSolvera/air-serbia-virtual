@@ -1,5 +1,113 @@
 # Continuation log — pick-up notes
 
+## Update 2026-06-06 (W1) — Website foundation scaffolded (Blazor per spec)
+
+User chose **Blazor per doc/website-design.md** (over adopting the static SPA
+directly); the delivered static design is the visual reference, copied into
+the repo at `doc/design/website/` (index.html + app.js + assets + README that
+maps mock arrays → API endpoints).
+
+Done (phase W1, partial):
+- New projects in sln: `AirSerbiaVirtua.Contracts` (shared DTOs, zero deps),
+  `AirSerbiaVirtua.Web` (Blazor Web App host, SSR public pages),
+  `AirSerbiaVirtua.Web.Client` (WASM, interactive portal later).
+  Web → Web.Client + Contracts; Web.Client → Contracts.
+- Contracts: auth/profile/routes/fleet/bookings/pireps/metar/admin records
+  (`AirSerbiaVirtua.Contracts` ns). **Desktop still uses its own copies in
+  Acars.Core/ApiContracts.cs — converge in W4** (noted in file header).
+- Theme: Tailwind CDN + brand config (ink/royal/crimson/mist, Sora/Manrope/
+  JetBrains Mono) in `App.razor`; `.panel/.tab-btn/.grid-overlay` etc. ported
+  into `wwwroot/app.css`. Aircraft assets in `wwwroot/assets/`.
+- `MainLayout` (sticky header: SVG chevron logo, tabs Home/Schedules/Fleet/
+  Join us, crimson "Pilot portal" button; footer w/ disclaimer) and `Home`
+  (hero + CTA + stats strip with "—" placeholders for `GET /api/v1/stats`).
+- `ComingSoon.razor` serves /schedules /fleet /join /portal until W2/W3.
+- CORS: web dev origins (http://localhost:5166, https://localhost:7064) added
+  to API `appsettings.Development.json`.
+- Root `docker-compose.yml` (postgres/api/web; Dockerfiles still TODO).
+- Smoke-tested: `dotnet run` Web on :5166 → landing 200 with hero/brand/
+  Tailwind, /schedules 200 coming-soon. Web runs standalone (no API needed yet).
+
+**W1 remaining:** API+Web Dockerfiles; login/register pages (WASM) against the
+API; `GET /api/v1/stats` endpoint + wire the landing stats strip.
+**Then W2:** schedules table, fleet cards, route map (Leaflet), join form.
+**Hosting:** Hetzner — NOT yet provisioned; everything local for now.
+
+## Update 2026-06-06 (late night) — Outstation Flights: ACARS app FEATURE-COMPLETE
+
+Every sidebar tab is now a real page. Outstation (Option A — ad-hoc Route rows):
+- `Route.IsOutstation` + migration `AddOutstationRoutes`; schedule list
+  (`GET /routes`) excludes outstation legs; `GET /routes/{id}` still serves
+  them (Briefing works).
+- `POST /api/v1/flights/start-outstation` { depIcao, arrIcao, aircraftId,
+  flightNumber }: validates ICAOs, auto-registers unknown airports as stubs
+  (lat/lon 0 → distance 0), creates one-off Route + Pending PIREP, locks
+  aircraft. No booking involved; submit/abort already handle bookingless
+  sessions.
+- Desktop `OutstationView`: charter form (flight number default JU9xx, dep/arr
+  ICAO, Active-fleet ComboBox) → starts session → jumps to ACARS Live.
+- E2E verified: LYBE→LDZA (LDZA auto-stubbed), hidden from schedule, POSREP
+  accepted, abort w/o booking, aircraft released, logbook row correct.
+
+**WEBSITE (next big block):** design delivered at
+`e:\Programiranje\Projects\AirSerbiaVirtual\WebSite\air-serbia-virtual\` —
+static SPA (HTML + Tailwind CDN + vanilla JS), 8 tabs (Home, Live Flights,
+Schedules, Profile, Fleet, Dispatch, Downloads, Heritage), mock data in
+`app.js` with a README mapping each mock array to suggested API endpoints.
+Architecture spec in `doc/website-design.md`. **Hosting target: Hetzner — not
+yet provisioned** (build + wire locally first).
+
+## Update 2026-06-06 (night) — Phase 5: METARs page + Roster Admin
+
+**METARs page (placeholder retired):** `MetarsViewModel/View` — multi-ICAO
+lookup (max 8, Enter or button), network-airport chips auto-loaded from the
+route schedule, result cards with observation age; graceful "no METAR" state.
+
+**Roster Admin (the Pending-login hole is CLOSED):**
+- `Pilot.IsAdmin` + migration `AddPilotAdmin` (seeds ASL001 → admin + Active).
+- JWT carries `role: Admin` claim when `IsAdmin`.
+- `GET/POST /api/v1/admin/pilots[/{id}/activate|/{id}/deactivate]` guarded by
+  `[Authorize(Roles="Admin")]`. Deactivate blocks self + admins.
+- **Login now rejects Pending** ("Account awaiting approval…") in addition to
+  Banned/Inactive. Registration flow: register → Pending → admin approves.
+- `PilotProfileDto`/`PilotProfile` gained `IsAdmin`; new `AdminPilot(Dto)`.
+- Desktop: "Roster Admin" sidebar item (ShieldAccountOutline) visible only to
+  admins, below a separator; `AdminView` roster table (status badges, shield
+  marker on admins, Approve for Pending/Inactive, Deactivate w/ confirm for
+  Active non-admins), summary line "N pilots · M awaiting approval".
+- **E2E verified (all 9 checks):** migration seed, roster list, register→Pending,
+  Pending login 403, activate, activated login OK, non-admin admin-access 403,
+  deactivate + inactive login 403, self-deactivate 409.
+- Test artifact: pilot **ASL999** (Test Pilot) left in DB as **Inactive** —
+  handy for demoing the Approve button; delete whenever.
+
+**Phase 5 remaining:** Outstation flights (needs design decision: nullable
+Pirep.RouteId vs ad-hoc Route rows; then start-outstation endpoint + UI).
+Then: Website + AI Dispatcher (doc/website-design.md).
+
+## Update 2026-06-06 (evening) — quick wins
+
+- **Auto Login (real)** — refresh token persisted via DPAPI (CurrentUser) to
+  `%LOCALAPPDATA%/AirSerbiaVirtua/session.token` (`SessionTokenStore`).
+  `ApiService`: `TokensUpdated` event (fires on every rotation), `GetMeAsync`
+  (new API `GET /api/v1/auth/me`), `TryRestoreSessionAsync`. `SessionService`
+  persists on rotation while AutoLogin=on (deletes when off / on sign-out);
+  `App.OnStartup` calls `TryAutoLoginAsync()` before showing the shell.
+  LoginViewModel saves toggles BEFORE the login call (ordering matters — the
+  token event fires mid-login). Server side verified (refresh→me round-trip);
+  **client E2E (restart app with toggle on) still needs a manual check.**
+- **Aborted flights (GVA #14, user-abort half)** — `PirepStatus.Aborted=4`,
+  `POST /api/v1/flights/{id}/abort` re-opens booking + releases aircraft;
+  ACARS page got a ghost Abort button (confirm dialog). Logbook/Debrief show
+  Aborted (mist badge). Verified E2E incl. dup-abort 409. Crash-detection
+  auto-abort still open. **Cleaned up the 2 stuck Pending flights** — fleet
+  all-Active again.
+- **Legacy cleanup** — old `Brand.*` palette/styles deleted from App.xaml
+  (MahApps dictionaries kept — they still provide base control styles).
+- Next big block (user's pick): see Mid-term roadmap — Website + AI Dispatcher
+  (doc/website-design.md) and Phase 5; GVA #13 (rich telemetry) deliberately
+  deferred until after the Phase 2b verification flight.
+
 ## Update 2026-06-06 (later) — per-page Suite redesign v2
 
 User supplied a second mockup (`Air Serbia Virtual - ACARS App (standalone) 2.html`,

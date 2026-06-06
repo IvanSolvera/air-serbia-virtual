@@ -232,6 +232,18 @@
                                 <TextBlock Text="Logbook" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
+
+                        <!-- Admin-only -->
+                        <StackPanel Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisConverter}}">
+                            <Rectangle Height="1" Fill="{StaticResource Suite.Hairline}" Margin="12,10" />
+                            <Button Style="{StaticResource Suite.NavItem}" Command="{Binding NavigateAdminCommand}"
+                                    Tag="{Binding Navigation.Current, Converter={StaticResource EqualsParameterConverter}, ConverterParameter=Admin}">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="ShieldAccountOutline" Width="18" Height="18" VerticalAlignment="Center" />
+                                    <TextBlock Text="Roster Admin" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- Pilot card (click -> Pilot Centre) -->

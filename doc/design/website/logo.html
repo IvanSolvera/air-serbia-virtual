@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Air Serbia Virtual — Logo System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { display: ['Sora','sans-serif'], sans: ['Manrope','sans-serif'], mono: ['"JetBrains Mono"','monospace'] },
+    colors: { ink:{900:'#06122a',800:'#0c2244',700:'#16365f'}, royal:{DEFAULT:'#2563d6',bright:'#3f86f4',deep:'#1546a8'}, crimson:{DEFAULT:'#d8203f',bright:'#ef3a57'}, mist:'#9db1d2' }
+  } } };
+</script>
+<style>
+  :root { color-scheme: dark; }
+  body { background: radial-gradient(1100px 560px at 82% -8%, rgba(37,99,214,0.16), transparent 60%), radial-gradient(800px 460px at 0% 0%, rgba(216,32,63,0.09), transparent 55%), #06122a; }
+  .panel { background: linear-gradient(180deg, rgba(20,48,87,0.5), rgba(10,28,56,0.5)); border: 1px solid rgba(157,177,210,0.14); }
+  .hairline { border-color: rgba(157,177,210,0.14); }
+  pre { tab-size: 2; }
+  pre::-webkit-scrollbar { height: 8px; }
+  pre::-webkit-scrollbar-thumb { background: rgba(157,177,210,0.25); border-radius: 8px; }
+  ::selection { background: rgba(216,32,63,0.4); }
+  .chip { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body class="font-sans text-slate-100 antialiased min-h-screen">
+
+  <header class="max-w-[1100px] mx-auto px-6 pt-12 pb-6">
+    <div class="flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] text-mist mb-4">
+      <span class="w-1.5 h-1.5 rounded-full bg-crimson"></span> BRAND IDENTITY · ORIGINAL COMMUNITY MARK
+    </div>
+    <h1 class="font-display font-extrabold text-4xl sm:text-5xl tracking-tight">Air Serbia Virtual — Logo System</h1>
+    <p class="text-mist mt-4 max-w-2xl leading-relaxed">An original, community-owned identity for the virtual airline — a geometric <span class="text-white">twin-wing mark</span> evoking a double-headed eagle and a soaring delta jet. Deliberately distinct from the official Air Serbia trademark. Preview each lockup below and copy the clean SVG.</p>
+  </header>
+
+  <main class="max-w-[1100px] mx-auto px-6 pb-24 space-y-6">
+
+    <!-- HORIZONTAL -->
+    <section class="panel rounded-3xl overflow-hidden">
+      <div class="px-7 py-5 border-b hairline flex items-center justify-between gap-4">
+        <div>
+          <h2 class="font-display font-bold text-xl">1 · Horizontal lockup</h2>
+          <p class="text-sm text-mist mt-1">Navbars, headers, email signatures.</p>
+        </div>
+        <button class="copy-btn shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-royal hover:bg-royal-bright text-white text-sm font-bold transition" data-src="horizontal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy SVG
+        </button>
+      </div>
+      <div class="grid md:grid-cols-2">
+        <div class="p-10 grid place-items-center" style="background:linear-gradient(160deg,#0e2649,#06122a)" id="prev-horizontal-dark"></div>
+        <div class="p-10 grid place-items-center bg-white" id="prev-horizontal-light"></div>
+      </div>
+      <pre class="text-[12px] leading-relaxed font-mono text-slate-300 bg-[#040c1c] border-t hairline px-6 py-5 overflow-x-auto"><code id="code-horizontal"></code></pre>
+    </section>
+
+    <!-- VERTICAL + ICON -->
+    <div class="grid lg:grid-cols-2 gap-6">
+      <section class="panel rounded-3xl overflow-hidden">
+        <div class="px-7 py-5 border-b hairline flex items-center justify-between gap-4">
+          <div>
+            <h2 class="font-display font-bold text-xl">2 · Stacked lockup</h2>
+            <p class="text-sm text-mist mt-1">Social, Discord, liveries.</p>
+          </div>
+          <button class="copy-btn shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-royal hover:bg-royal-bright text-white text-sm font-bold transition" data-src="vertical">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy SVG
+          </button>
+        </div>
+        <div class="p-10 grid place-items-center" style="background:linear-gradient(160deg,#0e2649,#06122a)" id="prev-vertical-dark"></div>
+        <pre class="text-[12px] leading-relaxed font-mono text-slate-300 bg-[#040c1c] border-t hairline px-6 py-5 overflow-x-auto"><code id="code-vertical"></code></pre>
+      </section>
+
+      <section class="panel rounded-3xl overflow-hidden">
+        <div class="px-7 py-5 border-b hairline flex items-center justify-between gap-4">
+          <div>
+            <h2 class="font-display font-bold text-xl">3 · App badge (icon only)</h2>
+            <p class="text-sm text-mist mt-1">Favicon, avatar, app tile.</p>
+          </div>
+          <button class="copy-btn shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-royal hover:bg-royal-bright text-white text-sm font-bold transition" data-src="badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy SVG
+          </button>
+        </div>
+        <div class="p-10 grid place-items-center gap-8" style="background:linear-gradient(160deg,#0e2649,#06122a)">
+          <div class="flex items-end gap-8" id="prev-badge-sizes"></div>
+        </div>
+        <pre class="text-[12px] leading-relaxed font-mono text-slate-300 bg-[#040c1c] border-t hairline px-6 py-5 overflow-x-auto"><code id="code-badge"></code></pre>
+      </section>
+    </div>
+
+    <!-- PALETTE -->
+    <section class="panel rounded-3xl p-7">
+      <h2 class="font-display font-bold text-xl mb-5">Palette &amp; construction</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="palette"></div>
+      <p class="text-sm text-mist mt-6 leading-relaxed max-w-3xl">The mark is built from three mirrored chevrons on a 120-unit grid: the upper chevron splits into <span class="text-white">two heads</span> (the double-headed-eagle nod), the broad middle chevron reads as <span class="text-white">spread wings</span>, and the lower crimson chevron is the <span class="text-crimson-bright">tail / Serbian-red accent</span>. Wordmark set in <span class="text-white">Sora ExtraBold</span>; “VIRTUAL” is letter-spaced in crimson. Fully symmetric, scales cleanly to 16px.</p>
+    </section>
+  </main>
+
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl panel text-sm font-semibold flex items-center gap-2 transition-all duration-300" style="opacity:0;transform:translate(-50%,12px)"></div>
+
+<script>
+/* ---------- ICON ---------- */
+function iconInner(id) {
+  return `<defs>
+    <linearGradient id="bg${id}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b3e6e"/><stop offset="1" stop-color="#08152e"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="116" height="116" rx="28" fill="url(#bg${id})" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1.5"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M27 58 L46 40 L60 51 L74 40 L93 58" stroke="#F4F7FB" stroke-width="8.5"/>
+    <path d="M22 77 L60 58 L98 77" stroke="#F4F7FB" stroke-width="8"/>
+    <path d="M34 91 L60 77 L86 91" stroke="#D8203F" stroke-width="7.5"/>
+  </g>`;
+}
+const SVG = {
+  badge: (id='B') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Air Serbia Virtual">
+  ${iconInner(id)}
+</svg>`,
+
+  horizontal: (id='H', textFill='#FFFFFF') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 452 120" width="452" height="120" role="img" aria-label="Air Serbia Virtual">
+  <g transform="translate(8,12) scale(0.8)">${iconInner(id)}</g>
+  <text x="128" y="58" font-family="Sora, sans-serif" font-weight="800" font-size="40" letter-spacing="-0.5" fill="${textFill}">AIR SERBIA</text>
+  <text x="130" y="88" font-family="Sora, sans-serif" font-weight="700" font-size="18" letter-spacing="7.5" fill="#D8203F">VIRTUAL</text>
+</svg>`,
+
+  vertical: (id='V', textFill='#FFFFFF') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 252" width="300" height="252" role="img" aria-label="Air Serbia Virtual">
+  <g transform="translate(95,14) scale(0.917)">${iconInner(id)}</g>
+  <text x="150" y="186" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="36" letter-spacing="-0.5" fill="${textFill}">AIR SERBIA</text>
+  <text x="150" y="216" text-anchor="middle" font-family="Sora, sans-serif" font-weight="700" font-size="17" letter-spacing="9" fill="#D8203F">VIRTUAL</text>
+</svg>`,
+};
+
+/* ---------- render previews ---------- */
+function setPrev(elId, svg, css) { const el = document.getElementById(elId); el.innerHTML = svg; const s = el.querySelector('svg'); if (css) Object.assign(s.style, css); }
+
+setPrev('prev-horizontal-dark', SVG.horizontal('hd', '#FFFFFF'), { width: '340px', height: 'auto' });
+setPrev('prev-horizontal-light', SVG.horizontal('hl', '#0b1e3d'), { width: '340px', height: 'auto' });
+setPrev('prev-vertical-dark', SVG.vertical('vd', '#FFFFFF'), { width: '230px', height: 'auto' });
+
+const sizes = [120, 72, 44];
+document.getElementById('prev-badge-sizes').innerHTML = sizes.map((px, i) =>
+  `<div class="flex flex-col items-center gap-2">
+     <div style="width:${px}px;height:${px}px">${SVG.badge('bs' + i)}</div>
+     <span class="font-mono text-[10px] text-mist chip">${px}px</span>
+   </div>`).join('');
+document.querySelectorAll('#prev-badge-sizes svg').forEach(s => { s.setAttribute('width', '100%'); s.setAttribute('height', '100%'); });
+
+/* ---------- code blocks (copyable source) ---------- */
+const SOURCES = {
+  horizontal: SVG.horizontal('H', '#FFFFFF'),
+  vertical: SVG.vertical('V', '#FFFFFF'),
+  badge: SVG.badge('B'),
+};
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+document.getElementById('code-horizontal').textContent = SOURCES.horizontal;
+document.getElementById('code-vertical').textContent = SOURCES.vertical;
+document.getElementById('code-badge').textContent = SOURCES.badge;
+
+/* ---------- palette ---------- */
+const PALETTE = [
+  { name: 'Royal Deep', hex: '#1546A8' },
+  { name: 'Royal Bright', hex: '#3F86F4' },
+  { name: 'Serbian Crimson', hex: '#D8203F' },
+  { name: 'Cloud White', hex: '#F4F7FB' },
+];
+document.getElementById('palette').innerHTML = PALETTE.map(p =>
+  `<div class="rounded-2xl overflow-hidden border hairline">
+     <div style="background:${p.hex};height:84px"></div>
+     <div class="px-3 py-3 bg-ink-900/40">
+       <div class="font-semibold text-sm">${p.name}</div>
+       <div class="font-mono text-[11px] text-mist mt-0.5">${p.hex}</div>
+     </div>
+   </div>`).join('');
+
+/* ---------- copy ---------- */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> ${msg}`;
+  t.style.opacity = '1'; t.style.transform = 'translate(-50%,0)';
+  clearTimeout(t._t); t._t = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%,12px)'; }, 2000);
+}
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const src = SOURCES[btn.dataset.src];
+    try { await navigator.clipboard.writeText(src); toast('SVG copied to clipboard'); }
+    catch (e) {
+      const ta = document.createElement('textarea'); ta.value = src; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('SVG copied to clipboard'); } catch (_) { toast('Select the code block to copy'); }
+      ta.remove();
+    }
+  });
+});
+</script>
+</body>
+</html>

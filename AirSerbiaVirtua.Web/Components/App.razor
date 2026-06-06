@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Air Serbia Virtual — Flight Crew Center</title>
+    <meta name="description" content="Air Serbia Virtual — a flight-sim community virtual airline. Schedules, fleet, live flights and pilot careers. Not affiliated with Air Serbia a.d." />
+
+    <!-- Brand fonts (same trio as the ACARS desktop client) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind (CDN for W1/W2; swap for a compiled build before production) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Sora', 'sans-serif'],
+                        sans: ['Manrope', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        ink: {
+                            900: '#06122a',
+                            850: '#081a36',
+                            800: '#0c2244',
+                            750: '#102a52',
+                            700: '#16365f',
+                            600: '#1d4275',
+                        },
+                        royal: {
+                            DEFAULT: '#2563d6',
+                            bright: '#3f86f4',
+                            deep: '#1546a8',
+                        },
+                        crimson: {
+                            DEFAULT: '#d8203f',
+                            bright: '#ef3a57',
+                        },
+                        mist: '#9db1d2',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <ResourcePreloader />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["AirSerbiaVirtua.Web.styles.css"]" />
+    <ImportMap />
+    <HeadOutlet />
+</head>
+
+<body class="font-sans text-slate-100 antialiased min-h-screen">
+    <Routes />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

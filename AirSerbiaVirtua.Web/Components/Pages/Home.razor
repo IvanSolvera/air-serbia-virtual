@@ -1,0 +1,66 @@
+@page "/"
+
+<PageTitle>Air Serbia Virtual — Flight Crew Center</PageTitle>
+
+<!-- ===== Hero ===== -->
+<section class="relative overflow-hidden">
+    <div class="grid-overlay absolute inset-0"></div>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 pt-16 pb-12 relative">
+        <div class="grid lg:grid-cols-2 gap-10 items-center">
+
+            <div>
+                <p class="font-mono text-[11px] tracking-[0.3em] text-royal-bright mb-5">
+                    BELGRADE NIKOLA TESLA · HUB OPERATIONS
+                </p>
+                <h1 class="font-display font-extrabold tracking-tight text-4xl sm:text-5xl leading-[1.05] text-white">
+                    Fly the flag.<br />
+                    Join the <span class="text-crimson-bright">virtual</span> national carrier.
+                </h1>
+                <p class="mt-6 max-w-xl text-[15px] leading-relaxed text-mist">
+                    Air Serbia Virtual is a flight-simulation community airline: real schedules,
+                    a living fleet, ACARS flight tracking and a pilot career from Cadet up.
+                    Book a leg on the web, fly it in the sim, watch it land in your logbook.
+                </p>
+                <div class="mt-8 flex flex-wrap gap-3">
+                    <a href="join"
+                       class="rounded-xl bg-gradient-to-b from-royal-bright to-royal px-6 py-3 font-display font-bold text-white shadow-lg shadow-royal/40 hover:brightness-110 transition">
+                        Request crew account
+                    </a>
+                    <a href="schedules"
+                       class="rounded-xl panel px-6 py-3 font-display font-bold text-slate-100 hover:bg-ink-750/60 transition">
+                        Browse schedules
+                    </a>
+                </div>
+            </div>
+
+            <div class="relative">
+                <div class="panel-solid rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+                    <img src="assets/a330.png" alt="Air Serbia Virtual Airbus A330" class="w-full object-cover" />
+                </div>
+                <p class="absolute bottom-3 right-4 font-mono text-[10px] tracking-wider text-mist/80 bg-ink-900/60 px-2.5 py-1 rounded-md backdrop-blur">
+                    A330 · LONG-HAUL FLAGSHIP
+                </p>
+            </div>
+        </div>
+
+        <!-- Stats strip (wired to GET /api/v1/stats in W2) -->
+        <div class="mt-14 panel rounded-2xl grid grid-cols-2 sm:grid-cols-4 divide-x divide-mist/10 overflow-hidden">
+            <div class="px-6 py-5">
+                <p class="font-mono text-[9.5px] tracking-[0.18em] text-mist/70">PILOTS ON ROSTER</p>
+                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">—</p>
+            </div>
+            <div class="px-6 py-5">
+                <p class="font-mono text-[9.5px] tracking-[0.18em] text-mist/70">FLIGHTS FLOWN</p>
+                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">—</p>
+            </div>
+            <div class="px-6 py-5">
+                <p class="font-mono text-[9.5px] tracking-[0.18em] text-mist/70">HOURS LOGGED</p>
+                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">—</p>
+            </div>
+            <div class="px-6 py-5">
+                <p class="font-mono text-[9.5px] tracking-[0.18em] text-mist/70">ROUTES IN NETWORK</p>
+                <p class="stat-num font-display font-bold text-2xl text-white mt-1.5">—</p>
+            </div>
+        </div>
+    </div>
+</section>

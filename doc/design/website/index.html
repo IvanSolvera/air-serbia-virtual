@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Air Serbia Virtual — Flight Crew Center</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          sans: ['Manrope', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        colors: {
+          ink: {
+            900: '#06122a',
+            850: '#081a36',
+            800: '#0c2244',
+            750: '#102a52',
+            700: '#16365f',
+            600: '#1d4275',
+          },
+          royal: {
+            DEFAULT: '#2563d6',
+            bright: '#3f86f4',
+            deep: '#1546a8',
+          },
+          crimson: {
+            DEFAULT: '#d8203f',
+            bright: '#ef3a57',
+          },
+          mist: '#9db1d2',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root { color-scheme: dark; }
+  html { scroll-behavior: smooth; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(37,99,214,0.18), transparent 60%),
+      radial-gradient(900px 500px at 0% 0%, rgba(216,32,63,0.10), transparent 55%),
+      #06122a;
+  }
+  .panel {
+    background: linear-gradient(180deg, rgba(20,48,87,0.55), rgba(10,28,56,0.55));
+    border: 1px solid rgba(157,177,210,0.14);
+    backdrop-filter: blur(10px);
+  }
+  .panel-solid {
+    background: linear-gradient(180deg, #0e2649, #0a1d3a);
+    border: 1px solid rgba(157,177,210,0.12);
+  }
+  .hairline { border-color: rgba(157,177,210,0.12); }
+  .tab-btn { position: relative; white-space: nowrap; }
+  .tab-btn[aria-selected="true"] { color: #fff; }
+  .tab-btn[aria-selected="true"]::after {
+    content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px;
+    background: linear-gradient(90deg, #2563d6, #d8203f); border-radius: 2px;
+  }
+  .view { display: none; }
+  .view.active { display: block; }
+  @media (prefers-reduced-motion: no-preference) {
+    .view.active { animation: fade .35s ease; }
+  }
+  @keyframes fade { from { transform: translateY(8px);} to { transform: none;} }
+  .stat-num { font-variant-numeric: tabular-nums; }
+  .grid-overlay {
+    background-image: linear-gradient(rgba(157,177,210,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(157,177,210,0.05) 1px, transparent 1px);
+    background-size: 38px 38px;
+  }
+  .dot-live { box-shadow: 0 0 0 0 rgba(216,32,63,0.7); animation: pulse 1.8s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(216,32,63,0.55);} 70% { box-shadow: 0 0 0 7px rgba(216,32,63,0);} 100% { box-shadow: 0 0 0 0 rgba(216,32,63,0);} }
+  .dot-on { box-shadow: 0 0 0 0 rgba(52,211,153,0.7); animation: pulseG 1.9s infinite; }
+  @keyframes pulseG {
+    0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.55);} 70% { box-shadow: 0 0 0 6px rgba(52,211,153,0);} 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0);} }
+  .net-glow { box-shadow: 0 0 16px rgba(52,211,153,0.28); }
+  .era-card { border-color: rgba(157,177,210,0.14); transition: border-color .25s ease, box-shadow .25s ease; }
+  .era-card.era-active { border-color: var(--era-ring); box-shadow: 0 0 26px var(--era-glow); }
+  .era-chevron { transition: transform .25s ease; }
+  .scroll-x::-webkit-scrollbar { height: 8px; }
+  .scroll-x::-webkit-scrollbar-thumb { background: rgba(157,177,210,0.25); border-radius: 8px; }
+  ::selection { background: rgba(216,32,63,0.4); }
+  .marquee-track { animation: marq 34s linear infinite; }
+  @keyframes marq { from { transform: translateX(0);} to { transform: translateX(-50%);} }
+</style>
+</head>
+<body class="font-sans text-slate-100 antialiased min-h-screen">
+
+  <!-- ░░ TOP STATUS STRIP ░░ -->
+  <div class="bg-ink-900/80 border-b hairline text-[11px] tracking-wide text-mist/80 overflow-hidden">
+    <div class="max-w-[1400px] mx-auto px-5 h-8 flex items-center gap-6 whitespace-nowrap overflow-hidden">
+      <span class="flex items-center gap-1.5 shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-crimson dot-live"></span> NETWORK ONLINE</span>
+      <div class="flex-1 overflow-hidden hidden sm:block">
+        <div class="marquee-track inline-flex gap-8 font-mono">
+          <span>ASV451 BEG→CDG • EN ROUTE FL360</span><span>ASV118 BEG→IST • BOARDING</span><span>ASV902 BEG→JFK • EN ROUTE FL380</span><span>ASV220 BEG→FRA • SCHEDULED</span><span>ASV451 BEG→CDG • EN ROUTE FL360</span><span>ASV118 BEG→IST • BOARDING</span><span>ASV902 BEG→JFK • EN ROUTE FL380</span><span>ASV220 BEG→FRA • SCHEDULED</span>
+        </div>
+      </div>
+      <span class="shrink-0 font-mono" id="utcClock">--:-- UTC</span>
+    </div>
+  </div>
+
+  <!-- ░░ NAV ░░ -->
+  <header class="sticky top-0 z-40 bg-ink-900/85 backdrop-blur-md border-b hairline">
+    <div class="max-w-[1400px] mx-auto px-5 h-16 flex items-center gap-4">
+      <a href="#" data-tab="home" class="flex items-center gap-3 shrink-0 group">
+        <span class="emblem"></span>
+        <span class="leading-none">
+          <span class="block font-display font-extrabold text-[15px] tracking-tight whitespace-nowrap">AIR SERBIA <span class="text-crimson-bright">VIRTUAL</span></span>
+          <span class="block font-mono text-[10px] text-mist tracking-[0.25em] mt-1 whitespace-nowrap">FLIGHT CREW CENTER</span>
+        </span>
+      </a>
+
+      <nav class="ml-5 hidden xl:flex items-center gap-0" role="tablist" id="topTabs">
+        <button class="tab-btn px-2.5 py-2 text-sm font-semibold text-mist hover:text-white transition" data-tab="home" aria-selected="true">Home</button>
+        <button class="tab-btn px-2.5 py-2 text-sm font-semibold text-mist hover:text-white transition" data-tab="flights" aria-selected="false">Live Flights</button>
+        <button class="tab-btn px-2.5 py-2 text-sm font-semibold text-mist hover:text-white transition" data-tab="schedules" aria-selected="false">Schedules</button>
+        <button class="tab-btn px-2.5 py-2 text-sm font-semibold text-mist hover:text-white transition" data-tab="profile" aria-selected="false">Profile</button>
+        <button class="tab-btn px-2.5 py-2 text-sm font-semibold text-mist hover:text-white transition" data-tab="fleet" aria-selected="false">Fleet</button>
+        <button class="tab-btn px-2.5 py-2 text-sm font-semibold text-mist hover:text-white transition" data-tab="dispatch" aria-selected="false">Dispatch</button>
+        <button class="tab-btn px-2.5 py-2 text-sm font-semibold text-mist hover:text-white transition" data-tab="downloads" aria-selected="false">Downloads</button>
+        <button class="tab-btn px-2.5 py-2 text-sm font-semibold text-mist hover:text-white transition" data-tab="heritage" aria-selected="false">Heritage</button>
+      </nav>
+
+      <div class="ml-auto flex items-center gap-3">
+        <button class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg panel text-sm font-semibold text-mist hover:text-white hover:border-white/25 transition" data-tab="profile">
+          <span class="w-7 h-7 rounded-full bg-gradient-to-br from-royal to-royal-deep grid place-items-center text-[11px] font-bold text-white">JP</span>
+          <span class="text-left leading-none">
+            <span class="block text-white text-xs">ASV102</span>
+            <span class="block text-[10px] text-mist mt-0.5">Captain</span>
+          </span>
+        </button>
+        <button data-tab="dispatch" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-crimson hover:bg-crimson-bright text-white text-sm font-bold shadow-lg shadow-crimson/25 transition whitespace-nowrap">
+          <i data-lucide="radar" class="w-4 h-4"></i><span class="hidden sm:inline">File a Flight</span>
+        </button>
+      </div>
+    </div>
+    <!-- mobile tabs -->
+    <nav class="xl:hidden flex items-center gap-1 px-3 pb-2 overflow-x-auto scroll-x" role="tablist">
+      <button class="tab-btn px-3 py-1.5 text-xs font-semibold text-mist" data-tab="home" aria-selected="true">Home</button>
+      <button class="tab-btn px-3 py-1.5 text-xs font-semibold text-mist" data-tab="flights">Live Flights</button>
+      <button class="tab-btn px-3 py-1.5 text-xs font-semibold text-mist" data-tab="schedules">Schedules</button>
+      <button class="tab-btn px-3 py-1.5 text-xs font-semibold text-mist" data-tab="profile">Profile</button>
+      <button class="tab-btn px-3 py-1.5 text-xs font-semibold text-mist" data-tab="fleet">Fleet</button>
+      <button class="tab-btn px-3 py-1.5 text-xs font-semibold text-mist" data-tab="dispatch">Dispatch</button>
+      <button class="tab-btn px-3 py-1.5 text-xs font-semibold text-mist whitespace-nowrap" data-tab="downloads">Downloads</button>
+      <button class="tab-btn px-3 py-1.5 text-xs font-semibold text-mist" data-tab="heritage">Heritage</button>
+    </nav>
+  </header>
+
+  <main class="max-w-[1400px] mx-auto px-5 pb-24">
+
+    <!-- ════════ HOME ════════ -->
+    <section id="view-home" class="view active pt-8">
+      <!-- HERO -->
+      <div class="relative rounded-3xl overflow-hidden panel-solid">
+        <div class="absolute inset-0">
+          <img src="assets/a330.png" alt="Air Serbia Virtual Airbus A330" class="w-full h-full object-cover object-center opacity-60" />
+          <div class="absolute inset-0" style="background:linear-gradient(90deg,#06122a 12%,rgba(6,18,42,0.82) 45%,rgba(6,18,42,0.15) 100%)"></div>
+          <div class="absolute inset-0" style="background:linear-gradient(0deg,#06122a 2%,transparent 45%)"></div>
+        </div>
+        <div class="relative px-7 sm:px-12 py-12 sm:py-20 max-w-2xl">
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border hairline text-[11px] font-mono tracking-widest text-mist mb-6">
+            <span class="w-1.5 h-1.5 rounded-full bg-crimson dot-live"></span> EST. 2024 • MSFS 2024 &amp; X-PLANE 12
+          </span>
+          <h1 class="font-display font-extrabold text-4xl sm:text-6xl leading-[1.02] tracking-tight">
+            Fly the flag.<br /><span class="text-royal-bright">Earn your wings.</span>
+          </h1>
+          <p class="mt-5 text-base sm:text-lg text-slate-300/90 max-w-xl leading-relaxed">
+            A community-run virtual airline for flight simulation enthusiasts. Bid real-world Air Serbia routes from Belgrade, log every leg, climb the ranks, and fly alongside a global crew.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <button data-tab="profile" class="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-crimson hover:bg-crimson-bright text-white font-bold shadow-lg shadow-crimson/30 transition whitespace-nowrap">
+              <i data-lucide="user-plus" class="w-5 h-5"></i> Join Air Serbia Virtual
+            </button>
+            <button data-tab="fleet" class="flex items-center gap-2 px-6 py-3.5 rounded-xl panel hover:border-white/30 text-white font-semibold transition whitespace-nowrap">
+              <i data-lucide="plane" class="w-5 h-5"></i> Explore the Fleet
+            </button>
+          </div>
+          <div class="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-mist">
+            <span class="flex items-center gap-2 whitespace-nowrap"><i data-lucide="shield-check" class="w-4 h-4 text-royal-bright"></i> Free to join</span>
+            <span class="flex items-center gap-2 whitespace-nowrap"><i data-lucide="activity" class="w-4 h-4 text-royal-bright"></i> ACARS tracked</span>
+            <span class="flex items-center gap-2 whitespace-nowrap"><i data-lucide="globe-2" class="w-4 h-4 text-royal-bright"></i> 60+ destinations</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE STATS -->
+      <div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4" id="statGrid">
+        <!-- filled by JS -->
+      </div>
+
+      <!-- SECONDARY ROW -->
+      <div class="mt-6 grid lg:grid-cols-3 gap-4">
+        <!-- top destinations -->
+        <div class="panel rounded-2xl p-6 lg:col-span-2">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="font-display font-bold text-lg flex items-center gap-2"><i data-lucide="trending-up" class="w-5 h-5 text-crimson-bright"></i> Most Flown Routes</h3>
+            <button data-tab="flights" class="text-xs font-semibold text-royal-bright hover:underline">View live board →</button>
+          </div>
+          <div class="space-y-4" id="routeBars"></div>
+        </div>
+        <!-- join card -->
+        <div class="rounded-2xl p-6 relative overflow-hidden" style="background:linear-gradient(160deg,#1546a8,#0c2244)">
+          <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-crimson/20 blur-2xl"></div>
+          <div class="relative">
+            <span class="emblem-sm"></span>
+            <h3 class="font-display font-bold text-xl mt-4">Ready for your first leg?</h3>
+            <p class="text-sm text-slate-300/90 mt-2 leading-relaxed">New cadets start on the ATR 72 short-haul network out of Belgrade and upgrade as hours build.</p>
+            <ul class="mt-5 space-y-2.5 text-sm">
+              <li class="flex items-center gap-2.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-royal-bright shrink-0"></i> Instant pilot ID &amp; callsign</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-royal-bright shrink-0"></i> Free MSFS &amp; X-Plane liveries</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-royal-bright shrink-0"></i> Rank progression &amp; awards</li>
+            </ul>
+            <button data-tab="dispatch" class="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-ink-900 font-bold hover:bg-slate-100 transition">
+              <i data-lucide="radar" class="w-4 h-4"></i> Open Dispatch
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ LIVE FLIGHTS ════════ -->
+    <section id="view-flights" class="view pt-8">
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <h2 class="font-display font-extrabold text-3xl tracking-tight">Live Flight Board</h2>
+          <p class="text-mist mt-1.5">Real-time movements across the Air Serbia Virtual network.</p>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="flex items-center gap-2 px-3 py-2 rounded-lg panel font-mono"><span class="w-2 h-2 rounded-full bg-crimson dot-live"></span> <span id="liveCount">0</span> AIRBORNE</span>
+          <span class="flex items-center gap-2 px-3 py-2 rounded-lg panel font-mono"><i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-mist"></i> AUTO</span>
+        </div>
+      </div>
+
+      <!-- live cards -->
+      <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8" id="liveCards"></div>
+
+      <!-- recent table -->
+      <div class="panel rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b hairline flex items-center justify-between">
+          <h3 class="font-display font-bold text-lg flex items-center gap-2"><i data-lucide="history" class="w-5 h-5 text-mist"></i> Flight Schedule &amp; Activity</h3>
+          <span class="text-xs text-mist font-mono">UPDATED LIVE</span>
+        </div>
+        <div class="overflow-x-auto scroll-x">
+          <table class="w-full text-sm min-w-[760px]">
+            <thead>
+              <tr class="text-left text-[11px] uppercase tracking-wider text-mist border-b hairline">
+                <th class="px-6 py-3 font-semibold">Flight</th>
+                <th class="px-4 py-3 font-semibold">Route</th>
+                <th class="px-4 py-3 font-semibold">Aircraft</th>
+                <th class="px-4 py-3 font-semibold">Pilot</th>
+                <th class="px-4 py-3 font-semibold">Dep</th>
+                <th class="px-6 py-3 font-semibold text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody id="flightRows" class="divide-y divide-white/5"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ PILOT PROFILE ════════ -->
+    <section id="view-profile" class="view pt-8">
+      <div class="grid lg:grid-cols-3 gap-5">
+        <!-- ID card -->
+        <div class="lg:col-span-1">
+          <div class="rounded-2xl overflow-hidden panel-solid">
+            <div class="relative p-6 pb-5" style="background:linear-gradient(150deg,#1546a8,#0c2244)">
+              <div class="absolute right-4 top-4 text-[10px] font-mono tracking-widest text-white/50">CREW ID</div>
+              <span class="emblem-sm"></span>
+              <div class="mt-4 flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/90 to-slate-300 grid place-items-center text-ink-900 font-display font-extrabold text-2xl">JP</div>
+                <div class="min-w-0">
+                  <div class="font-display font-extrabold text-lg leading-tight whitespace-nowrap">Jovan Petrović</div>
+                  <div class="font-mono text-sm text-royal-bright mt-1">ASV102</div>
+                </div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-400/15 border border-emerald-400/45 text-[11px] font-mono font-semibold text-emerald-300 whitespace-nowrap net-glow">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 dot-on"></span>VATSIM · ONLINE · ASV102
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] font-mono text-mist/70 whitespace-nowrap">
+                  <span class="w-1.5 h-1.5 rounded-full bg-mist/40"></span>IVAO · OFFLINE
+                </span>
+              </div>
+            </div>
+            <div class="p-6 space-y-5">
+              <!-- rank -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider text-mist whitespace-nowrap">Current Rank</div>
+                  <div class="font-display font-bold text-lg mt-1">Captain</div>
+                </div>
+                <div class="flex flex-col gap-1.5" title="Captain — 4 bars">
+                  <span class="block w-12 h-1.5 rounded-sm bg-gradient-to-r from-yellow-200 to-yellow-400"></span>
+                  <span class="block w-12 h-1.5 rounded-sm bg-gradient-to-r from-yellow-200 to-yellow-400"></span>
+                  <span class="block w-12 h-1.5 rounded-sm bg-gradient-to-r from-yellow-200 to-yellow-400"></span>
+                  <span class="block w-12 h-1.5 rounded-sm bg-gradient-to-r from-yellow-200 to-yellow-400"></span>
+                </div>
+              </div>
+              <div class="h-px bg-white/8"></div>
+              <!-- next rank progress -->
+              <div>
+                <div class="flex items-center justify-between text-xs mb-2">
+                  <span class="text-mist">Progress to <span class="text-white font-semibold">Senior Captain</span></span>
+                  <span class="font-mono text-mist">1,284 / 1,500h</span>
+                </div>
+                <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div class="h-full rounded-full bg-gradient-to-r from-royal to-royal-bright" style="width:85.6%"></div>
+                </div>
+              </div>
+              <div class="h-px bg-white/8"></div>
+              <!-- meta -->
+              <dl class="grid grid-cols-2 gap-y-4 gap-x-3 text-sm">
+                <div><dt class="text-[11px] uppercase tracking-wider text-mist">Home Base</dt><dd class="font-semibold mt-0.5">LYBE · Belgrade</dd></div>
+                <div><dt class="text-[11px] uppercase tracking-wider text-mist">Joined</dt><dd class="font-semibold mt-0.5">Mar 2024</dd></div>
+                <div><dt class="text-[11px] uppercase tracking-wider text-mist">Status</dt><dd class="font-semibold mt-0.5 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Active</dd></div>
+                <div><dt class="text-[11px] uppercase tracking-wider text-mist">Sim</dt><dd class="font-semibold mt-0.5">MSFS 2024</dd></div>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <!-- stats + logbook -->
+        <div class="lg:col-span-2 space-y-5">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="pilotStats"></div>
+
+          <!-- certified aircraft -->
+          <div class="panel rounded-2xl p-6">
+            <h3 class="font-display font-bold text-lg flex items-center gap-2 mb-4"><i data-lucide="badge-check" class="w-5 h-5 text-royal-bright"></i> Type Ratings</h3>
+            <div class="flex flex-wrap gap-3" id="typeRatings"></div>
+          </div>
+
+          <!-- achievements -->
+          <div class="panel rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-display font-bold text-lg flex items-center gap-2"><i data-lucide="trophy" class="w-5 h-5 text-crimson-bright"></i> Awards &amp; Achievements</h3>
+              <span class="text-xs text-mist font-mono">3 / 4 UNLOCKED</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="achievements"></div>
+          </div>
+
+          <!-- logbook -->
+          <div class="panel rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b hairline flex items-center justify-between">
+              <h3 class="font-display font-bold text-lg flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5 text-mist"></i> Recent Logbook</h3>
+              <span class="text-xs text-mist font-mono">LAST 5 LEGS</span>
+            </div>
+            <div class="overflow-x-auto scroll-x">
+              <table class="w-full text-sm min-w-[640px]">
+                <thead>
+                  <tr class="text-left text-[11px] uppercase tracking-wider text-mist border-b hairline">
+                    <th class="px-6 py-3 font-semibold">Flight</th>
+                    <th class="px-4 py-3 font-semibold">Route</th>
+                    <th class="px-4 py-3 font-semibold">Aircraft</th>
+                    <th class="px-4 py-3 font-semibold">Time</th>
+                    <th class="px-6 py-3 font-semibold text-right">Landing</th>
+                  </tr>
+                </thead>
+                <tbody id="logbookRows" class="divide-y divide-white/5"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ FLEET ════════ -->
+    <section id="view-fleet" class="view pt-8">
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <h2 class="font-display font-extrabold text-3xl tracking-tight">Fleet &amp; Liveries</h2>
+          <p class="text-mist mt-1.5">High-fidelity Air Serbia Virtual liveries for MSFS 2024 &amp; X-Plane 12.</p>
+        </div>
+        <span class="px-3 py-2 rounded-lg panel text-sm font-mono text-mist">4 TYPES · 11 AIRFRAMES</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-5" id="fleetGrid"></div>
+    </section>
+
+    <!-- ════════ DISPATCH ════════ -->
+    <!-- ════════ SCHEDULES ════════ -->
+    <section id="view-schedules" class="view pt-8">
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <h2 class="font-display font-extrabold text-3xl tracking-tight">Route Schedules</h2>
+          <p class="text-mist mt-1.5">Browse the full Air Serbia Virtual timetable, filter the network, and book straight to dispatch.</p>
+        </div>
+        <span class="px-3 py-2 rounded-lg panel text-sm font-mono text-mist whitespace-nowrap" id="schedCount">— routes</span>
+      </div>
+
+      <div class="grid lg:grid-cols-[1fr_300px] gap-5 items-start">
+        <!-- table -->
+        <div class="panel rounded-2xl overflow-hidden order-2 lg:order-1">
+          <div class="overflow-x-auto scroll-x">
+            <table class="w-full text-sm min-w-[720px]">
+              <thead>
+                <tr class="text-left text-[11px] uppercase tracking-wider text-mist border-b hairline">
+                  <th class="px-5 py-3 font-semibold">Flight</th>
+                  <th class="px-3 py-3 font-semibold">Dep</th>
+                  <th class="px-3 py-3 font-semibold">Arr</th>
+                  <th class="px-3 py-3 font-semibold">Dep Tm</th>
+                  <th class="px-3 py-3 font-semibold">Arr Tm</th>
+                  <th class="px-3 py-3 font-semibold">Duration</th>
+                  <th class="px-3 py-3 font-semibold">Aircraft</th>
+                  <th class="px-3 py-3 font-semibold">Op Days</th>
+                  <th class="px-5 py-3 font-semibold text-right">Book</th>
+                </tr>
+              </thead>
+              <tbody id="schedRows" class="divide-y divide-white/5"></tbody>
+            </table>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-t hairline">
+            <span class="text-xs text-mist font-mono" id="schedResult">—</span>
+            <div class="flex items-center gap-1" id="schedPager"></div>
+          </div>
+        </div>
+
+        <!-- filter sidebar -->
+        <div class="panel rounded-2xl p-5 order-1 lg:order-2 lg:sticky lg:top-24">
+          <h3 class="font-display font-bold text-base flex items-center gap-2 mb-4"><i data-lucide="sliders-horizontal" class="w-4 h-4 text-crimson-bright"></i> Filter Network</h3>
+          <div class="space-y-3.5">
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-mist">Flight Number</label>
+              <input id="fFlight" type="text" placeholder="e.g. ASV451" class="mt-1.5 w-full px-3 py-2.5 rounded-xl bg-ink-900/60 border hairline outline-none text-sm font-semibold placeholder:text-mist/50 placeholder:font-normal focus:border-royal/50 transition" />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[11px] uppercase tracking-wider text-mist">Departure</label>
+                <input id="fDep" type="text" placeholder="BEG" class="mt-1.5 w-full px-3 py-2.5 rounded-xl bg-ink-900/60 border hairline outline-none text-sm font-semibold placeholder:text-mist/50 placeholder:font-normal focus:border-royal/50 transition" />
+              </div>
+              <div>
+                <label class="text-[11px] uppercase tracking-wider text-mist">Arrival</label>
+                <input id="fArr" type="text" placeholder="CDG" class="mt-1.5 w-full px-3 py-2.5 rounded-xl bg-ink-900/60 border hairline outline-none text-sm font-semibold placeholder:text-mist/50 placeholder:font-normal focus:border-royal/50 transition" />
+              </div>
+            </div>
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-mist">Aircraft</label>
+              <div class="mt-1.5 px-3 py-2.5 rounded-xl bg-ink-900/60 border hairline"><select id="fAc" class="bg-transparent w-full outline-none text-sm font-semibold appearance-none cursor-pointer"></select></div>
+            </div>
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-mist">Duration</label>
+              <div class="mt-1.5 px-3 py-2.5 rounded-xl bg-ink-900/60 border hairline"><select id="fDur" class="bg-transparent w-full outline-none text-sm font-semibold appearance-none cursor-pointer">
+                <option value="any">Any duration</option>
+                <option value="short">Under 2h — short-haul</option>
+                <option value="med">2h – 5h — medium-haul</option>
+                <option value="long">5h+ — long-haul</option>
+              </select></div>
+            </div>
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-mist">Rank Applicable</label>
+              <div class="mt-1.5 px-3 py-2.5 rounded-xl bg-ink-900/60 border hairline"><select id="fRank" class="bg-transparent w-full outline-none text-sm font-semibold appearance-none cursor-pointer">
+                <option value="any">All flights</option>
+                <option value="Cadet">Cadet &amp; above</option>
+                <option value="First Officer">First Officer &amp; above</option>
+                <option value="Captain">Captain only</option>
+              </select></div>
+            </div>
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-mist">Order By</label>
+              <div class="mt-1.5 px-3 py-2.5 rounded-xl bg-ink-900/60 border hairline"><select id="fOrder" class="bg-transparent w-full outline-none text-sm font-semibold appearance-none cursor-pointer">
+                <option value="flight">Flight No. (A–Z)</option>
+                <option value="durAsc">Duration (shortest)</option>
+                <option value="durDesc">Duration (longest)</option>
+                <option value="dep">Departure (A–Z)</option>
+              </select></div>
+            </div>
+            <button id="fReset" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-crimson/90 hover:bg-crimson text-white text-sm font-bold transition mt-1"><i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Filters</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-dispatch" class="view pt-8">
+      <div class="mb-6">
+        <h2 class="font-display font-extrabold text-3xl tracking-tight">Flight Dispatch</h2>
+        <p class="text-mist mt-1.5">Select a route, generate your operational flight plan, and file with ACARS.</p>
+      </div>
+      <div class="grid lg:grid-cols-5 gap-5">
+        <!-- booking form -->
+        <div class="lg:col-span-2 panel rounded-2xl p-6 grid-overlay">
+          <h3 class="font-display font-bold text-lg flex items-center gap-2 mb-5"><i data-lucide="route" class="w-5 h-5 text-crimson-bright"></i> Route Builder</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-mist">Departure</label>
+              <div class="mt-1.5 flex items-center gap-2 px-3 py-3 rounded-xl bg-ink-900/60 border hairline">
+                <i data-lucide="plane-takeoff" class="w-4 h-4 text-royal-bright"></i>
+                <select id="depSel" class="bg-transparent w-full outline-none font-semibold text-sm appearance-none cursor-pointer"></select>
+              </div>
+            </div>
+            <div class="flex justify-center -my-1">
+              <button id="swapBtn" class="w-9 h-9 grid place-items-center rounded-full panel-solid hover:border-white/30 transition" title="Swap"><i data-lucide="arrow-up-down" class="w-4 h-4 text-mist"></i></button>
+            </div>
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-mist">Destination</label>
+              <div class="mt-1.5 flex items-center gap-2 px-3 py-3 rounded-xl bg-ink-900/60 border hairline">
+                <i data-lucide="plane-landing" class="w-4 h-4 text-crimson-bright"></i>
+                <select id="arrSel" class="bg-transparent w-full outline-none font-semibold text-sm appearance-none cursor-pointer"></select>
+              </div>
+            </div>
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-mist">Aircraft</label>
+              <div class="mt-1.5 flex items-center gap-2 px-3 py-3 rounded-xl bg-ink-900/60 border hairline">
+                <i data-lucide="plane" class="w-4 h-4 text-royal-bright"></i>
+                <select id="acSel" class="bg-transparent w-full outline-none font-semibold text-sm appearance-none cursor-pointer"></select>
+              </div>
+            </div>
+            <button id="genBtn" class="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-crimson hover:bg-crimson-bright text-white font-bold shadow-lg shadow-crimson/25 transition mt-2">
+              <i data-lucide="file-text" class="w-4 h-4"></i> Generate Flight Plan
+            </button>
+          </div>
+        </div>
+
+        <!-- generated plan -->
+        <div class="lg:col-span-3 panel-solid rounded-2xl overflow-hidden flex flex-col">
+          <div class="px-6 py-4 border-b hairline flex items-center justify-between bg-ink-900/40">
+            <h3 class="font-display font-bold text-lg flex items-center gap-2"><i data-lucide="clipboard-list" class="w-5 h-5 text-royal-bright"></i> Operational Flight Plan</h3>
+            <span id="planTag" class="text-xs font-mono text-mist">— AWAITING INPUT —</span>
+          </div>
+          <div id="planBody" class="p-6 flex-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ DOWNLOADS & RESOURCES ════════ -->
+    <section id="view-downloads" class="view pt-8">
+      <div class="mb-6">
+        <h2 class="font-display font-extrabold text-3xl tracking-tight">Downloads &amp; Resources</h2>
+        <p class="text-mist mt-1.5">Everything you need to fly the line — software, liveries, docs and charts.</p>
+      </div>
+      <div class="grid lg:grid-cols-2 gap-5">
+
+        <!-- ACARS software (featured) -->
+        <div class="rounded-2xl p-7 relative overflow-hidden lg:col-span-2" style="background:linear-gradient(150deg,#1546a8 0%,#0c2244 70%)">
+          <div class="absolute -right-10 -top-10 w-56 h-56 rounded-full bg-crimson/20 blur-3xl"></div>
+          <div class="relative flex flex-col md:flex-row md:items-center gap-6">
+            <div class="w-16 h-16 rounded-2xl bg-white/10 border border-white/15 grid place-items-center shrink-0">
+              <i data-lucide="radar" class="w-8 h-8 text-white"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-display font-bold text-xl">ASV ACARS Flight Tracker</h3>
+                <span class="px-2 py-0.5 rounded-full bg-white/15 border border-white/20 text-[11px] font-mono font-bold">v2.4</span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-[11px] font-semibold text-emerald-300 whitespace-nowrap">Latest</span>
+              </div>
+              <p class="text-sm text-slate-200/90 mt-2 leading-relaxed max-w-xl">Auto-logs every flight, tracks your landing rate in real time and syncs to your pilot logbook. Windows 10/11 · 64-bit · 38 MB.</p>
+            </div>
+            <div class="flex flex-col gap-2 md:w-56 shrink-0">
+              <button class="dl flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-white text-ink-900 font-bold hover:bg-slate-100 transition whitespace-nowrap"><i data-lucide="download" class="w-4 h-4"></i> Download for Windows</button>
+              <a href="#" class="flex items-center justify-center gap-1.5 text-sm font-semibold text-white/85 hover:text-white transition"><i data-lucide="book-open" class="w-4 h-4"></i> How to Install</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- fleet liveries -->
+        <div class="panel rounded-2xl p-6">
+          <h3 class="font-display font-bold text-lg flex items-center gap-2 mb-5"><i data-lucide="brush" class="w-5 h-5 text-royal-bright"></i> Fleet Liveries</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="liveryGroups"></div>
+        </div>
+
+        <!-- company documentation -->
+        <div class="panel rounded-2xl p-6">
+          <h3 class="font-display font-bold text-lg flex items-center gap-2 mb-5"><i data-lucide="file-text" class="w-5 h-5 text-crimson-bright"></i> Company Documentation</h3>
+          <div class="space-y-2.5" id="docList"></div>
+        </div>
+
+        <!-- charts & operations -->
+        <div class="panel rounded-2xl p-6 lg:col-span-2">
+          <h3 class="font-display font-bold text-lg flex items-center gap-2 mb-5"><i data-lucide="map" class="w-5 h-5 text-royal-bright"></i> Charts &amp; Operations</h3>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3" id="chartList"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════ NOSTALGIA & HERITAGE ════════ -->
+    <section id="view-heritage" class="view pt-8">
+      <div class="mb-7">
+        <h2 class="font-display font-extrabold text-3xl tracking-tight">Nostalgia &amp; Heritage</h2>
+        <p class="text-mist mt-1.5">A century of Serbian national aviation — from props to wide-bodies. Tap any era to explore.</p>
+      </div>
+
+      <div class="relative pl-12 sm:pl-16 max-w-3xl">
+        <div class="absolute left-[18px] sm:left-[26px] top-3 bottom-3 w-px" style="background:linear-gradient(180deg,#fbbf24aa,#94a3b8aa 50%,#3f86f4cc)"></div>
+        <div class="space-y-5" id="timeline"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t hairline">
+    <div class="max-w-[1400px] mx-auto px-5 py-8 flex flex-wrap items-center justify-between gap-4 text-sm text-mist">
+      <div class="flex items-center gap-3">
+        <span class="emblem-sm"></span>
+        <span>Air Serbia Virtual · A non-commercial flight-sim community. Not affiliated with Air Serbia a.d.</span>
+      </div>
+      <div class="flex items-center gap-5 font-mono text-xs">
+        <span>HUB: LYBE</span><span>v2.4</span><span>© 2026 ASV</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- emblem template style -->
+  <style>
+    .emblem, .emblem-sm { display:inline-grid; place-items:center; }
+    .emblem { width:42px; height:42px; }
+    .emblem-sm { width:34px; height:34px; }
+  </style>
+
+<script src="app.js"></script>
+</body>
+</html>

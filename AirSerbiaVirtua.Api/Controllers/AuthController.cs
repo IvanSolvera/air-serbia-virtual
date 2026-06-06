@@ -40,8 +40,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Self-service pilot registration. Creates a pilot in <see cref="PilotStatus.Pending"/>
-    /// state — an admin must promote them to Active before they can be flagged operational
-    /// (login is currently allowed for Pending; tighten when admin workflow lands).
+    /// state — an admin must promote them to Active (via /admin/pilots/{id}/activate)
+    /// before they can sign in.
     /// </summary>
     [HttpPost("register")]
     public async Task<ActionResult<PilotProfileDto>> Register([FromBody] RegisterRequest req)
@@ -100,6 +100,14 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid credentials." });
         }
 
+        if (pilot.Status == PilotStatus.Pending)
+        {
+            _logger.LogWarning("Login rejected for pilot {PilotId} ({Callsign}): awaiting approval",
+                pilot.Id, pilot.Callsign);
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "Account awaiting approval — an administrator must activate your roster entry." });
+        }
+
         if (pilot.Status == PilotStatus.Banned || pilot.Status == PilotStatus.Inactive)
         {
             _logger.LogWarning("Login rejected for pilot {PilotId} ({Callsign}): status {Status}",
@@ -143,6 +151,25 @@ public class AuthController : ControllerBase
             default:
                 return Unauthorized(new { message = "Invalid refresh token." });
         }
+    }
+
+    /// <summary>
+    /// Returns the signed-in pilot's profile. Used by Auto Login, which restores a
+    /// session from a persisted refresh token and has no cached profile to show.
+    /// </summary>
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<PilotProfileDto>> Me()
+    {
+        var pilotId = User.PilotId();
+        if (pilotId is null) return Unauthorized();
+
+        var pilot = await _db.Pilots
+            .Include(p => p.Rank)
+            .FirstOrDefaultAsync(p => p.Id == pilotId);
+        if (pilot is null) return Unauthorized();
+
+        return Ok(ToProfile(pilot, pilot.Rank?.Name ?? string.Empty));
     }
 
     /// <summary>Revokes the presented refresh token (logout from one device).</summary>
@@ -189,5 +216,6 @@ public class AuthController : ControllerBase
     private static PilotProfileDto ToProfile(Pilot p, string rankName) => new(
         p.Id, p.Callsign, p.Name, p.Email,
         p.RankId, rankName, p.TotalHours,
-        p.Status, p.HubId, p.DateJoined);
+        p.Status, p.HubId, p.DateJoined,
+        p.IsAdmin);
 }

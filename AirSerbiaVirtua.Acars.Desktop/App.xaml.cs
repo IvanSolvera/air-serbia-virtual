@@ -58,6 +58,12 @@ public partial class App : Application
                 // they reload current data each time they're navigated to.
                 services.AddTransient<PilotCentreViewModel>();
                 services.AddTransient<PilotCentreView>();
+                services.AddTransient<MetarsViewModel>();
+                services.AddTransient<MetarsView>();
+                services.AddTransient<AdminViewModel>();
+                services.AddTransient<AdminView>();
+                services.AddTransient<OutstationViewModel>();
+                services.AddTransient<OutstationView>();
                 services.AddTransient<LogbookViewModel>();
                 services.AddTransient<LogbookView>();
                 services.AddTransient<BriefingViewModel>();
@@ -75,6 +81,12 @@ public partial class App : Application
             .Build();
 
         await _host.StartAsync();
+
+        // Auto Login (opt-in): restore the session from the DPAPI-persisted
+        // refresh token before the shell appears, so the user lands straight in
+        // the Pilot Centre instead of the login screen.
+        if (UiSettings.Load().AutoLogin)
+            await _host.Services.GetRequiredService<ISessionService>().TryAutoLoginAsync();
 
         var window = _host.Services.GetRequiredService<MainWindow>();
         window.DataContext = _host.Services.GetRequiredService<MainViewModel>();

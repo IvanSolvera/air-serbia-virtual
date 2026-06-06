@@ -10,7 +10,19 @@ public record RefreshRequest(string RefreshToken);
 public record PilotProfile(
     int Id, string Callsign, string Name, string Email,
     int RankId, string RankName, decimal TotalHours,
-    int Status, string HubId, DateTimeOffset DateJoined);
+    int Status, string HubId, DateTimeOffset DateJoined,
+    bool IsAdmin = false);
+
+// ---- Admin (roster management) ------------------------------------------------
+public record AdminPilot(
+    int Id, string Callsign, string Name, string Email,
+    string RankName, decimal TotalHours,
+    int Status, string HubId, DateTimeOffset DateJoined,
+    bool IsAdmin);
+
+// ---- Outstation (ad-hoc charter) -----------------------------------------------
+public record OutstationStartRequest(
+    string DepIcao, string ArrIcao, int AircraftId, string FlightNumber);
 
 public record AuthTokens(
     string AccessToken,

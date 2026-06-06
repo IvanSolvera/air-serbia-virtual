@@ -103,5 +103,5 @@ public sealed class PirepRow
         StatusLabel = ((PirepStatusLabel)p.Status).ToString();
     }
 
-    private enum PirepStatusLabel { Pending = 0, Accepted = 1, Rejected = 2, UnderReview = 3 }
+    private enum PirepStatusLabel { Pending = 0, Accepted = 1, Rejected = 2, UnderReview = 3, Aborted = 4 }
 }

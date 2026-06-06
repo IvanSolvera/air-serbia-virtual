@@ -1,0 +1,144 @@
+<UserControl x:Class="AirSerbiaVirtua.Acars.Desktop.Views.MetarsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:vm="clr-namespace:AirSerbiaVirtua.Acars.Desktop.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance vm:MetarsViewModel}"
+             d:DesignHeight="700" d:DesignWidth="980">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="36,30,36,36">
+
+            <!-- phead -->
+            <TextBlock Text="METARs" Style="{StaticResource Suite.PageTitle}" />
+            <TextBlock Text="Station weather lookup — latest raw METAR per airport."
+                       Style="{StaticResource Suite.PageSub}" Margin="0,9,0,24" />
+
+            <!-- Lookup row -->
+            <Grid Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0" Margin="0,0,10,0">
+                    <TextBox Style="{StaticResource Suite.Input}" MaxWidth="520" HorizontalAlignment="Left"
+                             Height="38" Padding="40,0,14,0"
+                             Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}"
+                             ToolTip="One or more ICAO codes, separated by spaces or commas — e.g. LYBE LOWW EDDF">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding LookupCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <iconPacks:PackIconMaterial Kind="Magnify" Width="15" Height="15"
+                                                Foreground="{StaticResource Suite.MistDim}"
+                                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                Margin="14,0,0,0" IsHitTestVisible="False" />
+                </Grid>
+                <Button Grid.Column="1" Style="{StaticResource Suite.BtnCrimson}"
+                        Command="{Binding LookupCommand}" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="WeatherPartlyCloudy" Width="15" Height="15"
+                                                    VerticalAlignment="Center" />
+                        <TextBlock Text="Get METARs" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Network shortcuts -->
+            <TextBlock Text="NETWORK AIRPORTS" Style="{StaticResource Suite.MonoLabel}" Margin="0,8,0,10" />
+            <ItemsControl ItemsSource="{Binding NetworkAirports}" Margin="0,0,0,20">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource Suite.BtnGhost}" Height="30" FontSize="11.5"
+                                Padding="12,0" Margin="0,0,8,8"
+                                FontFamily="{StaticResource Suite.Mono}"
+                                Content="{Binding}"
+                                Command="{Binding DataContext.LookupAirportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ProgressBar IsIndeterminate="True" Height="2" Foreground="{StaticResource Suite.RoyalBright}"
+                         Background="Transparent" BorderThickness="0" Margin="0,0,0,12"
+                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}" />
+
+            <TextBlock Text="{Binding StatusMessage}" FontSize="12.5"
+                       Foreground="{StaticResource Suite.CrimsonBright}" Margin="0,0,0,12"
+                       Visibility="{Binding StatusMessage, Converter={StaticResource NullToCollapsedConverter}}" />
+
+            <!-- Results -->
+            <ItemsControl ItemsSource="{Binding Results}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource Suite.Panel}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial Width="15" Height="15" VerticalAlignment="Center">
+                                            <iconPacks:PackIconMaterial.Style>
+                                                <Style TargetType="iconPacks:PackIconMaterial">
+                                                    <Setter Property="Kind" Value="WeatherPartlyCloudy" />
+                                                    <Setter Property="Foreground" Value="{StaticResource Suite.RoyalBright}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasMetar}" Value="False">
+                                                            <Setter Property="Kind" Value="CloudOffOutline" />
+                                                            <Setter Property="Foreground" Value="{StaticResource Suite.MistDim}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </iconPacks:PackIconMaterial.Style>
+                                        </iconPacks:PackIconMaterial>
+                                        <TextBlock Text="{Binding Icao}" Style="{StaticResource Suite.TileValue}"
+                                                   FontSize="16" Margin="9,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding AgeText}" FontFamily="{StaticResource Suite.Mono}"
+                                               FontSize="10.5" Foreground="{StaticResource Suite.MistDim}"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
+                                <TextBlock Text="{Binding Raw}" FontFamily="{StaticResource Suite.Mono}"
+                                           FontSize="12.5" TextWrapping="Wrap"
+                                           LineHeight="20" LineStackingStrategy="BlockLineHeight">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{StaticResource Suite.Cloud}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasMetar}" Value="False">
+                                                    <Setter Property="Foreground" Value="{StaticResource Suite.MistDim}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Empty hint -->
+            <Border Style="{StaticResource Suite.Banner}" Margin="0,6,0,0"
+                    Visibility="{Binding HasResults, Converter={StaticResource InverseBoolToVisConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="8" Height="8" Fill="{StaticResource Suite.RoyalBright}" VerticalAlignment="Center">
+                        <Ellipse.Effect>
+                            <DropShadowEffect Color="#FF3F86F4" BlurRadius="9" ShadowDepth="0" Opacity="0.8" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <TextBlock Text="Type ICAO codes above or tap a network airport to pull the latest weather."
+                               FontSize="13" Foreground="{StaticResource Suite.Mist}"
+                               Margin="14,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

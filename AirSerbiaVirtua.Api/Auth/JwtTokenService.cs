@@ -30,6 +30,9 @@ public class JwtTokenService
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
+        if (pilot.IsAdmin)
+            claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+
         var token = new JwtSecurityToken(
             issuer: jwt["Issuer"],
             audience: jwt["Audience"],

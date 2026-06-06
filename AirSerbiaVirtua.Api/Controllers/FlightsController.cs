@@ -79,6 +79,151 @@ public class FlightsController : ControllerBase
     }
 
     /// <summary>
+    /// Starts an outstation (ad-hoc charter) flight outside the published schedule:
+    /// creates a one-off Route flagged IsOutstation (auto-registering unknown
+    /// airports), locks the aircraft and opens a Pending PIREP session — no booking
+    /// involved. Phase 5.
+    /// </summary>
+    [HttpPost("start-outstation")]
+    public async Task<ActionResult<FlightStartResponse>> StartOutstation([FromBody] OutstationStartRequest req)
+    {
+        var pilotId = User.PilotId();
+        if (pilotId is null) return Unauthorized();
+
+        var dep = NormalizeIcao(req.DepIcao);
+        var arr = NormalizeIcao(req.ArrIcao);
+        if (dep is null || arr is null)
+            return BadRequest(new { message = "Departure and arrival must be valid 4-letter ICAO codes." });
+        if (dep == arr)
+            return BadRequest(new { message = "Departure and arrival cannot be the same airport." });
+        if (string.IsNullOrWhiteSpace(req.FlightNumber) || req.FlightNumber.Trim().Length > 10)
+            return BadRequest(new { message = "Flight number is required (max 10 characters)." });
+
+        var aircraft = await _db.Aircraft.FindAsync(req.AircraftId);
+        if (aircraft is null) return BadRequest(new { message = "Unknown aircraft." });
+        if (aircraft.Status != AircraftStatus.Active)
+            return Conflict(new { message = $"Aircraft {aircraft.Registration} is not available ({aircraft.Status})." });
+
+        // Outstations may serve airports outside the nav database — register
+        // minimal stubs so FK references hold; a nav-data sync can enrich later.
+        var depAirport = await EnsureAirportAsync(dep);
+        var arrAirport = await EnsureAirportAsync(arr);
+
+        var distanceNm = GreatCircleNm(depAirport, arrAirport);
+
+        var route = new Models.Route
+        {
+            FlightNumber = req.FlightNumber.Trim().ToUpperInvariant(),
+            DepIcao = dep,
+            ArrIcao = arr,
+            AircraftType = aircraft.Type,
+            Distance = distanceNm,
+            PlannedTime = distanceNm > 0 ? (int)(distanceNm / 7.5) + 25 : 0,   // ~450 kts + taxi pad
+            Days = [],
+            IsOutstation = true
+        };
+        _db.Routes.Add(route);
+
+        var now = DateTimeOffset.UtcNow;
+        var pirep = new Pirep
+        {
+            PilotId = pilotId.Value,
+            Route = route,
+            AircraftId = aircraft.Id,
+            DepActual = now,
+            ArrActual = now,
+            Status = PirepStatus.Pending,
+            Source = "ACARS"
+        };
+        _db.Pireps.Add(pirep);
+
+        aircraft.Status = AircraftStatus.InFlight;
+
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Outstation flight session {FlightSessionId} started: {FlightNumber} {Dep}->{Arr} on {Registration}",
+            pirep.Id, route.FlightNumber, dep, arr, aircraft.Registration);
+
+        return Ok(new FlightStartResponse(pirep.Id, route.Id, aircraft.Id, aircraft.Registration, now));
+    }
+
+    private static string? NormalizeIcao(string? raw)
+    {
+        var icao = raw?.Trim().ToUpperInvariant();
+        return icao is { Length: 4 } && icao.All(char.IsLetter) ? icao : null;
+    }
+
+    private async Task<Airport> EnsureAirportAsync(string icao)
+    {
+        var airport = await _db.Airports.FindAsync(icao);
+        if (airport is not null) return airport;
+
+        airport = new Airport
+        {
+            Icao = icao,
+            Name = $"{icao} (outstation)",
+            Country = "",
+            Lat = 0,
+            Lon = 0,
+            Elevation = 0,
+            Revision = 0
+        };
+        _db.Airports.Add(airport);
+        return airport;
+    }
+
+    /// <summary>Great-circle distance in nm; 0 when either airport lacks coordinates.</summary>
+    private static int GreatCircleNm(Airport a, Airport b)
+    {
+        if ((a.Lat == 0 && a.Lon == 0) || (b.Lat == 0 && b.Lon == 0)) return 0;
+        const double earthRadiusNm = 3440.065;
+        double ToRad(double deg) => deg * Math.PI / 180.0;
+        var dLat = ToRad(b.Lat - a.Lat);
+        var dLon = ToRad(b.Lon - a.Lon);
+        var h = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRad(a.Lat)) * Math.Cos(ToRad(b.Lat)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        return (int)Math.Round(2 * earthRadiusNm * Math.Asin(Math.Sqrt(h)));
+    }
+
+    /// <summary>
+    /// Aborts an active flight session (sim crash, user abandon): marks the PIREP
+    /// Aborted, releases the aircraft and re-opens the booking so the pilot can
+    /// fly the leg again. GVA-inspired item #14 — failed flights are first-class.
+    /// </summary>
+    [HttpPost("{id:int}/abort")]
+    public async Task<IActionResult> Abort(int id)
+    {
+        var pilotId = User.PilotId();
+        if (pilotId is null) return Unauthorized();
+
+        var pirep = await _db.Pireps.FirstOrDefaultAsync(p => p.Id == id && p.PilotId == pilotId);
+        if (pirep is null) return NotFound(new { message = "Flight session not found." });
+        if (pirep.Status != PirepStatus.Pending)
+            return Conflict(new { message = "Flight session is no longer active." });
+
+        pirep.Status = PirepStatus.Aborted;
+        pirep.ArrActual = DateTimeOffset.UtcNow;
+
+        var aircraft = await _db.Aircraft.FindAsync(pirep.AircraftId);
+        if (aircraft is { Status: AircraftStatus.InFlight })
+            aircraft.Status = AircraftStatus.Active;
+
+        var booking = await _db.Bookings.FirstOrDefaultAsync(b =>
+            b.PilotId == pilotId &&
+            b.RouteId == pirep.RouteId &&
+            b.Status == BookingStatus.Confirmed);
+        if (booking is not null)
+            booking.Status = BookingStatus.Open;   // leg can be re-flown
+
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Flight session {FlightSessionId} aborted by pilot", id);
+        return Ok(new { message = "Flight aborted." });
+    }
+
+    /// <summary>
     /// Receives a POSREP telemetry sample (pushed ~every 30 s) and appends it to
     /// the session's position log. Idempotent: a client retry carrying the same
     /// <see cref="PositionReportDto.ClientReportId"/> is accepted without creating

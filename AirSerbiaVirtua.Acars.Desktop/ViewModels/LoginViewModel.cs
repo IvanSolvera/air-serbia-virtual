@@ -40,6 +40,12 @@ public sealed partial class LoginViewModel : ObservableObject
         ErrorMessage = null;
         try
         {
+            // Persist the toggles BEFORE the call: the token-persistence hook in
+            // SessionService reads AutoLogin while the login response is processed.
+            _settings.RememberMe = RememberMe;
+            _settings.AutoLogin = AutoLogin;
+            _settings.Save();
+
             var result = await _session.LoginAsync(Callsign.Trim(), Password);
             if (!result.Success)
             {
@@ -47,8 +53,6 @@ public sealed partial class LoginViewModel : ObservableObject
                 return;
             }
 
-            _settings.RememberMe = RememberMe;
-            _settings.AutoLogin = AutoLogin;
             _settings.SavedCallsign = RememberMe ? Callsign.Trim() : null;
             _settings.Save();
         }

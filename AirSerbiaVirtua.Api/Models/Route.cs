@@ -41,6 +41,12 @@ public class Route
     /// </summary>
     public List<int> Days { get; set; } = new();
 
+    /// <summary>
+    /// True for ad-hoc charter legs created via Outstation Flights — these are
+    /// one-offs outside the published schedule and are hidden from Bookings.
+    /// </summary>
+    public bool IsOutstation { get; set; }
+
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public ICollection<Pirep> Pireps { get; set; } = new List<Pirep>();
 }

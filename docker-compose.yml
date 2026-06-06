@@ -1,0 +1,57 @@
+# ==============================================================================
+# Air Serbia Virtual — full stack (web + api + postgres)
+# Target host: Hetzner (not yet provisioned) — see doc/deployment.md for the
+# reverse-proxy/TLS layer that fronts this in production.
+#
+# Secrets live in a chmod-600 .env next to this file:
+#   DB_PASSWORD=...
+#   JWT_KEY=...      (64+ random chars: openssl rand -base64 48)
+# ==============================================================================
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: airserbiavirtua
+      POSTGRES_USER: asv
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U asv -d airserbiavirtua"]
+      interval: 10s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: AirSerbiaVirtua.Api/Dockerfile   # TODO(W1): add Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:5000
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=airserbiavirtua;Username=asv;Password=${DB_PASSWORD}
+      Jwt__Key: ${JWT_KEY:?set JWT_KEY in .env}
+      Cors__AllowedOrigins__0: ${WEB_ORIGIN:-https://airserbiavirtual.example}
+    ports:
+      - "127.0.0.1:5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: AirSerbiaVirtua.Web/Dockerfile   # TODO(W1): add Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      Api__BaseUrl: http://api:5000/
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

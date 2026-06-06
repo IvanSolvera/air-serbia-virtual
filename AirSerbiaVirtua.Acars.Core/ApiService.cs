@@ -31,6 +31,12 @@ public sealed class ApiService : IDisposable
     /// <summary>Host name of the configured API endpoint (for display in the UI).</summary>
     public string BaseHost => _http.BaseAddress?.Host ?? "unknown";
 
+    /// <summary>
+    /// Raised whenever a new token pair is stored (login, refresh rotation).
+    /// Lets the host persist the rotated refresh token for Auto Login.
+    /// </summary>
+    public event Action<AuthTokens>? TokensUpdated;
+
     /// <param name="baseUrl">e.g. https://localhost:7001/</param>
     /// <param name="handler">Optional handler (inject for tests or cert pinning).</param>
     public ApiService(string baseUrl, HttpMessageHandler? handler = null)
@@ -74,6 +80,39 @@ public sealed class ApiService : IDisposable
         catch
         {
             ClearTokens();
+            return false;
+        }
+    }
+
+    /// <summary>Fetches the signed-in pilot's profile (used after a token-only session restore).</summary>
+    public async Task<PilotProfile> GetMeAsync(CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync("api/v1/auth/me", ct), ct);
+        await EnsureSuccess(resp, "Profile");
+        var profile = (await resp.Content.ReadFromJsonAsync<PilotProfile>(Json, ct))!;
+        Pilot = profile;
+        return profile;
+    }
+
+    /// <summary>
+    /// Restores a session from a persisted refresh token (Auto Login): rotates the
+    /// token for a fresh pair and loads the pilot profile. Returns false when the
+    /// token is expired/revoked or the API is unreachable.
+    /// </summary>
+    public async Task<bool> TryRestoreSessionAsync(string refreshToken, CancellationToken ct = default)
+    {
+        _refreshToken = refreshToken;
+        if (!await RefreshAsync(ct)) return false;
+
+        try
+        {
+            await GetMeAsync(ct);
+            return true;
+        }
+        catch
+        {
+            ClearTokens();
+            Pilot = null;
             return false;
         }
     }
@@ -149,6 +188,25 @@ public sealed class ApiService : IDisposable
     /// <summary>Convenience overload that builds the POSREP from live telemetry + state.</summary>
     public Task PushPositionAsync(int flightSessionId, FlightData data, FlightState phase, CancellationToken ct = default) =>
         PushPositionAsync(flightSessionId, PositionReport.FromTelemetry(data, phase), ct);
+
+    /// <summary>Starts an ad-hoc outstation flight (no booking; one-off charter leg).</summary>
+    public async Task<FlightStartResponse> StartOutstationFlightAsync(OutstationStartRequest request, CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(
+            () => _http.PostAsJsonAsync("api/v1/flights/start-outstation", request, Json, ct),
+            ct);
+        await EnsureSuccess(resp, "Outstation start");
+        return (await resp.Content.ReadFromJsonAsync<FlightStartResponse>(Json, ct))!;
+    }
+
+    /// <summary>Abandons the active flight session: PIREP → Aborted, aircraft + booking released.</summary>
+    public async Task AbortFlightAsync(int flightSessionId, CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(
+            () => _http.PostAsync($"api/v1/flights/{flightSessionId}/abort", content: null, ct),
+            ct);
+        await EnsureSuccess(resp, "Flight abort");
+    }
 
     // ---- Routes -------------------------------------------------------------
     public async Task<List<ApiRoute>> GetRoutesAsync(string? hubIcao = null, CancellationToken ct = default)
@@ -234,6 +292,31 @@ public sealed class ApiService : IDisposable
         return (await resp.Content.ReadFromJsonAsync<List<MetarInfo>>(Json, ct)) ?? new();
     }
 
+    // ---- Admin (roster management) -------------------------------------------
+    /// <summary>Full roster for the admin page (requires the Admin role).</summary>
+    public async Task<List<AdminPilot>> GetAdminPilotsAsync(CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync("api/v1/admin/pilots", ct), ct);
+        await EnsureSuccess(resp, "Roster");
+        return (await resp.Content.ReadFromJsonAsync<List<AdminPilot>>(Json, ct)) ?? new();
+    }
+
+    /// <summary>Promotes a Pending/Inactive pilot to Active.</summary>
+    public async Task ActivatePilotAsync(int pilotId, CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(
+            () => _http.PostAsync($"api/v1/admin/pilots/{pilotId}/activate", content: null, ct), ct);
+        await EnsureSuccess(resp, "Activate pilot");
+    }
+
+    /// <summary>Deactivates an Active pilot.</summary>
+    public async Task DeactivatePilotAsync(int pilotId, CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(
+            () => _http.PostAsync($"api/v1/admin/pilots/{pilotId}/deactivate", content: null, ct), ct);
+        await EnsureSuccess(resp, "Deactivate pilot");
+    }
+
     // ---- Change password ----------------------------------------------------
     public async Task ChangePasswordAsync(string currentPassword, string newPassword, CancellationToken ct = default)
     {
@@ -269,6 +352,7 @@ public sealed class ApiService : IDisposable
         AccessTokenExpiresAtUtc = tokens.AccessExpiresAtUtc;
         RefreshTokenExpiresAtUtc = tokens.RefreshExpiresAtUtc;
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+        TokensUpdated?.Invoke(tokens);
     }
 
     private void ClearTokens()
