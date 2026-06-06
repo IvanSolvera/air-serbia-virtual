@@ -1,0 +1,139 @@
+@page "/portal"
+@rendermode PortalRender.NoPrerender
+@inject PortalSession Session
+@inject PortalApi Api
+@inject NavigationManager Nav
+
+<PageTitle>Pilot portal — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    @if (!_ready)
+    {
+        <p class="text-mist text-[13.5px]">Loading your crew profile…</p>
+    }
+    else
+    {
+        <PortalNav />
+
+        <div class="grid lg:grid-cols-3 gap-6">
+
+            <!-- Career card -->
+            <div class="panel-solid rounded-2xl p-6">
+                <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-5">CAREER</p>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-mist text-[13px]">Rank</span>
+                        <span class="font-display font-bold text-white">@Session.Pilot?.RankName</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-mist text-[13px]">Hours logged</span>
+                        <span class="font-mono font-semibold text-white">@Session.Pilot?.TotalHours.ToString("0.0") h</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-mist text-[13px]">Home hub</span>
+                        <span class="font-mono font-semibold text-white">@Session.Pilot?.HubId</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-mist text-[13px]">Flights flown</span>
+                        <span class="font-mono font-semibold text-white">@(_pireps?.Count(p => p.Status == 1).ToString() ?? "—")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active bookings -->
+            <div class="panel-solid rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70">ACTIVE BOOKINGS</p>
+                    <a href="portal/book" class="text-[12px] font-bold text-royal-bright hover:underline">Book a flight →</a>
+                </div>
+                @if (ActiveBookings.Any())
+                {
+                    <div class="space-y-3">
+                        @foreach (var b in ActiveBookings.Take(3))
+                        {
+                            <div class="panel rounded-xl px-4 py-3 flex items-center justify-between">
+                                <div>
+                                    <p class="font-display font-bold text-white text-[14px]">@b.FlightNumber</p>
+                                    <p class="font-mono text-[11px] text-mist mt-0.5">@b.DepIcao → @b.ArrIcao · @b.Date.ToString("dd MMM")</p>
+                                </div>
+                                <span class="rounded-md bg-emerald-400/10 border border-emerald-400/30 px-2 py-0.5 font-mono text-[10px] text-emerald-200">
+                                    @StatusLabel(b.Status)
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-mist/60 text-[13px] py-6 text-center">No active bookings — reserve a leg and take it flying.</p>
+                }
+            </div>
+
+            <!-- Last flight -->
+            <div class="panel-solid rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70">LAST FLIGHT</p>
+                    <a href="portal/logbook" class="text-[12px] font-bold text-royal-bright hover:underline">Logbook →</a>
+                </div>
+                @if (_pireps?.FirstOrDefault() is { } last)
+                {
+                    <p class="font-display font-extrabold text-2xl text-white">@last.FlightNumber</p>
+                    <p class="font-mono text-[12px] text-mist mt-1">@last.DepIcao → @last.ArrIcao · @last.AircraftRegistration</p>
+                    <div class="mt-5 grid grid-cols-3 gap-3 text-center">
+                        <div class="panel rounded-lg py-2.5">
+                            <p class="font-mono text-[9px] tracking-wider text-mist/60">SCORE</p>
+                            <p class="font-display font-bold text-white text-[16px] mt-0.5">@last.Score</p>
+                        </div>
+                        <div class="panel rounded-lg py-2.5">
+                            <p class="font-mono text-[9px] tracking-wider text-mist/60">BLOCK</p>
+                            <p class="font-display font-bold text-white text-[16px] mt-0.5">@(last.BlockMin)m</p>
+                        </div>
+                        <div class="panel rounded-lg py-2.5">
+                            <p class="font-mono text-[9px] tracking-wider text-mist/60">LANDING</p>
+                            <p class="font-display font-bold text-white text-[16px] mt-0.5">@last.LandingRateFpm</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-mist/60 text-[13px] py-6 text-center">No flights yet — your first PIREP will show here.</p>
+                }
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    private bool _ready;
+    private List<BookingInfo>? _bookings;
+    private List<PirepListItem>? _pireps;
+
+    private IEnumerable<BookingInfo> ActiveBookings =>
+        _bookings?.Where(b => b.Status is 0 or 1) ?? [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.EnsureRestoredAsync();
+        if (!Session.IsAuthenticated)
+        {
+            Nav.NavigateTo("portal/login");
+            return;
+        }
+
+        try
+        {
+            _bookings = await Api.GetMyBookingsAsync();
+            _pireps = await Api.GetMyPirepsAsync();
+        }
+        catch
+        {
+            if (!Session.IsAuthenticated) { Nav.NavigateTo("portal/login"); return; }
+        }
+        _ready = true;
+    }
+
+    private static string StatusLabel(int status) => status switch
+    {
+        0 => "OPEN", 1 => "CONFIRMED", 2 => "FLOWN", 3 => "CANCELLED", _ => "EXPIRED"
+    };
+}

@@ -1,0 +1,115 @@
+@page "/portal/profile"
+@rendermode PortalRender.NoPrerender
+@inject PortalSession Session
+@inject PortalApi Api
+@inject NavigationManager Nav
+
+<PageTitle>Profile — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    @if (!_ready)
+    {
+        <p class="text-mist text-[13.5px]">Loading profile…</p>
+    }
+    else
+    {
+        <PortalNav />
+
+        <div class="grid lg:grid-cols-2 gap-6 max-w-4xl">
+
+            <!-- Identity -->
+            <div class="panel-solid rounded-2xl p-6">
+                <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-5">ROSTER ENTRY</p>
+                <div class="space-y-4 text-[13.5px]">
+                    <div class="flex justify-between"><span class="text-mist">Callsign</span><span class="font-mono font-semibold text-white">@Session.Pilot?.Callsign</span></div>
+                    <div class="flex justify-between"><span class="text-mist">Name</span><span class="font-semibold text-white">@Session.Pilot?.Name</span></div>
+                    <div class="flex justify-between"><span class="text-mist">Email</span><span class="font-mono text-[12.5px] text-white">@Session.Pilot?.Email</span></div>
+                    <div class="flex justify-between"><span class="text-mist">Rank</span><span class="font-semibold text-white">@Session.Pilot?.RankName</span></div>
+                    <div class="flex justify-between"><span class="text-mist">Joined</span><span class="font-mono text-[12.5px] text-white">@Session.Pilot?.DateJoined.UtcDateTime.ToString("d MMM yyyy")</span></div>
+                </div>
+            </div>
+
+            <!-- Change password -->
+            <div class="panel-solid rounded-2xl p-6">
+                <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-5">ACCOUNT SECURITY</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">CURRENT PASSWORD</label>
+                        <input @bind="_current" type="password" disabled="@_busy"
+                               class="w-full h-11 rounded-lg panel px-3.5 text-[14px] text-white outline-none focus:ring-2 focus:ring-royal-bright/40" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">NEW PASSWORD</label>
+                        <input @bind="_next" type="password" disabled="@_busy"
+                               class="w-full h-11 rounded-lg panel px-3.5 text-[14px] text-white outline-none focus:ring-2 focus:ring-royal-bright/40" />
+                    </div>
+                    <div>
+                        <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">CONFIRM NEW PASSWORD</label>
+                        <input @bind="_confirm" type="password" disabled="@_busy"
+                               class="w-full h-11 rounded-lg panel px-3.5 text-[14px] text-white outline-none focus:ring-2 focus:ring-royal-bright/40" />
+                    </div>
+
+                    @if (_message is not null)
+                    {
+                        <div class="rounded-lg px-4 py-3 text-[13px] @(_isError ? "border border-crimson/50 bg-crimson/10 text-rose-100" : "border border-emerald-400/40 bg-emerald-400/10 text-emerald-100")">
+                            @_message
+                        </div>
+                    }
+
+                    <button @onclick="ChangePasswordAsync" disabled="@(!CanSubmit)"
+                            class="rounded-xl bg-gradient-to-b from-royal-bright to-royal px-5 py-2.5 font-display font-bold text-white shadow-lg shadow-royal/40 hover:brightness-110 transition disabled:opacity-40 disabled:hover:brightness-100">
+                        @(_busy ? "Updating…" : "Update password")
+                    </button>
+                    <p class="text-[11.5px] text-mist/60">Changing your password signs you out on all other devices.</p>
+                </div>
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    private bool _ready;
+    private bool _busy;
+    private string _current = "";
+    private string _next = "";
+    private string _confirm = "";
+    private string? _message;
+    private bool _isError;
+
+    private bool CanSubmit => !_busy && _current.Length > 0 && _next.Length > 0 && _confirm.Length > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.EnsureRestoredAsync();
+        if (!Session.IsAuthenticated)
+        {
+            Nav.NavigateTo("portal/login");
+            return;
+        }
+        _ready = true;
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        _message = null;
+        if (_next != _confirm)
+        {
+            _isError = true;
+            _message = "New password and confirmation do not match.";
+            return;
+        }
+        if (_next.Length < 8)
+        {
+            _isError = true;
+            _message = "New password must be at least 8 characters.";
+            return;
+        }
+
+        _busy = true;
+        var (ok, error) = await Api.ChangePasswordAsync(_current, _next);
+        _isError = !ok;
+        _message = ok ? "Password changed. Other devices have been signed out." : error;
+        if (ok) { _current = _next = _confirm = ""; }
+        _busy = false;
+    }
+}

@@ -1,0 +1,118 @@
+@page "/portal/logbook"
+@rendermode PortalRender.NoPrerender
+@inject PortalSession Session
+@inject PortalApi Api
+@inject NavigationManager Nav
+
+<PageTitle>Logbook — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    @if (!_ready)
+    {
+        <p class="text-mist text-[13.5px]">Opening your logbook…</p>
+    }
+    else
+    {
+        <PortalNav />
+
+        <div class="flex items-end justify-between mb-4">
+            <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70">FLIGHT RECORDS</p>
+            <p class="font-mono text-[11px] text-mist/60">
+                @(_pireps?.Count ?? 0) flight(s) · @TotalHours logged · avg score @AvgScore
+            </p>
+        </div>
+
+        <div class="panel-solid rounded-2xl overflow-hidden">
+            @if (_pireps is { Count: > 0 })
+            {
+                <table class="w-full text-[13.5px]">
+                    <thead>
+                        <tr class="border-b hairline bg-ink-900/50 text-left font-mono text-[9.5px] tracking-[0.16em] text-mist/70">
+                            <th class="px-5 py-3.5 font-medium">FLIGHT</th>
+                            <th class="px-5 py-3.5 font-medium">ROUTE</th>
+                            <th class="px-5 py-3.5 font-medium">AIRCRAFT</th>
+                            <th class="px-5 py-3.5 font-medium">DATE</th>
+                            <th class="px-5 py-3.5 font-medium">BLOCK</th>
+                            <th class="px-5 py-3.5 font-medium">LANDING</th>
+                            <th class="px-5 py-3.5 font-medium">SCORE</th>
+                            <th class="px-5 py-3.5 font-medium">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in _pireps)
+                        {
+                            <tr class="border-b hairline last:border-0 hover:bg-royal/5 transition-colors">
+                                <td class="px-5 py-4 font-display font-bold text-white">@p.FlightNumber</td>
+                                <td class="px-5 py-4 font-mono text-slate-100">@p.DepIcao <span class="text-mist/60">→</span> @p.ArrIcao</td>
+                                <td class="px-5 py-4">
+                                    <span class="rounded-md border hairline bg-ink-800/70 px-2 py-0.5 font-mono text-[11px] text-royal-bright/90">@p.AircraftRegistration</span>
+                                </td>
+                                <td class="px-5 py-4 font-mono text-[12px] text-mist">@p.DepActual.UtcDateTime.ToString("dd MMM yyyy")</td>
+                                <td class="px-5 py-4 font-mono text-[12px] text-mist">@FormatMin(p.BlockMin)</td>
+                                <td class="px-5 py-4 font-mono text-[12px] text-mist">@(p.LandingRateFpm == 0 ? "—" : $"{p.LandingRateFpm} fpm")</td>
+                                <td class="px-5 py-4 font-mono font-semibold text-white">@p.Score</td>
+                                <td class="px-5 py-4">
+                                    <span class="rounded-md px-2 py-0.5 font-mono text-[10px] @StatusClasses(p.Status)">@StatusLabel(p.Status)</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="px-5 py-10 text-center text-mist/60 text-[13px]">
+                    No flights logged yet — book a leg and fly it with the ACARS client.
+                </p>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private bool _ready;
+    private List<PirepListItem>? _pireps;
+
+    private string TotalHours
+    {
+        get
+        {
+            var totalMin = _pireps?.Where(p => p.Status == 1).Sum(p => p.BlockMin) ?? 0;
+            return $"{totalMin / 60}h {totalMin % 60:00}m";
+        }
+    }
+
+    private string AvgScore =>
+        _pireps is { Count: > 0 } list && list.Any(p => p.Status == 1)
+            ? list.Where(p => p.Status == 1).Average(p => p.Score).ToString("0")
+            : "—";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.EnsureRestoredAsync();
+        if (!Session.IsAuthenticated)
+        {
+            Nav.NavigateTo("portal/login");
+            return;
+        }
+
+        try { _pireps = await Api.GetMyPirepsAsync(); }
+        catch { if (!Session.IsAuthenticated) { Nav.NavigateTo("portal/login"); return; } }
+        _ready = true;
+    }
+
+    private static string FormatMin(int min) => min <= 0 ? "—" : $"{min / 60}h {min % 60:00}m";
+
+    private static string StatusLabel(int status) => status switch
+    {
+        0 => "PENDING", 1 => "ACCEPTED", 2 => "REJECTED", 3 => "REVIEW", 4 => "ABORTED", _ => "?"
+    };
+
+    private static string StatusClasses(int status) => status switch
+    {
+        1 => "bg-emerald-400/10 border border-emerald-400/30 text-emerald-200",
+        2 => "bg-crimson/15 border border-crimson/40 text-rose-200",
+        4 => "bg-ink-800/70 border hairline text-mist",
+        _ => "bg-amber-400/10 border border-amber-400/30 text-amber-200"
+    };
+}

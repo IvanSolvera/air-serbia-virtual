@@ -16,7 +16,8 @@ public record LoginRequest(string Callsign, string Password);
 public record RefreshRequest(string RefreshToken);
 
 public record RegisterRequest(
-    string Callsign, string Name, string Email, string Password, string HubIcao);
+    string Callsign, string Name, string Email, string Password, string HubIcao,
+    string? VatsimId = null);
 
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
@@ -63,6 +64,7 @@ public record BookingInfo(
     string DepIcao,
     string ArrIcao,
     string AircraftType,
+    int PlannedMinutes,
     DateOnly Date,
     int Status);
 
@@ -75,7 +77,7 @@ public record PirepListItem(
     string DepIcao,
     string ArrIcao,
     string AircraftType,
-    string Registration,
+    string AircraftRegistration,
     DateTimeOffset DepActual,
     DateTimeOffset ArrActual,
     int BlockMin,
@@ -96,4 +98,4 @@ public record AdminPilot(
     int Id, string Callsign, string Name, string Email,
     string RankName, decimal TotalHours,
     int Status, string HubId, DateTimeOffset DateJoined,
-    bool IsAdmin);
+    bool IsAdmin, string? VatsimId = null);

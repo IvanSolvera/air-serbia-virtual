@@ -1,5 +1,33 @@
 # Continuation log — pick-up notes
 
+## Update 2026-06-06 (W3 + VATSIM ID)
+
+**VATSIM ID on applications:** `Pilot.VatsimId` (+ migration `AddPilotVatsimId`),
+optional on register (validated 6-8 digits, 400 otherwise), shown in BOTH admin
+surfaces (web AdminPilotDto + desktop Roster Admin under the email). Join form
+has the optional field ("speeds up approval"). E2E: ASL888 registered w/
+1234567, visible to admin, bad id rejected. **ASL888 + ASL999 are leftover test
+pilots** (Pending/Inactive) — approve or delete at will.
+
+**W3 pilot portal (WASM, all routes serve 200):**
+- Infra: `PortalSession` (JWT pair + profile in localStorage, restore-once),
+  `PortalApi` (bearer + refresh-on-401 retry, same pattern as desktop),
+  WASM config via Web.Client/wwwroot/appsettings.json (Api:BaseUrl), CORS ok.
+  All portal pages `@rendermode PortalRender.NoPrerender` (localStorage is
+  browser-only — prerender would paint signed-out state).
+- Pages: /portal/login (enter-to-submit), /portal dashboard (career card,
+  active bookings, last-flight tiles), /portal/book (my bookings w/ cancel +
+  route table w/ Book today), /portal/logbook (totals + status badges),
+  /portal/profile (roster entry + change password). Shared `PortalNav`
+  (identity header + tab strip + sign out).
+- **Browser click-through still needed** (curl can't run WASM): login as
+  ASL001, book a leg, check logbook, change-password round-trip.
+- W3 deliberately deferred: Briefing page + "dispatch ready" desktop handoff
+  (`GET /api/bookings/active` pull) — that's the W4 entry point.
+
+**Next: W4** (desktop slim-down + pull web dispatch + contracts convergence),
+W5 admin web, W6 ASV Dispatch AI. Hetzner still pending.
+
 ## Update 2026-06-06 (W1+W2 complete) — public website live locally
 
 **API:** new anonymous `GET /api/v1/stats` (pilots/flights/hours/routes);

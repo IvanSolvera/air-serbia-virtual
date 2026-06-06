@@ -1,0 +1,160 @@
+@page "/portal/book"
+@rendermode PortalRender.NoPrerender
+@inject PortalSession Session
+@inject PortalApi Api
+@inject NavigationManager Nav
+
+<PageTitle>Book a flight — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    @if (!_ready)
+    {
+        <p class="text-mist text-[13.5px]">Loading schedules…</p>
+    }
+    else
+    {
+        <PortalNav />
+
+        @if (_message is not null)
+        {
+            <div class="mb-6 rounded-xl px-5 py-3.5 text-[13.5px] @(_isError ? "border border-crimson/50 bg-crimson/10 text-rose-100" : "panel text-mist")">
+                @_message
+            </div>
+        }
+
+        <!-- My bookings -->
+        <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-4">MY BOOKINGS</p>
+        <div class="panel-solid rounded-2xl overflow-hidden mb-10">
+            @if (ActiveBookings.Any())
+            {
+                <table class="w-full text-[13.5px]">
+                    <tbody>
+                        @foreach (var b in ActiveBookings)
+                        {
+                            <tr class="border-b hairline last:border-0">
+                                <td class="px-5 py-4 font-display font-bold text-white w-28">@b.FlightNumber</td>
+                                <td class="px-5 py-4 font-mono text-slate-100">@b.DepIcao <span class="text-mist/60">→</span> @b.ArrIcao</td>
+                                <td class="px-5 py-4 font-mono text-[12px] text-mist">@b.Date.ToString("dd MMM yyyy")</td>
+                                <td class="px-5 py-4">
+                                    <span class="rounded-md bg-emerald-400/10 border border-emerald-400/30 px-2 py-0.5 font-mono text-[10px] text-emerald-200">
+                                        @StatusLabel(b.Status)
+                                    </span>
+                                </td>
+                                <td class="px-5 py-4 text-right">
+                                    <button @onclick="() => CancelAsync(b)" disabled="@_busy"
+                                            class="rounded-lg panel px-3.5 py-1.5 text-[12px] font-bold text-mist hover:text-white transition disabled:opacity-40">
+                                        Cancel
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="px-5 py-8 text-center text-mist/60 text-[13px]">No active bookings. Reserve a route below to get started.</p>
+            }
+        </div>
+
+        <!-- Available routes -->
+        <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-4">AVAILABLE ROUTES</p>
+        <div class="panel-solid rounded-2xl overflow-hidden">
+            <table class="w-full text-[13.5px]">
+                <thead>
+                    <tr class="border-b hairline bg-ink-900/50 text-left font-mono text-[9.5px] tracking-[0.16em] text-mist/70">
+                        <th class="px-5 py-3.5 font-medium">FLIGHT</th>
+                        <th class="px-5 py-3.5 font-medium">LEG</th>
+                        <th class="px-5 py-3.5 font-medium">A/C</th>
+                        <th class="px-5 py-3.5 font-medium">ETE</th>
+                        <th class="px-5 py-3.5"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in _routes ?? [])
+                    {
+                        <tr class="border-b hairline last:border-0 hover:bg-royal/5 transition-colors">
+                            <td class="px-5 py-4 font-display font-bold text-white">@r.FlightNumber</td>
+                            <td class="px-5 py-4 font-mono text-slate-100">@r.DepIcao <span class="text-mist/60">→</span> @r.ArrIcao</td>
+                            <td class="px-5 py-4">
+                                <span class="rounded-md border hairline bg-ink-800/70 px-2 py-0.5 font-mono text-[11px] text-royal-bright/90">@r.AircraftType</span>
+                            </td>
+                            <td class="px-5 py-4 font-mono text-[12px] text-mist">@($"{r.PlannedMinutes / 60}h {r.PlannedMinutes % 60:00}m")</td>
+                            <td class="px-5 py-4 text-right">
+                                <button @onclick="() => BookAsync(r)" disabled="@_busy"
+                                        class="rounded-lg bg-gradient-to-b from-crimson-bright to-crimson px-4 py-1.5 text-[12px] font-bold text-white shadow shadow-crimson/30 hover:brightness-110 transition disabled:opacity-40">
+                                    Book today
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private bool _ready;
+    private bool _busy;
+    private string? _message;
+    private bool _isError;
+    private List<RouteInfo>? _routes;
+    private List<BookingInfo>? _bookings;
+
+    private IEnumerable<BookingInfo> ActiveBookings =>
+        _bookings?.Where(b => b.Status is 0 or 1) ?? [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.EnsureRestoredAsync();
+        if (!Session.IsAuthenticated)
+        {
+            Nav.NavigateTo("portal/login");
+            return;
+        }
+
+        await LoadAsync();
+        _ready = true;
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            _routes = await Api.GetRoutesAsync();
+            _bookings = await Api.GetMyBookingsAsync();
+        }
+        catch
+        {
+            if (!Session.IsAuthenticated) Nav.NavigateTo("portal/login");
+        }
+    }
+
+    private async Task BookAsync(RouteInfo r)
+    {
+        _busy = true;
+        var (ok, error) = await Api.CreateBookingAsync(r.Id, DateOnly.FromDateTime(DateTime.UtcNow));
+        _isError = !ok;
+        _message = ok
+            ? $"{r.FlightNumber} booked for today — start it from the ACARS desktop client when you're ready to fly."
+            : error;
+        await LoadAsync();
+        _busy = false;
+    }
+
+    private async Task CancelAsync(BookingInfo b)
+    {
+        _busy = true;
+        var (ok, error) = await Api.CancelBookingAsync(b.Id);
+        _isError = !ok;
+        _message = ok ? $"Booking {b.FlightNumber} cancelled." : error;
+        await LoadAsync();
+        _busy = false;
+    }
+
+    private static string StatusLabel(int status) => status switch
+    {
+        0 => "OPEN", 1 => "CONFIRMED", 2 => "FLOWN", 3 => "CANCELLED", _ => "EXPIRED"
+    };
+}

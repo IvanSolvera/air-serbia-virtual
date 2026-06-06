@@ -55,6 +55,11 @@ public class AuthController : ControllerBase
         if (req.Password is null || req.Password.Length < MinPasswordLength)
             return BadRequest(new { message = $"Password must be at least {MinPasswordLength} characters." });
 
+        // VATSIM CID is optional; when present it must look like one (6-8 digits).
+        var vatsimId = string.IsNullOrWhiteSpace(req.VatsimId) ? null : req.VatsimId.Trim();
+        if (vatsimId is not null && (vatsimId.Length is < 6 or > 8 || !vatsimId.All(char.IsDigit)))
+            return BadRequest(new { message = "VATSIM ID must be 6-8 digits (or leave it empty)." });
+
         if (await _db.Pilots.AnyAsync(p => p.Callsign == req.Callsign))
             return Conflict(new { message = "Callsign already in use." });
 
@@ -77,7 +82,8 @@ public class AuthController : ControllerBase
             HubId = req.HubIcao,
             RankId = startingRank.Id,
             Status = PilotStatus.Pending,
-            DateJoined = now
+            DateJoined = now,
+            VatsimId = vatsimId
         };
 
         _db.Pilots.Add(pilot);

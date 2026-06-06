@@ -39,6 +39,13 @@ public class Pilot
     /// <summary>Grants access to the roster admin endpoints (promote/deactivate pilots).</summary>
     public bool IsAdmin { get; set; }
 
+    /// <summary>
+    /// Optional VATSIM CID supplied at registration — lets an admin verify the
+    /// applicant on the network before approving the roster entry.
+    /// </summary>
+    [MaxLength(10)]
+    public string? VatsimId { get; set; }
+
     /// <summary>Home hub ICAO, references <see cref="Airport.Icao"/>.</summary>
     [MaxLength(4)]
     public string HubId { get; set; } = null!;

@@ -1,0 +1,85 @@
+@page "/portal/login"
+@rendermode PortalRender.NoPrerender
+@inject PortalSession Session
+@inject PortalApi Api
+@inject NavigationManager Nav
+
+<PageTitle>Sign in — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-md px-4 py-20">
+    <div class="panel-solid rounded-2xl p-8">
+        <p class="font-mono text-[10px] tracking-[0.28em] text-mist/70 mb-3">CREW AUTHENTICATION</p>
+        <h1 class="font-display font-extrabold text-2xl text-white">Sign in to the portal</h1>
+        <p class="mt-2 mb-8 text-mist text-[13px]">Same credentials as your ACARS desktop client.</p>
+
+        <div class="space-y-5">
+            <div>
+                <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">ASV ID</label>
+                <input @bind="_callsign" @bind:event="oninput" @onkeydown="OnKeyDown"
+                       placeholder="e.g. ASL001" disabled="@_busy"
+                       class="w-full h-11 rounded-lg panel px-3.5 text-[14px] font-mono text-white placeholder:text-mist/40 outline-none focus:ring-2 focus:ring-royal-bright/40" />
+            </div>
+            <div>
+                <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">PASSWORD</label>
+                <input @bind="_password" @bind:event="oninput" @onkeydown="OnKeyDown"
+                       type="password" disabled="@_busy"
+                       class="w-full h-11 rounded-lg panel px-3.5 text-[14px] text-white outline-none focus:ring-2 focus:ring-royal-bright/40" />
+            </div>
+
+            @if (_error is not null)
+            {
+                <div class="rounded-lg border border-crimson/50 bg-crimson/10 px-4 py-3 text-[13px] text-rose-100">
+                    @_error
+                </div>
+            }
+
+            <button @onclick="SignInAsync" disabled="@(!CanSubmit)"
+                    class="w-full h-12 rounded-xl bg-gradient-to-b from-royal-bright to-royal font-display font-bold text-white shadow-lg shadow-royal/40 hover:brightness-110 transition disabled:opacity-40 disabled:hover:brightness-100">
+                @(_busy ? "Signing in…" : "Sign in")
+            </button>
+
+            <p class="text-center text-[12px] text-mist/60">
+                No account yet? <a href="join" class="text-royal-bright hover:underline">Request a crew account</a>.
+            </p>
+        </div>
+    </div>
+</section>
+
+@code {
+    private string _callsign = "";
+    private string _password = "";
+    private bool _busy;
+    private string? _error;
+
+    private bool CanSubmit => !_busy && _callsign.Trim().Length > 0 && _password.Length > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.EnsureRestoredAsync();
+        if (Session.IsAuthenticated)
+            Nav.NavigateTo("portal");
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && CanSubmit) await SignInAsync();
+    }
+
+    private async Task SignInAsync()
+    {
+        _busy = true;
+        _error = null;
+        try
+        {
+            var (ok, error) = await Api.LoginAsync(_callsign.Trim().ToUpperInvariant(), _password);
+            if (ok)
+                Nav.NavigateTo("portal");
+            else
+                _error = error;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

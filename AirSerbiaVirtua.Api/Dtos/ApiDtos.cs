@@ -10,7 +10,8 @@ public record RegisterRequest(
     string Name,
     string Email,
     string Password,
-    string HubIcao);
+    string HubIcao,
+    string? VatsimId = null);
 
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
@@ -27,7 +28,7 @@ public record AdminPilotDto(
     int Id, string Callsign, string Name, string Email,
     string RankName, decimal TotalHours,
     PilotStatus Status, string HubId, DateTimeOffset DateJoined,
-    bool IsAdmin);
+    bool IsAdmin, string? VatsimId);
 
 // ---- Outstation (ad-hoc charter) -----------------------------------------------
 public record OutstationStartRequest(

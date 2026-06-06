@@ -39,7 +39,7 @@ public class AdminController : ControllerBase
             .Select(p => new AdminPilotDto(
                 p.Id, p.Callsign, p.Name, p.Email,
                 p.Rank != null ? p.Rank.Name : string.Empty, p.TotalHours,
-                p.Status, p.HubId, p.DateJoined, p.IsAdmin))
+                p.Status, p.HubId, p.DateJoined, p.IsAdmin, p.VatsimId))
             .ToListAsync();
 
         return Ok(pilots);

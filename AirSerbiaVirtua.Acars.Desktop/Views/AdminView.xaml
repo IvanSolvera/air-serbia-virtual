@@ -131,8 +131,15 @@
                                                                         Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisConverter}}" />
                                         </StackPanel>
                                         <TextBlock Grid.Column="1" Text="{Binding Name}" Style="{StaticResource Suite.Cell}" />
-                                        <TextBlock Grid.Column="2" Text="{Binding Email}" Style="{StaticResource Suite.MutedCell}"
-                                                   TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Email}" Style="{StaticResource Suite.MutedCell}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <TextBlock FontFamily="{StaticResource Suite.Mono}" FontSize="10"
+                                                       Foreground="{StaticResource Suite.MistDim}" Margin="0,2,0,0">
+                                                <Run Text="VATSIM " /><Run Text="{Binding VatsimLabel, Mode=OneWay}"
+                                                     Foreground="{StaticResource Suite.Mist}" FontWeight="SemiBold" />
+                                            </TextBlock>
+                                        </StackPanel>
                                         <TextBlock Grid.Column="3" Text="{Binding RankName}" Style="{StaticResource Suite.MutedCell}" />
                                         <TextBlock Grid.Column="4" Text="{Binding HoursLabel}" Style="{StaticResource Suite.Num}" />
                                         <TextBlock Grid.Column="5" Text="{Binding JoinedLabel}" Style="{StaticResource Suite.Num}" />

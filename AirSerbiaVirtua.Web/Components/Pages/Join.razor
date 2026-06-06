@@ -73,6 +73,14 @@
                                        class="w-full h-11 rounded-lg panel px-3.5 text-[14px] text-white outline-none focus:ring-2 focus:ring-royal-bright/40" />
                             <ValidationMessage For="() => Model.Password" class="text-[12px] mt-1" />
                         </div>
+                        <div>
+                            <label class="block font-mono text-[10px] tracking-[0.18em] text-mist mb-2">
+                                VATSIM ID <span class="text-mist/50 tracking-normal normal-case">(optional — speeds up approval)</span>
+                            </label>
+                            <InputText @bind-Value="Model.VatsimId" placeholder="e.g. 1234567"
+                                       class="w-full h-11 rounded-lg panel px-3.5 text-[14px] font-mono text-white placeholder:text-mist/40 outline-none focus:ring-2 focus:ring-royal-bright/40" />
+                            <ValidationMessage For="() => Model.VatsimId" class="text-[12px] mt-1" />
+                        </div>
 
                         @if (_error is not null)
                         {
@@ -109,7 +117,8 @@
                 Model.Name.Trim(),
                 Model.Email.Trim(),
                 Model.Password,
-                "LYBE");
+                "LYBE",
+                string.IsNullOrWhiteSpace(Model.VatsimId) ? null : Model.VatsimId.Trim());
 
             var resp = await HttpFactory.CreateClient("Api")
                 .PostAsJsonAsync("api/v1/auth/register", req);
@@ -145,5 +154,8 @@
 
         [Required(ErrorMessage = "Choose a password."), MinLength(8, ErrorMessage = "At least 8 characters.")]
         public string Password { get; set; } = "";
+
+        [RegularExpression(@"^\d{6,8}$", ErrorMessage = "VATSIM IDs are 6-8 digits.")]
+        public string? VatsimId { get; set; }
     }
 }

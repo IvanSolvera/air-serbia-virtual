@@ -18,7 +18,7 @@ public record AdminPilot(
     int Id, string Callsign, string Name, string Email,
     string RankName, decimal TotalHours,
     int Status, string HubId, DateTimeOffset DateJoined,
-    bool IsAdmin);
+    bool IsAdmin, string? VatsimId = null);
 
 // ---- Outstation (ad-hoc charter) -----------------------------------------------
 public record OutstationStartRequest(
