@@ -20,7 +20,7 @@ COPY AirSerbiaVirtua.Api/ AirSerbiaVirtua.Api/
 RUN dotnet publish AirSerbiaVirtua.Api/AirSerbiaVirtua.Api.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 # Self-contained migrations bundle (linux-x64) for the migrator service.
-RUN dotnet tool install --global dotnet-ef --version 10.* \
+RUN dotnet tool install --global dotnet-ef --version 10.0.7 \
  && /root/.dotnet/tools/dotnet-ef migrations bundle \
         --project AirSerbiaVirtua.Api/AirSerbiaVirtua.Api.csproj \
         --configuration Release --self-contained -r linux-x64 \
