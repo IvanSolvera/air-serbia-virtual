@@ -109,7 +109,7 @@ Docker: `docker-compose.yml` with `web`, `api`, `postgres` services.
 1. **W1 Foundation** — Contracts extraction, Blazor scaffold, brand theme, login/register against existing API, CORS, docker-compose
 2. **W2 Public site** — landing, fleet, schedules, route map, join us
 3. **W3 Pilot portal** — dashboard, booking, briefing, logbook, profile
-4. **W4 Desktop slim-down** — desktop pulls active dispatch; remove its Bookings/Briefing UI
+4. **W4 Desktop slim-down** — desktop pulls active dispatch; remove its Bookings/Briefing UI *(amended 2026-06-06: desktop keeps Bookings/Briefing — see doc/w4-desktop-slimdown-design.md; shipped 2026-06-13)*
 5. **W5 Admin area** — roster, PIREP review, CRUD
 6. **W6 AI dispatcher** — intent router first, LLM phrasing layer second
 

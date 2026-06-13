@@ -1,5 +1,79 @@
 # Continuation log — pick-up notes
 
+## ✅ SESSION 2026-06-13 — PHASE W4 COMPLETE (tasks 5–13 shipped)
+
+**Everything is committed** on `dev` (clean tree apart from
+`.claude/settings.local.json` — leave it). W4 (desktop slim-down + web dispatch
+handoff + Contracts convergence + first automated test suites) is **fully done**.
+Tasks 1–4 landed in the prior session; this session executed **tasks 5–13** of
+`doc/w4-implementation-plan.md` test-by-test.
+
+**What shipped this session:**
+- **T5** `AirSerbiaVirtua.Tests.Api` — integration host + `WireCompatTests`.
+  ⚠ **Docker is not installed on this machine**, so the Testcontainers fixture
+  uses the **local Postgres server against a dedicated `airserbiavirtua_test`
+  database** (the plan's documented fallback). `ApiTestHost` hard-guards the DB
+  name to end in `_test` and injects the conn string via in-memory config
+  (overrides user-secrets) so the dev DB can never be touched.
+- **T6** `Booking.DispatchReadyAtUtc` + migration `AddBookingDispatch`; endpoints
+  `GET /api/v1/bookings/active`, `POST`/`DELETE /api/v1/bookings/{id}/dispatch`.
+- **T7** Desktop + Acars.Core converged on Contracts: `IApiService` seam,
+  `GetActiveBookingsAsync`, `ApiContracts.cs` shrunk to `PositionReports`/
+  `PhaseMapping`; all the local status-label enum mirrors deleted in favour of
+  the real Contracts enums.
+- **T8** `DispatchService` (the one start-flight sequence) + Bookings delegation.
+- **T9** Pilot Centre "Resume dispatch" card. **T10** Bookings READY chip.
+- **T11** Web `IPortalApi` seam + dispatch client methods + `Tests.Web` (bUnit)
+  + PortalBook READY badge + Prepare link.
+- **T12** Web **Briefing page** (`/portal/briefing`): route facts, shared
+  `FuelEstimator`, dep/arr METARs, Mark/Undo dispatch-ready, `?bookingId` deep
+  link + Briefing nav tab.
+
+**Verification (all green):** full `dotnet build AirSerbiaVirtual.sln -p:Platform=x64`
+→ 0 errors. **Tests.Unit 38/38** (x64), **Tests.Api 14/14** (local Postgres),
+**Tests.Web 7/7** (bUnit). PoC `--selftest` ALL PASS. Live curl smoke against the
+dev API proved login → book → `POST dispatch` (timestamp set, ordered first) →
+`DELETE` (cleared). The `AddBookingDispatch` migration applied to the dev DB on
+API boot.
+
+**Deviations from the plan (all deliberate, see commits):**
+- Docker fallback for Tests.Api (above).
+- **FluentAssertions pinned 8.10.0** in every test project (9.x = paid licence).
+- **bUnit resolved to 2.7.2** (latest), not 1.x → API is `BunitContext` (not
+  `TestContext`) and `Render<T>()` (not `RenderComponent<T>()`); assembly-level
+  `[FixtureLifeCycle(InstancePerTestCase)]` so NUnit gives bUnit a fresh context
+  per test. The WASM `@rendermode` rendered fine in bUnit 2.x — no workaround.
+- Fixed a real bug in the plan's `Active_ReturnsOnlyOpenAndConfirmed` test: it
+  reused one date for 3 bookings of the same pilot+route, violating the
+  `(PilotId,RouteId,Date)` unique index → gave them distinct dates (ordering
+  assertion unchanged).
+- `PilotCentreDispatchTests` clears Moq invocations after the ctor's eager
+  refresh so the not-authenticated test's `Times.Never` holds.
+
+**REMAINING — manual checks only (no code left):**
+1. **Browser pass of the dispatch handoff** (curl can't run WASM): start
+   API+Web+Desktop, sign in ASL001, on `/portal/briefing` Mark dispatch ready →
+   open desktop **Pilot Centre** → the resume-dispatch card should appear →
+   **Start flight** → lands in ACARS Live. Check READY chips on both the web
+   PortalBook row and the desktop Bookings row.
+2. Older verification debt still open: portal click-through (login/book/logbook/
+   change-password), join-form submit from a browser, Auto Login round-trip, and
+   the long-standing **Phase 2b MSFS verification flight** (JU360 LYBE→LOWW +
+   mid-cruise Wi-Fi pull).
+
+**Leftover test artifact:** booking **id 7** (JU360, today, Open) for ASL001 in
+the **dev** DB, created by the live smoke — cancel it or use it for the browser pass.
+
+**Run order (dev):** Postgres → API (`dotnet run --project AirSerbiaVirtua.Api
+--launch-profile http`, :5036) → Web (`dotnet run --project AirSerbiaVirtua.Web`,
+:5166) → Desktop (`-p:Platform=x64`, bin\x64\Debug). Tests.Api needs Postgres up;
+Tests.Unit needs `-p:Platform=x64`.
+
+**Next after the browser pass:** W5 (admin web), W6 (ASV Dispatch AI). Hetzner
+still not provisioned.
+
+---
+
 ## ⏸ SESSION CLOSED 2026-06-06 (evening) — W4 MID-EXECUTION, resume here
 
 **Everything is committed** (clean tree apart from `.claude/settings.local.json`,
