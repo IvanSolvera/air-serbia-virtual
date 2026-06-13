@@ -20,4 +20,11 @@ public class Booking
     public DateOnly Date { get; set; }
 
     public BookingStatus Status { get; set; } = BookingStatus.Open;
+
+    /// <summary>
+    /// Set when the pilot marks this booking "dispatch ready" on the web
+    /// Briefing page; null = not prepared. The desktop client offers
+    /// dispatch-ready bookings for today as one-click "Resume dispatch".
+    /// </summary>
+    public DateTimeOffset? DispatchReadyAtUtc { get; set; }
 }

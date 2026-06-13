@@ -35,7 +35,7 @@ public class BookingsController : ControllerBase
                 b.Id, b.RouteId,
                 b.Route!.FlightNumber, b.Route.DepIcao, b.Route.ArrIcao,
                 b.Route.AircraftType, b.Route.PlannedTime,
-                b.Date, b.Status))
+                b.Date, b.Status, b.DispatchReadyAtUtc))
             .ToListAsync();
 
         return Ok(bookings);
@@ -69,11 +69,8 @@ public class BookingsController : ControllerBase
         _db.Bookings.Add(booking);
         await _db.SaveChangesAsync();
 
-        return Ok(new BookingInfo(
-            booking.Id, route.Id,
-            route.FlightNumber, route.DepIcao, route.ArrIcao,
-            route.AircraftType, route.PlannedTime,
-            booking.Date, booking.Status));
+        booking.Route = route;
+        return Ok(ToDto(booking));
     }
 
     /// <summary>Cancels a still-Open booking owned by the calling pilot.</summary>
@@ -90,6 +87,82 @@ public class BookingsController : ControllerBase
             return Conflict(new { message = $"Booking is already {booking.Status}." });
 
         booking.Status = BookingStatus.Cancelled;
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    private static BookingInfo ToDto(Booking b) => new(
+        b.Id, b.RouteId,
+        b.Route!.FlightNumber, b.Route.DepIcao, b.Route.ArrIcao,
+        b.Route.AircraftType, b.Route.PlannedTime,
+        b.Date, b.Status, b.DispatchReadyAtUtc);
+
+    /// <summary>
+    /// The calling pilot's Open/Confirmed bookings — dispatch-ready first
+    /// (newest preparation wins), then by service date. The desktop client
+    /// pulls this to offer "Resume dispatch".
+    /// </summary>
+    [HttpGet("active")]
+    public async Task<ActionResult<List<BookingInfo>>> Active()
+    {
+        var pilotId = User.PilotId();
+        if (pilotId is null) return Unauthorized();
+
+        var bookings = await _db.Bookings
+            .AsNoTracking()
+            .Where(b => b.PilotId == pilotId &&
+                        (b.Status == BookingStatus.Open || b.Status == BookingStatus.Confirmed))
+            .Include(b => b.Route)
+            .ToListAsync();
+
+        var ordered = bookings
+            .OrderByDescending(b => b.DispatchReadyAtUtc.HasValue)
+            .ThenByDescending(b => b.DispatchReadyAtUtc)
+            .ThenBy(b => b.Date)
+            .ThenBy(b => b.Id)
+            .Select(ToDto)
+            .ToList();
+
+        return Ok(ordered);
+    }
+
+    /// <summary>
+    /// Marks an Open/Confirmed booking dispatch-ready (web Briefing page).
+    /// Idempotent — repeating refreshes the timestamp.
+    /// </summary>
+    [HttpPost("{id:int}/dispatch")]
+    public async Task<ActionResult<BookingInfo>> MarkDispatchReady(int id)
+    {
+        var pilotId = User.PilotId();
+        if (pilotId is null) return Unauthorized();
+
+        var booking = await _db.Bookings
+            .Include(b => b.Route)
+            .FirstOrDefaultAsync(b => b.Id == id && b.PilotId == pilotId);
+        if (booking is null) return NotFound();
+
+        if (booking.Status is not (BookingStatus.Open or BookingStatus.Confirmed))
+            return Conflict(new { message = $"Booking is {booking.Status} — only Open or Confirmed bookings can be dispatched." });
+
+        booking.DispatchReadyAtUtc = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
+        return Ok(ToDto(booking));
+    }
+
+    /// <summary>Clears the dispatch-ready flag ("unprepare").</summary>
+    [HttpDelete("{id:int}/dispatch")]
+    public async Task<IActionResult> ClearDispatchReady(int id)
+    {
+        var pilotId = User.PilotId();
+        if (pilotId is null) return Unauthorized();
+
+        var booking = await _db.Bookings.FirstOrDefaultAsync(b => b.Id == id && b.PilotId == pilotId);
+        if (booking is null) return NotFound();
+
+        if (booking.Status is not (BookingStatus.Open or BookingStatus.Confirmed))
+            return Conflict(new { message = $"Booking is {booking.Status}." });
+
+        booking.DispatchReadyAtUtc = null;
         await _db.SaveChangesAsync();
         return NoContent();
     }

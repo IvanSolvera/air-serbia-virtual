@@ -51,15 +51,15 @@ public static class TestData
 
     public static async Task<Booking> SeedBookingAsync(
         int pilotId, int routeId, BookingStatus status = BookingStatus.Open,
-        DateOnly? date = null /* W4 Task 6: , DateTimeOffset? dispatchReadyAtUtc = null */)
+        DateOnly? date = null, DateTimeOffset? dispatchReadyAtUtc = null)
     {
         using var scope = ApiTestHost.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var booking = new Booking
         {
             PilotId = pilotId, RouteId = routeId, Status = status,
-            Date = date ?? DateOnly.FromDateTime(DateTime.UtcNow)
-            // W4 Task 6: , DispatchReadyAtUtc = dispatchReadyAtUtc
+            Date = date ?? DateOnly.FromDateTime(DateTime.UtcNow),
+            DispatchReadyAtUtc = dispatchReadyAtUtc
         };
         db.Bookings.Add(booking);
         await db.SaveChangesAsync();
