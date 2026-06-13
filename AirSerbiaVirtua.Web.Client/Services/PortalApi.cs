@@ -9,7 +9,7 @@ namespace AirSerbiaVirtua.Web.Client.Services;
 /// <see cref="PortalSession"/> and transparently refreshes the pair once when a
 /// call comes back 401 — same pattern as the desktop ACARS client.
 /// </summary>
-public sealed class PortalApi(HttpClient http, PortalSession session)
+public sealed class PortalApi(HttpClient http, PortalSession session) : IPortalApi
 {
     // ---- Auth ---------------------------------------------------------------
     public async Task<(bool Ok, string? Error)> LoginAsync(string callsign, string password)
@@ -54,6 +54,31 @@ public sealed class PortalApi(HttpClient http, PortalSession session)
 
     public Task<List<BookingInfo>> GetMyBookingsAsync() =>
         GetAsync<List<BookingInfo>>("api/v1/bookings/mine");
+
+    public Task<List<BookingInfo>> GetActiveBookingsAsync() =>
+        GetAsync<List<BookingInfo>>("api/v1/bookings/active");
+
+    public async Task<RouteInfo?> GetRouteAsync(int id)
+    {
+        var resp = await SendWithRetryAsync(() => NewRequest(HttpMethod.Get, $"api/v1/routes/{id}"));
+        if (!resp.IsSuccessStatusCode) return null;
+        return await resp.Content.ReadFromJsonAsync<RouteInfo>();
+    }
+
+    public Task<List<MetarInfo>> GetMetarAsync(IEnumerable<string> icaos) =>
+        GetAsync<List<MetarInfo>>($"api/v1/metar?icaos={Uri.EscapeDataString(string.Join(",", icaos))}");
+
+    public async Task<(bool Ok, string? Error)> MarkDispatchReadyAsync(int bookingId)
+    {
+        var resp = await SendWithRetryAsync(() => NewRequest(HttpMethod.Post, $"api/v1/bookings/{bookingId}/dispatch"));
+        return resp.IsSuccessStatusCode ? (true, null) : (false, await ReadErrorAsync(resp, "Dispatch failed"));
+    }
+
+    public async Task<(bool Ok, string? Error)> ClearDispatchReadyAsync(int bookingId)
+    {
+        var resp = await SendWithRetryAsync(() => NewRequest(HttpMethod.Delete, $"api/v1/bookings/{bookingId}/dispatch"));
+        return resp.IsSuccessStatusCode ? (true, null) : (false, await ReadErrorAsync(resp, "Undo failed"));
+    }
 
     public async Task<(bool Ok, string? Error)> CreateBookingAsync(int routeId, DateOnly date)
     {
