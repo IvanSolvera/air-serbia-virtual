@@ -1,0 +1,251 @@
+@page "/portal/briefing"
+@rendermode PortalRender.NoPrerender
+@inject PortalSession Session
+@inject IPortalApi Api
+@inject NavigationManager Nav
+
+<PageTitle>Briefing — Air Serbia Virtual</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    @if (!_ready)
+    {
+        <p class="text-mist text-[13.5px]">Loading briefing…</p>
+    }
+    else
+    {
+        <PortalNav />
+
+        @if (_message is not null)
+        {
+            <div class="mb-6 rounded-xl border border-crimson/50 bg-crimson/10 px-5 py-3.5 text-[13.5px] text-rose-100">
+                @_message
+            </div>
+        }
+
+        @if (_bookings.Count == 0)
+        {
+            <div class="panel-solid rounded-2xl px-5 py-10 text-center">
+                <p class="text-mist/70 text-[13.5px]">
+                    No active bookings to brief.
+                    <a class="text-royal-bright hover:underline" href="portal/book">Book a flight</a> first.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="grid gap-6 lg:grid-cols-[320px_1fr]">
+                <!-- Booking list -->
+                <div>
+                    <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-4">ACTIVE BOOKINGS</p>
+                    <div class="panel-solid rounded-2xl overflow-hidden">
+                        @foreach (var b in _bookings)
+                        {
+                            <button @onclick="() => SelectAsync(b)"
+                                    class="w-full text-left px-5 py-4 border-b hairline last:border-0 transition-colors @(b.Id == _selected?.Id ? "bg-royal/10" : "hover:bg-royal/5")">
+                                <span class="font-display font-bold text-white">@b.FlightNumber</span>
+                                <span class="ml-2 font-mono text-[12px] text-slate-100">@b.DepIcao → @b.ArrIcao</span>
+                                @if (b.DispatchReadyAtUtc is not null)
+                                {
+                                    <span class="ml-2 rounded-md bg-emerald-400/20 border border-emerald-400/50 px-2 py-0.5 font-mono text-[10px] text-emerald-100">READY</span>
+                                }
+                                <p class="font-mono text-[11px] text-mist/70 mt-1">@b.Date.ToString("dd MMM yyyy")</p>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <!-- Briefing panel -->
+                <div>
+                    @if (_selected is null || _route is null)
+                    {
+                        <p class="text-mist/60 text-[13px]">Select a booking to brief.</p>
+                    }
+                    else
+                    {
+                        <div class="flex items-center justify-between mb-4">
+                            <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70">
+                                BRIEFING — @_route.FlightNumber @_route.DepIcao → @_route.ArrIcao
+                            </p>
+                            @if (_selected.DispatchReadyAtUtc is { } readyAt)
+                            {
+                                <div class="flex items-center gap-2">
+                                    <span class="rounded-md bg-emerald-400/20 border border-emerald-400/50 px-2.5 py-1 font-mono text-[10.5px] text-emerald-100">
+                                        DISPATCH READY · @readyAt.ToString("HH:mm")Z
+                                    </span>
+                                    <button id="undo-ready" @onclick="UndoReadyAsync" disabled="@_busy"
+                                            class="rounded-lg panel px-3 py-1 text-[11.5px] font-bold text-mist hover:text-white transition disabled:opacity-40">
+                                        Undo
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <button id="mark-ready" @onclick="MarkReadyAsync" disabled="@_busy"
+                                        class="rounded-lg bg-gradient-to-b from-crimson-bright to-crimson px-4 py-1.5 text-[12px] font-bold text-white shadow shadow-crimson/30 hover:brightness-110 transition disabled:opacity-40">
+                                    Mark dispatch ready
+                                </button>
+                            }
+                        </div>
+
+                        <!-- Route facts -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                            <div class="panel-solid rounded-xl px-4 py-3">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">AIRCRAFT</p>
+                                <p class="font-display font-bold text-white mt-1">@_route.AircraftType</p>
+                            </div>
+                            <div class="panel-solid rounded-xl px-4 py-3">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">DISTANCE</p>
+                                <p class="font-display font-bold text-white mt-1">@_route.DistanceNm nm</p>
+                            </div>
+                            <div class="panel-solid rounded-xl px-4 py-3">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">PLANNED</p>
+                                <p class="font-display font-bold text-white mt-1">@($"{_route.PlannedMinutes / 60}h {_route.PlannedMinutes % 60:00}m")</p>
+                            </div>
+                            <div class="panel-solid rounded-xl px-4 py-3">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">SERVICE DATE</p>
+                                <p class="font-display font-bold text-white mt-1">@_selected.Date.ToString("dd MMM")</p>
+                            </div>
+                        </div>
+
+                        <!-- Fuel estimate -->
+                        <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-3">PLANNING FUEL (INDICATIVE)</p>
+                        <div class="grid grid-cols-3 gap-3 mb-6">
+                            <div class="panel-solid rounded-xl px-4 py-3">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">TRIP</p>
+                                <p class="font-mono font-bold text-white mt-1">@($"{_fuelTrip:N0}") kg</p>
+                            </div>
+                            <div class="panel-solid rounded-xl px-4 py-3">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">RESERVE</p>
+                                <p class="font-mono font-bold text-white mt-1">@($"{_fuelReserve:N0}") kg</p>
+                            </div>
+                            <div class="panel-solid rounded-xl px-4 py-3 border border-royal/40">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">BLOCK TOTAL</p>
+                                <p class="font-mono font-bold text-royal-bright mt-1">@($"{_fuelTrip + _fuelReserve:N0}") kg</p>
+                            </div>
+                        </div>
+
+                        <!-- Weather -->
+                        <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-3">WEATHER</p>
+                        <div class="space-y-3">
+                            <div class="panel-solid rounded-xl px-4 py-3">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">DEP · @_route.DepIcao</p>
+                                <p class="font-mono text-[12px] text-slate-100 mt-1">@(_depMetar?.Raw ?? "No report available.")</p>
+                            </div>
+                            <div class="panel-solid rounded-xl px-4 py-3">
+                                <p class="font-mono text-[9.5px] tracking-[0.16em] text-mist/70">ARR · @_route.ArrIcao</p>
+                                <p class="font-mono text-[12px] text-slate-100 mt-1">@(_arrMetar?.Raw ?? "No report available.")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "bookingId")]
+    public int? BookingId { get; set; }
+
+    private bool _ready;
+    private bool _busy;
+    private string? _message;
+    private List<BookingInfo> _bookings = [];
+    private BookingInfo? _selected;
+    private RouteInfo? _route;
+    private MetarInfo? _depMetar;
+    private MetarInfo? _arrMetar;
+    private int _fuelTrip;
+    private int _fuelReserve;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.EnsureRestoredAsync();
+        if (!Session.IsAuthenticated)
+        {
+            Nav.NavigateTo("portal/login");
+            return;
+        }
+
+        await LoadAsync(preferId: BookingId);
+        _ready = true;
+    }
+
+    private async Task LoadAsync(int? preferId)
+    {
+        try
+        {
+            _bookings = await Api.GetActiveBookingsAsync();
+        }
+        catch
+        {
+            _message = "The crew desk is unreachable — try again in a minute.";
+            _bookings = [];
+            return;
+        }
+
+        BookingInfo? pick = null;
+        if (preferId is { } id) pick = _bookings.FirstOrDefault(b => b.Id == id);
+        pick ??= _bookings.FirstOrDefault();
+        await SelectAsync(pick);
+    }
+
+    private async Task SelectAsync(BookingInfo? b)
+    {
+        _selected = b;
+        _route = null;
+        _depMetar = _arrMetar = null;
+        if (b is null) return;
+
+        _route = await Api.GetRouteAsync(b.RouteId);
+        if (_route is null) return;
+
+        (_fuelTrip, _fuelReserve) = FuelEstimator.Estimate(_route.AircraftType, _route.DistanceNm);
+
+        try
+        {
+            var metars = await Api.GetMetarAsync([_route.DepIcao, _route.ArrIcao]);
+            _depMetar = metars.FirstOrDefault(m => m.Icao.Equals(_route.DepIcao, StringComparison.OrdinalIgnoreCase));
+            _arrMetar = metars.FirstOrDefault(m => m.Icao.Equals(_route.ArrIcao, StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            // METAR proxy down — the panel shows "No report available."
+        }
+    }
+
+    private async Task MarkReadyAsync()
+    {
+        if (_selected is null) return;
+        _busy = true;
+        _message = null;
+        var (ok, error) = await Api.MarkDispatchReadyAsync(_selected.Id);
+        if (!ok) _message = error;
+        await ReloadKeepingSelectionAsync();
+        _busy = false;
+    }
+
+    private async Task UndoReadyAsync()
+    {
+        if (_selected is null) return;
+        _busy = true;
+        _message = null;
+        var (ok, error) = await Api.ClearDispatchReadyAsync(_selected.Id);
+        if (!ok) _message = error;
+        await ReloadKeepingSelectionAsync();
+        _busy = false;
+    }
+
+    private async Task ReloadKeepingSelectionAsync()
+    {
+        var keep = _selected?.Id;
+        _bookings = await Api.GetActiveBookingsAsync();
+        var again = keep is { } id ? _bookings.FirstOrDefault(b => b.Id == id) : null;
+        // Selection object is stale after reload — rebind without refetching route/metar
+        // unless the booking vanished (e.g. flown elsewhere).
+        if (again is not null && _selected is not null && again.RouteId == _selected.RouteId)
+            _selected = again;
+        else
+            await SelectAsync(again ?? _bookings.FirstOrDefault());
+    }
+}
