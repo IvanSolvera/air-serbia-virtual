@@ -159,7 +159,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="90" />
                             <ColumnDefinition Width="110" />
-                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="150" />
                             <ColumnDefinition Width="130" />
                             <ColumnDefinition Width="90" />
                         </Grid.ColumnDefinitions>
@@ -185,7 +185,7 @@
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="90" />
                                                 <ColumnDefinition Width="110" />
-                                                <ColumnDefinition Width="110" />
+                                                <ColumnDefinition Width="150" />
                                                 <ColumnDefinition Width="130" />
                                                 <ColumnDefinition Width="90" />
                                             </Grid.ColumnDefinitions>
@@ -195,10 +195,18 @@
                                                 <TextBlock Text="{Binding AircraftType}" Style="{StaticResource Suite.ChipText}" />
                                             </Border>
                                             <TextBlock Grid.Column="3" Text="{Binding Date, StringFormat='yyyy-MM-dd'}" Style="{StaticResource Suite.Num}" />
-                                            <Border Grid.Column="4" Style="{StaticResource Suite.BadgeGreen}">
-                                                <TextBlock Text="{Binding StatusLabel}" Style="{StaticResource Suite.BadgeText}"
-                                                           Foreground="#FFBDF3DD" />
-                                            </Border>
+                                            <StackPanel Grid.Column="4" Orientation="Horizontal">
+                                                <Border Style="{StaticResource Suite.BadgeGreen}">
+                                                    <TextBlock Text="{Binding StatusLabel}" Style="{StaticResource Suite.BadgeText}"
+                                                               Foreground="#FFBDF3DD" />
+                                                </Border>
+                                                <!-- W4: dispatch-ready chip — set on the web Briefing page -->
+                                                <Border Style="{StaticResource Suite.BadgeGreen}" Margin="6,0,0,0"
+                                                        Visibility="{Binding IsDispatchReady, Converter={StaticResource BoolToVisConverter}}">
+                                                    <TextBlock Text="READY" Style="{StaticResource Suite.BadgeText}"
+                                                               Foreground="#FFBDF3DD" />
+                                                </Border>
+                                            </StackPanel>
                                             <Button Grid.Column="5"
                                                     Style="{StaticResource Suite.BtnCrimson}"
                                                     Height="32" FontSize="12" Padding="12,0"

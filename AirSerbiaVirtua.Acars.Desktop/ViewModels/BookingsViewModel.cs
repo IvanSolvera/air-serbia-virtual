@@ -213,6 +213,9 @@ public sealed partial class BookingRow : ObservableObject
     [ObservableProperty] private BookingStatus _status;
     public string StatusLabel => Status.ToString();
 
+    /// <summary>True when the pilot marked this booking dispatch-ready on the web Briefing page.</summary>
+    public bool IsDispatchReady => Source.DispatchReadyAtUtc is not null;
+
     public BookingRow(BookingInfo b)
     {
         Source = b;
