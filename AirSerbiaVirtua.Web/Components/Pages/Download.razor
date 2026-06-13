@@ -1,0 +1,68 @@
+@page "/download"
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+<PageTitle>Download ACARS — Air Serbia Virtual</PageTitle>
+
+@{
+    var downloadUrl = Configuration["Downloads:AcarsWindowsUrl"]
+        ?? "https://github.com/IvanSolvera/air-serbia-virtual/releases/latest/download/AirSerbiaVirtua-ACARS-win-x64.exe";
+}
+
+<section class="mx-auto max-w-7xl px-4 sm:px-6 pt-16 pb-12">
+    <div class="grid lg:grid-cols-2 gap-10 items-start">
+
+        <!-- Pitch + download -->
+        <div>
+            <p class="font-mono text-[11px] tracking-[0.3em] text-royal-bright mb-5">
+                FLIGHT CREW SUITE · ACARS TERMINAL
+            </p>
+            <h1 class="font-display font-extrabold tracking-tight text-4xl sm:text-5xl leading-[1.05] text-white">
+                Download the <span class="text-crimson-bright">ACARS</span> client
+            </h1>
+            <p class="mt-6 max-w-xl text-[15px] leading-relaxed text-mist">
+                The Air Serbia Virtual ACARS desktop app links your flight simulator to the
+                airline: pull the dispatch you prepared on the web, track the flight live, and
+                file your PIREP automatically when you arrive on stand. Windows only.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-3">
+                <a href="@downloadUrl"
+                   class="rounded-xl bg-gradient-to-b from-crimson-bright to-crimson px-6 py-3 font-display font-bold text-white shadow-lg shadow-crimson/30 hover:brightness-110 transition">
+                    Download for Windows (64-bit)
+                </a>
+                <a href="portal"
+                   class="rounded-xl panel px-6 py-3 font-display font-bold text-slate-100 hover:bg-ink-750/60 transition">
+                    Open pilot portal
+                </a>
+            </div>
+            <p class="mt-4 font-mono text-[11px] tracking-wide text-mist/60">
+                Self-contained · no .NET install required · v1.0.0
+            </p>
+        </div>
+
+        <!-- Requirements + steps -->
+        <div class="panel-solid rounded-2xl p-6 sm:p-8">
+            <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mb-4">SYSTEM REQUIREMENTS</p>
+            <ul class="space-y-2.5 text-[14px] text-slate-100">
+                <li>• Windows 10 or 11 (64-bit)</li>
+                <li>• Microsoft Flight Simulator 2020 or 2024 <span class="text-mist">+ FSUIPC7</span> — for live telemetry</li>
+                <li>• An approved ASV pilot account — <a class="text-royal-bright hover:underline" href="join">request one here</a></li>
+            </ul>
+
+            <p class="font-mono text-[10px] tracking-[0.2em] text-mist/70 mt-7 mb-4">INSTALL &amp; RUN</p>
+            <ol class="space-y-2.5 text-[14px] text-slate-100 list-decimal list-inside">
+                <li>Download the file above.</li>
+                <li>Run <span class="font-mono text-[12.5px] text-royal-bright">AirSerbiaVirtua-ACARS-win-x64.exe</span>.</li>
+                <li>If Windows SmartScreen warns (the build is unsigned), click <span class="text-white">More info → Run anyway</span>.</li>
+                <li>Sign in with your ASV callsign and password.</li>
+            </ol>
+
+            <div class="mt-7 rounded-xl border border-royal/30 bg-royal/5 px-4 py-3">
+                <p class="text-[12.5px] text-mist">
+                    Connects to <span class="font-mono text-royal-bright">airserbiavirtual.rs</span>.
+                    FSUIPC7 is a free add-on you install separately so the app can read sim data.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>

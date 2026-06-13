@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
@@ -38,6 +39,16 @@ public partial class App : Application
             {
                 config.SetBasePath(AppContext.BaseDirectory);
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+
+                // Distributed release builds bake the production API URL in via an
+                // assembly-metadata attribute (see the .csproj 'AcarsApiBaseUrl').
+                // Layer it last so it overrides the dev appsettings.json. It is
+                // absent in dev/test builds, so localhost continues to be used there.
+                var prodApi = Assembly.GetExecutingAssembly()
+                    .GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .FirstOrDefault(a => a.Key == "ApiBaseUrl")?.Value;
+                if (!string.IsNullOrWhiteSpace(prodApi))
+                    config.AddInMemoryCollection(new Dictionary<string, string?> { ["Api:BaseUrl"] = prodApi });
             })
             .ConfigureServices((ctx, services) =>
             {

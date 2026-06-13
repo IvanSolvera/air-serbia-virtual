@@ -11,7 +11,19 @@
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>1.0.0</Version>
   </PropertyGroup>
+
+  <!-- Release distribution bakes the production API URL in via assembly metadata:
+         dotnet publish ... -p:AcarsApiBaseUrl=https://airserbiavirtual.rs/
+       App.xaml.cs reads this and overrides Api:BaseUrl. Dev/test builds leave the
+       property unset, so appsettings.json (localhost) is used as before. -->
+  <ItemGroup Condition="'$(AcarsApiBaseUrl)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ApiBaseUrl</_Parameter1>
+      <_Parameter2>$(AcarsApiBaseUrl)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
