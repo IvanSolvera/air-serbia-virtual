@@ -1,6 +1,15 @@
 # Design — Downloadable ACARS client + website Download section
 
-**Date:** 2026-06-13 · **Status:** approved (brainstorming) → ready for implementation plan
+**Date:** 2026-06-13 · **Status:** SHIPPED (with deploy-time amendments below)
+
+> **Amended at deploy (2026-06-13):** production turned out to be **systemd + Caddy**
+> on `asv.solvera.one`, not Docker, with the API on its own subdomain. So vs. this
+> spec: the client targets **`https://api-asv.solvera.one/`** (not `airserbiavirtual.rs`
+> and not same-origin), and the installer is **hosted on the server** at
+> `https://asv.solvera.one/downloads/AirSerbiaVirtua-ACARS-win-x64.exe` (Caddy
+> `file_server`), **not GitHub Releases**. Authoritative current docs:
+> `doc/release-acars.md` (build + upload) and `doc/update-runbook.md` (server deploy).
+> The Download link also needed the `download` attribute to bypass Blazor enhanced nav.
 
 ## Goal
 
