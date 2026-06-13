@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
+using AirSerbiaVirtua.Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -23,12 +24,12 @@ public sealed partial class OutstationViewModel : ObservableObject
     [ObservableProperty] private string _flightNumber;
     [ObservableProperty] private string _depIcao = "LYBE";
     [ObservableProperty] private string _arrIcao = string.Empty;
-    [ObservableProperty] private ApiAircraft? _selectedAircraft;
+    [ObservableProperty] private AircraftInfo? _selectedAircraft;
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string? _statusMessage;
     [ObservableProperty] private bool _hasError;
 
-    public ObservableCollection<ApiAircraft> Fleet { get; } = [];
+    public ObservableCollection<AircraftInfo> Fleet { get; } = [];
 
     public OutstationViewModel(
         ISessionService session,
@@ -126,7 +127,7 @@ public sealed partial class OutstationViewModel : ObservableObject
     partial void OnFlightNumberChanged(string value) => StartFlightCommand.NotifyCanExecuteChanged();
     partial void OnDepIcaoChanged(string value) => StartFlightCommand.NotifyCanExecuteChanged();
     partial void OnArrIcaoChanged(string value) => StartFlightCommand.NotifyCanExecuteChanged();
-    partial void OnSelectedAircraftChanged(ApiAircraft? value) => StartFlightCommand.NotifyCanExecuteChanged();
+    partial void OnSelectedAircraftChanged(AircraftInfo? value) => StartFlightCommand.NotifyCanExecuteChanged();
     partial void OnIsBusyChanged(bool value) => StartFlightCommand.NotifyCanExecuteChanged();
 
     private static void OnUi(Action a) => Application.Current?.Dispatcher.Invoke(a);

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using AirSerbiaVirtua.Contracts;
 
 namespace AirSerbiaVirtua.Acars.Core;
 
@@ -15,7 +16,7 @@ namespace AirSerbiaVirtua.Acars.Core;
 /// the refresh token via the Windows Credential Manager / DPAPI rather than
 /// plain storage. The access token can stay in memory.
 /// </summary>
-public sealed class ApiService : IDisposable
+public sealed class ApiService : IApiService
 {
     private readonly HttpClient _http;
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -187,7 +188,7 @@ public sealed class ApiService : IDisposable
 
     /// <summary>Convenience overload that builds the POSREP from live telemetry + state.</summary>
     public Task PushPositionAsync(int flightSessionId, FlightData data, FlightState phase, CancellationToken ct = default) =>
-        PushPositionAsync(flightSessionId, PositionReport.FromTelemetry(data, phase), ct);
+        PushPositionAsync(flightSessionId, PositionReports.FromTelemetry(data, phase), ct);
 
     /// <summary>Starts an ad-hoc outstation flight (no booking; one-off charter leg).</summary>
     public async Task<FlightStartResponse> StartOutstationFlightAsync(OutstationStartRequest request, CancellationToken ct = default)
@@ -209,29 +210,37 @@ public sealed class ApiService : IDisposable
     }
 
     // ---- Routes -------------------------------------------------------------
-    public async Task<List<ApiRoute>> GetRoutesAsync(string? hubIcao = null, CancellationToken ct = default)
+    public async Task<List<RouteInfo>> GetRoutesAsync(string? hubIcao = null, CancellationToken ct = default)
     {
         var url = string.IsNullOrWhiteSpace(hubIcao) ? "api/v1/routes" : $"api/v1/routes?hub={Uri.EscapeDataString(hubIcao)}";
         using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync(url, ct), ct);
         await EnsureSuccess(resp, "Routes list");
-        return (await resp.Content.ReadFromJsonAsync<List<ApiRoute>>(Json, ct)) ?? new();
+        return (await resp.Content.ReadFromJsonAsync<List<RouteInfo>>(Json, ct)) ?? new();
     }
 
     // ---- Bookings -----------------------------------------------------------
-    public async Task<List<ApiBooking>> GetMyBookingsAsync(CancellationToken ct = default)
+    public async Task<List<BookingInfo>> GetMyBookingsAsync(CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync("api/v1/bookings/mine", ct), ct);
         await EnsureSuccess(resp, "Bookings (mine)");
-        return (await resp.Content.ReadFromJsonAsync<List<ApiBooking>>(Json, ct)) ?? new();
+        return (await resp.Content.ReadFromJsonAsync<List<BookingInfo>>(Json, ct)) ?? new();
     }
 
-    public async Task<ApiBooking> CreateBookingAsync(int routeId, DateOnly date, CancellationToken ct = default)
+    /// <summary>Open/Confirmed bookings, dispatch-ready first (W4 dispatch pull).</summary>
+    public async Task<List<BookingInfo>> GetActiveBookingsAsync(CancellationToken ct = default)
+    {
+        using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync("api/v1/bookings/active", ct), ct);
+        await EnsureSuccess(resp, "Bookings (active)");
+        return (await resp.Content.ReadFromJsonAsync<List<BookingInfo>>(Json, ct)) ?? new();
+    }
+
+    public async Task<BookingInfo> CreateBookingAsync(int routeId, DateOnly date, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(
             () => _http.PostAsJsonAsync("api/v1/bookings", new CreateBookingRequest(routeId, date), Json, ct),
             ct);
         await EnsureSuccess(resp, "Create booking");
-        return (await resp.Content.ReadFromJsonAsync<ApiBooking>(Json, ct))!;
+        return (await resp.Content.ReadFromJsonAsync<BookingInfo>(Json, ct))!;
     }
 
     public async Task CancelBookingAsync(int bookingId, CancellationToken ct = default)
@@ -243,7 +252,7 @@ public sealed class ApiService : IDisposable
     }
 
     // ---- Aircraft -----------------------------------------------------------
-    public async Task<List<ApiAircraft>> GetAircraftAsync(string? type = null, string? status = null, CancellationToken ct = default)
+    public async Task<List<AircraftInfo>> GetAircraftAsync(string? type = null, string? status = null, CancellationToken ct = default)
     {
         var qs = new List<string>();
         if (!string.IsNullOrWhiteSpace(type))   qs.Add($"type={Uri.EscapeDataString(type)}");
@@ -252,7 +261,7 @@ public sealed class ApiService : IDisposable
 
         using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync(url, ct), ct);
         await EnsureSuccess(resp, "Aircraft list");
-        return (await resp.Content.ReadFromJsonAsync<List<ApiAircraft>>(Json, ct)) ?? new();
+        return (await resp.Content.ReadFromJsonAsync<List<AircraftInfo>>(Json, ct)) ?? new();
     }
 
     // ---- PIREP --------------------------------------------------------------
@@ -275,11 +284,11 @@ public sealed class ApiService : IDisposable
     }
 
     // ---- Route detail -------------------------------------------------------
-    public async Task<ApiRoute> GetRouteAsync(int id, CancellationToken ct = default)
+    public async Task<RouteInfo> GetRouteAsync(int id, CancellationToken ct = default)
     {
         using var resp = await SendWithAuthRetryAsync(() => _http.GetAsync($"api/v1/routes/{id}", ct), ct);
         await EnsureSuccess(resp, "Route");
-        return (await resp.Content.ReadFromJsonAsync<ApiRoute>(Json, ct))!;
+        return (await resp.Content.ReadFromJsonAsync<RouteInfo>(Json, ct))!;
     }
 
     // ---- Weather (METAR) ----------------------------------------------------

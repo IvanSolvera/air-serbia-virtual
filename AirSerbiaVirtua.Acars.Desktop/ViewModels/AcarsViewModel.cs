@@ -4,6 +4,7 @@ using System.Net;
 using System.Windows;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
+using AirSerbiaVirtua.Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -305,7 +306,7 @@ public sealed partial class AcarsViewModel : ObservableObject, IDisposable
 
             // Persist the sample immediately; the queue's worker delivers it to the
             // server with retry/backoff. Enqueue never blocks on the network.
-            var report = PositionReport.FromTelemetry(sample, _currentPhase);
+            var report = PositionReports.FromTelemetry(sample, _currentPhase);
             _posrepQueue.Enqueue(new PosrepEnvelope(sessionId, report));
         }
     }

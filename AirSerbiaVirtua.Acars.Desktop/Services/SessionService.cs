@@ -1,13 +1,14 @@
 using System.Net.Http;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Settings;
+using AirSerbiaVirtua.Contracts;
 using Microsoft.Extensions.Options;
 
 namespace AirSerbiaVirtua.Acars.Desktop.Services;
 
 public sealed class SessionService : ISessionService, IDisposable
 {
-    public ApiService Api { get; }
+    public IApiService Api { get; }
     public PilotProfile? Pilot { get; private set; }
     public bool IsAuthenticated => Api.IsAuthenticated;
     public bool IsApiReachable { get; private set; }

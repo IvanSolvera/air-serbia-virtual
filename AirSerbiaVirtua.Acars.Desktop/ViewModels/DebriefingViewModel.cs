@@ -71,7 +71,7 @@ public sealed partial class DebriefingViewModel : ObservableObject
             BlockTime = $"{p.BlockMin / 60}h {p.BlockMin % 60:D2}m";
             AirTime = $"{p.AirMin / 60}h {p.AirMin % 60:D2}m";
             FuelUsed = $"{p.FuelUsedKg:N0} kg";
-            StatusLabel = ((PirepStatusLabel)p.Status).ToString();
+            StatusLabel = p.Status.ToString();
         }
         catch (Exception ex)
         {
@@ -105,6 +105,4 @@ public sealed partial class DebriefingViewModel : ObservableObject
             _ => "Very hard â€” inspect required in the real world."
         };
     }
-
-    private enum PirepStatusLabel { Pending = 0, Accepted = 1, Rejected = 2, UnderReview = 3, Aborted = 4 }
 }

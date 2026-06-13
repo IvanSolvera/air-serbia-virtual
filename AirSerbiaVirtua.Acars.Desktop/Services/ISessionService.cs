@@ -1,4 +1,5 @@
 using AirSerbiaVirtua.Acars.Core;
+using AirSerbiaVirtua.Contracts;
 
 namespace AirSerbiaVirtua.Acars.Desktop.Services;
 
@@ -9,7 +10,7 @@ namespace AirSerbiaVirtua.Acars.Desktop.Services;
 /// </summary>
 public interface ISessionService
 {
-    ApiService Api { get; }
+    IApiService Api { get; }
     PilotProfile? Pilot { get; }
     bool IsAuthenticated { get; }
     bool IsApiReachable { get; }

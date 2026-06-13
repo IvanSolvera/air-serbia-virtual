@@ -1,4 +1,5 @@
 using System.Text.Json;
+using AirSerbiaVirtua.Contracts;
 
 namespace AirSerbiaVirtua.Acars.Core;
 

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
+using AirSerbiaVirtua.Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -44,7 +45,7 @@ public sealed partial class AdminViewModel : ObservableObject
             foreach (var p in roster)
                 Pilots.Add(AdminPilotRow.From(p, myId));
 
-            var pending = roster.Count(p => p.Status == 0);
+            var pending = roster.Count(p => p.Status == PilotStatus.Pending);
             RosterSummary = $"{roster.Count} pilots · {pending} awaiting approval";
         }
         catch (Exception ex)
@@ -118,7 +119,7 @@ public sealed record AdminPilotRow(
 {
     public static AdminPilotRow From(AdminPilot p, int? myId)
     {
-        var status = (Status)p.Status;
+        var status = p.Status;
         return new AdminPilotRow(
             p.Id,
             p.Callsign,
@@ -130,10 +131,7 @@ public sealed record AdminPilotRow(
             status.ToString(),
             p.DateJoined.UtcDateTime.ToString("d MMM yyyy"),
             p.IsAdmin,
-            CanActivate: status is Status.Pending or Status.Inactive,
-            CanDeactivate: status == Status.Active && !p.IsAdmin && p.Id != myId);
+            CanActivate: status is PilotStatus.Pending or PilotStatus.Inactive,
+            CanDeactivate: status == PilotStatus.Active && !p.IsAdmin && p.Id != myId);
     }
-
-    /// <summary>Mirror of the API PilotStatus enum.</summary>
-    private enum Status { Pending = 0, Active = 1, OnLeave = 2, Inactive = 3, Banned = 4 }
 }

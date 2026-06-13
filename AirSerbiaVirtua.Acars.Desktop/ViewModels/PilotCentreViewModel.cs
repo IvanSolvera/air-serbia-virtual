@@ -52,7 +52,7 @@ public sealed partial class PilotCentreViewModel : ObservableObject
         Email = p.Email;
         RankName = string.IsNullOrWhiteSpace(p.RankName) ? "—" : p.RankName;
         TotalHours = $"{p.TotalHours:0.0} h";
-        StatusText = ((PilotStatusLabel)p.Status).ToString();
+        StatusText = p.Status.ToString();
         Hub = p.HubId;
         Joined = p.DateJoined.UtcDateTime.ToString("d MMM yyyy");
         Initials = MakeInitials(p.Name, p.Callsign);
@@ -117,7 +117,4 @@ public sealed partial class PilotCentreViewModel : ObservableObject
     }
 
     private static void OnUi(Action a) => Application.Current?.Dispatcher.Invoke(a);
-
-    /// <summary>Mirror of the API PilotStatus enum (client has it only as an int).</summary>
-    private enum PilotStatusLabel { Pending = 0, Active = 1, OnLeave = 2, Inactive = 3, Banned = 4 }
 }

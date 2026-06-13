@@ -1,5 +1,6 @@
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
+using AirSerbiaVirtua.Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -70,7 +71,7 @@ public sealed partial class BriefingViewModel : ObservableObject
             DepIcao = route.DepIcao;
             ArrIcao = route.ArrIcao;
 
-            var (trip, reserve) = EstimateFuel(route.AircraftType, route.DistanceNm, route.PlannedMinutes);
+            var (trip, reserve) = FuelEstimator.Estimate(route.AircraftType, route.DistanceNm);
             FuelTrip = $"{trip:N0} kg";
             FuelReserve = $"{reserve:N0} kg";
             FuelTotal = $"{trip + reserve:N0} kg";
@@ -101,26 +102,5 @@ public sealed partial class BriefingViewModel : ObservableObject
     {
         var m = metars.FirstOrDefault(x => string.Equals(x.Icao, icao, StringComparison.OrdinalIgnoreCase));
         return string.IsNullOrWhiteSpace(m?.Raw) ? "No report available." : m!.Raw!;
-    }
-
-    /// <summary>
-    /// Rough planning fuel: cruise burn per nm by type + a fixed reserve block
-    /// (taxi + contingency + 45 min final reserve). Indicative only.
-    /// </summary>
-    private static (int trip, int reserve) EstimateFuel(string type, int distanceNm, int plannedMin)
-    {
-        double burnPerNm = type.ToUpperInvariant() switch
-        {
-            "A319" => 7.0,
-            "A320" => 7.4,
-            "A321" => 8.2,
-            "ATR72" or "AT72" or "ATR" => 2.6,
-            "E195" or "E190" => 5.6,
-            _ => 6.5
-        };
-        int trip = (int)Math.Round(distanceNm * burnPerNm);
-        // Reserve: 45 min at ~ (burnPerNm * 360 nm/h) plus a fixed taxi/contingency pad.
-        int reserve = (int)Math.Round(burnPerNm * 360 * 0.75) + 400;
-        return (trip, reserve);
     }
 }

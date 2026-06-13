@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
+using AirSerbiaVirtua.Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -134,7 +135,7 @@ public sealed partial class BookingsViewModel : ObservableObject
 
             _sim.ResetSession();
             _flightState.Set(start, row.FlightNumber);
-            row.Status = (int)ApiBookingStatus.Confirmed;
+            row.Status = BookingStatus.Confirmed;
 
             StatusMessage = $"Flight {row.FlightNumber} started on {aircraft.Registration}. Switching to ACARS Live.";
             _navigation.NavigateTo(NavTarget.Acars);
@@ -177,15 +178,15 @@ public sealed partial class BookingsViewModel : ObservableObject
 
     private bool CanRefresh() => !IsBusy;
 
-    private static bool IsActive(ApiBooking b) =>
-        b.Status is (int)ApiBookingStatus.Open or (int)ApiBookingStatus.Confirmed;
+    private static bool IsActive(BookingInfo b) =>
+        b.Status is BookingStatus.Open or BookingStatus.Confirmed;
     private bool CanBook(RouteRow? row) => row is not null && !IsBusy && _session.IsAuthenticated;
     private bool CanCancel(BookingRow? row) =>
         row is not null && !IsBusy && _session.IsAuthenticated &&
-        row.Status is (int)ApiBookingStatus.Open or (int)ApiBookingStatus.Confirmed;
+        row.Status is BookingStatus.Open or BookingStatus.Confirmed;
     private bool CanStartFlight(BookingRow? row) =>
         row is not null && !IsBusy && _session.IsAuthenticated &&
-        row.Status is (int)ApiBookingStatus.Open or (int)ApiBookingStatus.Confirmed &&
+        row.Status is BookingStatus.Open or BookingStatus.Confirmed &&
         !_flightState.HasActiveSession;
 }
 
@@ -201,7 +202,7 @@ public sealed class RouteRow
     public int PlannedMinutes { get; }
     public string PlannedTimeLabel => $"{PlannedMinutes / 60}h {PlannedMinutes % 60:D2}m";
 
-    public RouteRow(ApiRoute r)
+    public RouteRow(RouteInfo r)
     {
         Id = r.Id;
         FlightNumber = r.FlightNumber;
@@ -224,10 +225,10 @@ public sealed partial class BookingRow : ObservableObject
     public string AircraftType { get; }
     public DateOnly Date { get; }
 
-    [ObservableProperty] private int _status;
-    public string StatusLabel => ((ApiBookingStatus)Status).ToString();
+    [ObservableProperty] private BookingStatus _status;
+    public string StatusLabel => Status.ToString();
 
-    public BookingRow(ApiBooking b)
+    public BookingRow(BookingInfo b)
     {
         Id = b.Id;
         RouteId = b.RouteId;
@@ -239,5 +240,5 @@ public sealed partial class BookingRow : ObservableObject
         _status = b.Status;
     }
 
-    partial void OnStatusChanged(int value) => OnPropertyChanged(nameof(StatusLabel));
+    partial void OnStatusChanged(BookingStatus value) => OnPropertyChanged(nameof(StatusLabel));
 }

@@ -15,4 +15,8 @@
     <PackageReference Include="FSUIPCClientDLL" Version="3.3.16" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AirSerbiaVirtua.Contracts\AirSerbiaVirtua.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,5 @@
 using AirSerbiaVirtua.Acars.Core;
+using AirSerbiaVirtua.Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AirSerbiaVirtua.Acars.Desktop.Services;

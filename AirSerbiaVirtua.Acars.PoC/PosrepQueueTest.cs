@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using AirSerbiaVirtua.Acars.Core;
+using AirSerbiaVirtua.Contracts;
 
 namespace AirSerbiaVirtua.Acars.PoC;
 
@@ -38,7 +39,7 @@ public static class PosrepQueueTest
                 .Select(i => new PositionReport(
                     ClientReportId: Guid.NewGuid(),
                     Timestamp: t0.AddSeconds(i * 30),
-                    Lat: 44.8 + i, Lon: 20.3, AltFt: 1000 * i, GsKts: 250, Phase: 5))
+                    Lat: 44.8 + i, Lon: 20.3, AltFt: 1000 * i, GsKts: 250, Phase: FlightPhase.Cruise))
                 .ToList();
 
             // ---- A. Durability: enqueue while offline, nothing delivered ----

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
+using AirSerbiaVirtua.Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -53,7 +54,7 @@ public sealed partial class LogbookViewModel : ObservableObject
             Pireps.Clear();
             foreach (var p in items) Pireps.Add(new PirepRow(p));
 
-            var accepted = items.Where(i => i.Status == 1).ToList();
+            var accepted = items.Where(i => i.Status == PirepStatus.Accepted).ToList();
             var totalMin = accepted.Sum(i => i.BlockMin);
             var avgScore = accepted.Count > 0 ? (int)Math.Round(accepted.Average(i => i.Score)) : 0;
             TotalsText = $"{items.Count} flight{(items.Count == 1 ? "" : "s")}  â€¢  "
@@ -100,8 +101,6 @@ public sealed class PirepRow
         AirLabel = $"{p.AirMin / 60}h {p.AirMin % 60:D2}m";
         LandingLabel = p.LandingRateFpm != 0 ? $"{p.LandingRateFpm} fpm" : "â€”";
         Score = p.Score;
-        StatusLabel = ((PirepStatusLabel)p.Status).ToString();
+        StatusLabel = p.Status.ToString();
     }
-
-    private enum PirepStatusLabel { Pending = 0, Accepted = 1, Rejected = 2, UnderReview = 3, Aborted = 4 }
 }
