@@ -22,10 +22,24 @@ services:
       interval: 10s
       retries: 5
 
+  # One-shot: applies pending EF migrations against the prod DB (idempotent) and
+  # exits, BEFORE the API starts. Production does not auto-migrate, so this is how
+  # the schema moves forward on every deploy. Reuses the api image's baked-in
+  # /app/efbundle. If a migration fails it exits non-zero and the API won't start.
+  migrator:
+    image: asv-api:latest
+    restart: "no"
+    entrypoint: ["/app/efbundle", "--connection",
+                 "Host=postgres;Port=5432;Database=airserbiavirtua;Username=asv;Password=${DB_PASSWORD:?set DB_PASSWORD in .env}"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   api:
     build:
       context: .
-      dockerfile: AirSerbiaVirtua.Api/Dockerfile   # TODO(W1): add Dockerfile
+      dockerfile: AirSerbiaVirtua.Api/Dockerfile
+    image: asv-api:latest            # named so the migrator can reuse it
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
@@ -36,13 +50,13 @@ services:
     ports:
       - "127.0.0.1:5000:5000"
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
 
   web:
     build:
       context: .
-      dockerfile: AirSerbiaVirtua.Web/Dockerfile   # TODO(W1): add Dockerfile
+      dockerfile: AirSerbiaVirtua.Web/Dockerfile
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
