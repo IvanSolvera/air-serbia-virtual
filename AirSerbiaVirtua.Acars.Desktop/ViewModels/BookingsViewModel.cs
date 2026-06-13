@@ -12,8 +12,7 @@ public sealed partial class BookingsViewModel : ObservableObject
 {
     private readonly ISessionService _session;
     private readonly FlightSessionState _flightState;
-    private readonly INavigationService _navigation;
-    private readonly AirSerbiaVirtua.Acars.Core.SimulatorService _sim;
+    private readonly DispatchService _dispatch;
 
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string? _statusMessage;
@@ -25,13 +24,11 @@ public sealed partial class BookingsViewModel : ObservableObject
     public BookingsViewModel(
         ISessionService session,
         FlightSessionState flightState,
-        INavigationService navigation,
-        AirSerbiaVirtua.Acars.Core.SimulatorService sim)
+        DispatchService dispatch)
     {
         _session = session;
         _flightState = flightState;
-        _navigation = navigation;
-        _sim = sim;
+        _dispatch = dispatch;
         _session.StateChanged += (_, _) =>
             Application.Current?.Dispatcher.Invoke(() => RefreshCommand.NotifyCanExecuteChanged());
     }
@@ -119,31 +116,16 @@ public sealed partial class BookingsViewModel : ObservableObject
         HasError = false;
         try
         {
-            // Pick the first Active aircraft of the required type. The API
-            // returns Conflict if it's already InFlight, which we surface
-            // through StatusMessage.
-            var fleet = await _session.Api.GetAircraftAsync(type: row.AircraftType, status: "Active");
-            if (fleet.Count == 0)
+            var result = await _dispatch.StartAsync(row.Source);
+            if (!result.Success)
             {
                 HasError = true;
-                StatusMessage = $"No {row.AircraftType} airframes are available right now.";
+                StatusMessage = result.Message;
                 return;
             }
 
-            var aircraft = fleet[0];
-            var start = await _session.Api.StartFlightAsync(row.RouteId, aircraft.Id, row.Date);
-
-            _sim.ResetSession();
-            _flightState.Set(start, row.FlightNumber);
             row.Status = BookingStatus.Confirmed;
-
-            StatusMessage = $"Flight {row.FlightNumber} started on {aircraft.Registration}. Switching to ACARS Live.";
-            _navigation.NavigateTo(NavTarget.Acars);
-        }
-        catch (Exception ex)
-        {
-            HasError = true;
-            StatusMessage = ex.Message;
+            StatusMessage = $"Flight {row.FlightNumber} started on {result.Registration}. Switching to ACARS Live.";
         }
         finally
         {
@@ -225,11 +207,15 @@ public sealed partial class BookingRow : ObservableObject
     public string AircraftType { get; }
     public DateOnly Date { get; }
 
+    /// <summary>The wire DTO this row was built from (used by DispatchService + the READY chip).</summary>
+    public BookingInfo Source { get; }
+
     [ObservableProperty] private BookingStatus _status;
     public string StatusLabel => Status.ToString();
 
     public BookingRow(BookingInfo b)
     {
+        Source = b;
         Id = b.Id;
         RouteId = b.RouteId;
         FlightNumber = b.FlightNumber;

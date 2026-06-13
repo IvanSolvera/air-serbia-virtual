@@ -47,6 +47,7 @@ public partial class App : Application
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<SimulatorService>();
                 services.AddSingleton<FlightSessionState>();
+                services.AddSingleton<DispatchService>();
 
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
