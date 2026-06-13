@@ -17,6 +17,31 @@
             <TextBlock Text="Your roster profile, rank progression and account settings."
                        Style="{StaticResource Suite.PageSub}" Margin="0,9,0,24" />
 
+            <!-- W4: resume-dispatch card — visible only when a web-prepared booking for today exists -->
+            <Border Style="{StaticResource Suite.Tile}" Margin="0,0,0,18"
+                    Visibility="{Binding HasDispatch, Converter={StaticResource BoolToVisConverter}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding DispatchTitle}"
+                                   FontFamily="{StaticResource Suite.Display}"
+                                   FontWeight="Bold" FontSize="17" Foreground="White" />
+                        <TextBlock Text="{Binding DispatchSub}"
+                                   Style="{StaticResource Suite.PageSub}" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding DispatchMessage}"
+                                   Foreground="#F2546A" FontSize="12.5" Margin="0,6,0,0"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Start flight"
+                            Style="{StaticResource Suite.BtnCrimson}"
+                            Command="{Binding StartDispatchCommand}"
+                            VerticalAlignment="Center" Margin="16,0,0,0" />
+                </Grid>
+            </Border>
+
             <!-- Profile card -->
             <Border Style="{StaticResource Suite.Panel}" Padding="26,24" Margin="0,0,0,30">
                 <Grid>

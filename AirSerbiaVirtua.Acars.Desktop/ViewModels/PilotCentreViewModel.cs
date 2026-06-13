@@ -1,6 +1,7 @@
 using System.Windows;
 using AirSerbiaVirtua.Acars.Core;
 using AirSerbiaVirtua.Acars.Desktop.Services;
+using AirSerbiaVirtua.Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -14,6 +15,15 @@ namespace AirSerbiaVirtua.Acars.Desktop.ViewModels;
 public sealed partial class PilotCentreViewModel : ObservableObject
 {
     private readonly ISessionService _session;
+    private readonly FlightSessionState _flightState;
+    private readonly DispatchService _dispatch;
+    private BookingInfo? _dispatchBooking;
+
+    // ---- W4 resume-dispatch card ----
+    [ObservableProperty] private bool _hasDispatch;
+    [ObservableProperty] private string _dispatchTitle = string.Empty;
+    [ObservableProperty] private string _dispatchSub = string.Empty;
+    [ObservableProperty] private string? _dispatchMessage;
 
     [ObservableProperty] private bool _isSignedIn;
     [ObservableProperty] private string _callsign = "—";
@@ -34,11 +44,18 @@ public sealed partial class PilotCentreViewModel : ObservableObject
     [ObservableProperty] private string? _passwordMessage;
     [ObservableProperty] private bool _passwordError;
 
-    public PilotCentreViewModel(ISessionService session)
+    public PilotCentreViewModel(ISessionService session, FlightSessionState flightState, DispatchService dispatch)
     {
         _session = session;
-        _session.StateChanged += (_, _) => OnUi(Load);
+        _flightState = flightState;
+        _dispatch = dispatch;
+        _session.StateChanged += (_, _) =>
+        {
+            OnUi(Load);
+            _ = RefreshDispatchAsync();
+        };
         Load();
+        _ = RefreshDispatchAsync();
     }
 
     private void Load()
@@ -56,6 +73,63 @@ public sealed partial class PilotCentreViewModel : ObservableObject
         Hub = p.HubId;
         Joined = p.DateJoined.UtcDateTime.ToString("d MMM yyyy");
         Initials = MakeInitials(p.Name, p.Callsign);
+    }
+
+    /// <summary>
+    /// W4 dispatch pull: shows the resume-dispatch card iff a web-prepared
+    /// (dispatch-ready) booking dated today exists and no session is active.
+    /// Failures are silent — the card is simply absent when offline.
+    /// </summary>
+    public async Task RefreshDispatchAsync()
+    {
+        try
+        {
+            if (!_session.IsAuthenticated || _flightState.HasActiveSession)
+            {
+                ClearDispatchCard();
+                return;
+            }
+
+            var bookings = await _session.Api.GetActiveBookingsAsync();
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var pick = bookings
+                .Where(b => b.DispatchReadyAtUtc is not null && b.Date == today)
+                .OrderByDescending(b => b.DispatchReadyAtUtc)
+                .FirstOrDefault();
+
+            if (pick is null)
+            {
+                ClearDispatchCard();
+                return;
+            }
+
+            _dispatchBooking = pick;
+            DispatchTitle = $"Dispatch ready: {pick.FlightNumber} {pick.DepIcao} → {pick.ArrIcao}";
+            DispatchSub = $"{pick.AircraftType} · prepared {pick.DispatchReadyAtUtc:HH:mm}Z";
+            HasDispatch = true;
+        }
+        catch
+        {
+            ClearDispatchCard();
+        }
+    }
+
+    private void ClearDispatchCard()
+    {
+        _dispatchBooking = null;
+        HasDispatch = false;
+    }
+
+    [RelayCommand]
+    private async Task StartDispatchAsync()
+    {
+        if (_dispatchBooking is null) return;
+        DispatchMessage = null;
+        var result = await _dispatch.StartAsync(_dispatchBooking);
+        if (result.Success)
+            ClearDispatchCard();          // navigation to ACARS already happened
+        else
+            DispatchMessage = result.Message;
     }
 
     [RelayCommand(CanExecute = nameof(CanChangePassword))]
